@@ -1,0 +1,32 @@
+[project]
+name = "autostatistika-ingestion"
+version = "0.1.0"
+description = "Official Estonian vehicle-statistics ingestion for Autostatistika.ee"
+requires-python = ">=3.11"
+dependencies = [
+  "pandas==2.3.3",
+  "openpyxl==3.1.5",
+  "xlrd==2.0.2",
+  "requests==2.32.5",
+  "beautifulsoup4==4.14.2",
+  "lxml==6.0.2",
+  "python-dotenv==1.1.1",
+  "charset-normalizer==3.4.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.4.2"]
+
+[project.scripts]
+ingestion = "ingestion.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = [".."]
+include = ["ingestion*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

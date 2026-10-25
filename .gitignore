@@ -1,0 +1,44 @@
+# dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# next
+apps/web/.next/
+apps/web/out/
+apps/web/.turbo/
+*.tsbuildinfo
+
+# env and secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# data
+data/downloads/
+data/discovery/
+data/*.db
+data/*.db-journal
+data/*.json
+*.xlsx
+*.xls
+*.csv
+!ingestion/tests/fixtures/**/*.csv
+!apps/web/data/published/**/*.json
+# inspected official workbooks, used by the parser tests and the samples backfill
+!data/source-samples/*.xls
+!data/source-samples/*.xlsx
+
+# tooling
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+coverage/
+htmlcov/
+.sentryclirc

@@ -1,0 +1,83 @@
+name: Ingest official sources
+
+# Weekly: download new Transpordiamet files, rebuild the warehouse from every
+# file, and redeploy the site when the published numbers changed.
+#
+# The SQLite warehouse is not kept between runs. Downloaded source files are
+# (actions/cache), and a rebuild from them reproduces the published bundle
+# exactly, in about two minutes.
+on:
+  schedule:
+    - cron: "17 4 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -r requirements.txt
+      - name: Restore downloaded source files
+        uses: actions/cache@v4
+        with:
+          path: data/downloads
+          key: downloads-${{ github.run_id }}
+          restore-keys: downloads-
+      - name: Download new files
+        run: python scripts/fetch_backfill.py
+      - name: Parser tests
+        run: pytest ingestion/tests -q
+      - name: Rebuild warehouse and publish
+        run: |
+          python -m ingestion backfill --source samples > /dev/null
+          python scripts/run_backfill.py
+      - name: Status
+        run: python -m ingestion status
+      - name: Compare with the published bundle
+        id: compare
+        run: |
+          git show HEAD:apps/web/data/published/bundle.json > "$RUNNER_TEMP/previous.json"
+          result=$(python scripts/compare_bundle.py "$RUNNER_TEMP/previous.json" apps/web/data/published/bundle.json)
+          echo "$result"
+          echo "changed=$([ "$result" = changed ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - name: Commit the new bundle
+        if: steps.compare.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/data/published/bundle.json
+          git commit -m "Update published data"
+          git push
+      - name: Notify
+        if: failure() && env.ALERT_WEBHOOK_URL != ''
+        run: |
+          curl -sS -X POST "$ALERT_WEBHOOK_URL" -H 'content-type: application/json' -d '{"text":"Autostatistika ingestion failed"}'
+
+  deploy:
+    needs: ingest
+    if: needs.ingest.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml

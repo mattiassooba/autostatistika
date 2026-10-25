@@ -1,0 +1,97 @@
+# Methodology
+
+Autostatistika republishes official Transpordiamet statistics. It does not estimate missing months and it does not reconstruct history from a current register extract.
+
+## Flows versus stocks
+
+- **Registrations are flows.** A September 2026 first-registration count is vehicles first entered in the Estonian register during that month.
+- **The fleet is a stock.** A 31.12.2020 bus file is the register as it stood that day, including suspended records when the source says so.
+- Adding snapshot counts across dates is invalid.
+- Counting `Esm reg aasta` in a current fleet file is not a first-registration time series. Vehicles leave the register.
+
+## First registrations versus new vehicles
+
+Modern Infoleht üldtabel rows:
+
+- `Kokku` — first registrations in Estonia that month
+- `sh uued` — of which new vehicles
+- `neist uued omanik era` — of which new vehicles registered to a private owner
+
+Used-vehicle first registrations are `Kokku - sh uued` when both cells are present. That remainder is an import/first-entry of a used vehicle, not a domestic ownership transfer.
+
+`Järelturg` sheets are ownership transfers and are stored under a separate metric. They are never added to first registrations.
+
+## Year columns on ranking sheets
+
+`Esm_sõidu-TOP10` columns labelled `2026`, `2025`, … are the vehicle's own first-registration year. They describe the age mix of vehicles first registered in Estonia in the reporting month. Autostatistika:
+
+- stores each year cell with `vehicle_first_reg_year`
+- publishes brand totals as the sum of those cells for the reporting month
+- never treats those columns as a calendar time series of monthly events
+
+## Percentages
+
+Every share names its denominator.
+
+- New-vehicle share = new / first registrations for the same category and month
+- Repeat-inspection share = inspections marked `Kordus` / all inspections in that population and month
+- Brand share = brand first registrations / category first registrations for the same month
+
+Missing is not zero. Empty source cells stay null.
+
+## Inspections
+
+2010-2019 monthly workbooks count events at inspection stations. National figures are the sum of station rows after dropping total/subtotal rows.
+
+- Periodic (`korraline`) inspections are stored separately from all inspections when the source splits them
+- Repeat (`kordus`) is an outcome of an inspection event, not a unique failed vehicle
+- These workbooks have no brand or model. Brand reliability claims are not shown
+- Tractor inspections are a separate population
+
+Teabevärav `yv_*.csv` files, when imported, are aggregated to the same metrics plus defect-group counts. Event-level rows are not published.
+
+Infoleht workbooks also contain “arvel olevad” county and age tables. Those sheets mix grains (counties, age bands, and brand rows). Autostatistika never adds those grains together. A national stock figure is published only from a single grain that also passes an Estonia-scale plausibility check. Dedicated bus-register files (31.12.2010, 31.12.2020) are the verified fleet snapshots in the current sample import.
+
+## Fleet status
+
+If the source includes `Üldstaatus` (registered, suspended, temporarily deleted), Autostatistika keeps that dimension. A headline "registered fleet" uses only statuses the source marks as registered. Mixed-status totals are labelled as such.
+
+## Coverage
+
+Each dataset publishes a coverage matrix: metric × year × category × geography. The UI hides filters the current tab cannot support.
+
+## Insights
+
+Candidate findings are calculated in Python from published facts. An optional language model only rewrites approved numbers. Every published insight stores its evidence rows. If the model is missing or fails validation, a deterministic Estonian and English sentence is used instead.
+
+## Disclaimer
+
+Autostatistika is an independent project. It is not an official service of Transpordiamet or the Estonian government.
+
+
+## Rules added with the 2006-2026 backfill (25 Oct 2026)
+
+- **Brand month totals** are the source's own `Kokku` column. Summing year columns alone drops the `Vanemad`
+  (older) bucket. Rows naming one brand twice ("VOLKSWAGEN", "VOLKSWAGEN, VW") are summed. A brand total can never
+  exceed its category's first registrations for the month; if it does, that sheet's brand table is dropped.
+- **Facts that normalise to one key are summed, never overwritten** (CNG + LPG -> gas, a model listed per body type).
+- **The reporting month comes from the leaflet's own title**, not the file name (`infoleht-1114_detsember_2014...`
+  is December). Partial-month leaflets are skipped. Inspection reports use their `Periood:` line.
+- **Inspection national figures are the report's `Kokku` rows**; station rows must reconcile with them (>1 % gap
+  blocks the import). The 2010 single-sheet layout holds a vehicles table and a tractors table; they are separate
+  populations. Station identity is bureau + point code.
+- **Legacy stock tables** (Infoleht 2006-2015) are read only from register sheets (`arvel`, county, age). Flow sheets
+  in the same workbook are never stock. Month-end and first-of-next-month dates are one snapshot. County splits,
+  age bands and the stated total reconcile exactly for every date.
+- **Status scope**: from 12/2014 the age sheet notes that suspended records are included; earlier leaflets do not say
+  and the series continues without a break. Those stocks are labelled "in the register, incl. suspended" where stated.
+  31.12.2014 also has a registered-only sheet: 552 022 registered + 100 928 suspended passenger cars.
+- **"Enim arvel olevad" brand tables are top lists** (top 17-21), published with `complete: false`; shares use the
+  snapshot stock as denominator and the remainder is stated as not listed.
+
+## Cross-check
+
+Monthly first registrations 2006-2014 were compared with Transpordiamet's consolidated
+`esmased-yldtabel_2006-2014.xlsx`: 764 month x category values, 728 identical. All 36 differences trace to that
+table, not to the monthly leaflets: its 2008 sheet repeats September as October and shifts the rest of the year,
+and its 2012 sheet inserts a Mopeedid column from June. The original monthly leaflets are the published values.

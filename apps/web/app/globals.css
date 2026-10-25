@@ -1,0 +1,286 @@
+@import "tailwindcss";
+
+/*
+ * Carbon & Lime design tokens.
+ * Colors: paper/ink/graphite/lime/mist are the brand core. Everything else is a
+ * functional step derived from them (rules, muted text, dark-panel surfaces).
+ * Chart series slots are validated for CVD separation (see lib/design/tokens.ts).
+ */
+@theme {
+  --color-paper: #f7f7f3;
+  --color-paper-2: #efefe9;
+  --color-paper-3: #e6e7e0;
+  --color-ink: #181d1d;
+  --color-ink-2: #1f2525;
+  --color-ink-3: #283030;
+  --color-graphite: #313b3b;
+  --color-muted: #5e6965;
+  --color-lime: #d5f08b;
+  --color-lime-deep: #b7d65f;
+  --color-lime-wash: #eef7d3;
+  --color-mist: #a8b2ad;
+  --color-rule: #dde1db;
+  --color-rule-strong: #c5ccc6;
+  --color-rule-dark: #333d3d;
+
+  --color-s1: #008a7b;
+  --color-s2: #d06a2c;
+  --color-s3: #5563d0;
+  --color-s4: #b04a86;
+
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --breakpoint-xs: 26rem;
+  --breakpoint-3xl: 112rem;
+}
+
+:root {
+  --dur-press: 160ms;
+  --dur-ui: 240ms;
+  --dur-tab: 320ms;
+  --dur-reveal: 600ms;
+  --header-h: 64px;
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 12px);
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-variation-settings: "wdth" 100;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--color-lime);
+  color: var(--color-ink);
+}
+
+/* ---------- Typography roles ---------- */
+
+.t-display {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 125;
+  font-weight: 760;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+}
+
+.t-headline {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 118;
+  font-weight: 680;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+}
+
+.t-title {
+  font-variation-settings: "wdth" 108;
+  font-weight: 620;
+  letter-spacing: -0.012em;
+  line-height: 1.15;
+}
+
+.t-figure {
+  font-variation-settings: "wdth" 112;
+  font-weight: 640;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  font-feature-settings: "lnum" 1;
+}
+
+.t-label {
+  font-variation-settings: "wdth" 92;
+  font-weight: 540;
+  letter-spacing: 0.005em;
+}
+
+.t-meta {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Surfaces & textures ---------- */
+
+.grid-dark {
+  background-image:
+    linear-gradient(to right, rgb(247 247 243 / 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(247 247 243 / 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: -1px -1px;
+}
+
+.grid-light {
+  background-image:
+    linear-gradient(to right, rgb(24 29 29 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(24 29 29 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* Hatching marks a stretch of time without imported data. It is a structural
+   sign used everywhere coverage gaps appear, never decoration. */
+.hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    currentColor 0 1px,
+    transparent 1px 6px
+  );
+}
+
+/* ---------- Interaction ---------- */
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.on-dark :focus-visible,
+.on-dark:focus-visible {
+  outline-color: var(--color-lime);
+}
+
+.press {
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.press:active {
+  transform: scale(0.97);
+}
+
+/* Scroll-reveal primitive (IntersectionObserver toggles data-shown). */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity var(--dur-reveal) var(--ease-out),
+    transform var(--dur-reveal) var(--ease-out);
+}
+
+.js [data-reveal][data-shown="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hero entrance: one orchestrated moment. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.35em, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: var(--len, 1200);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(213 240 139 / 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(213 240 139 / 0);
+  }
+}
+
+.enter-rise {
+  animation: rise 900ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 60ms);
+}
+
+.enter-fade {
+  animation: fade 900ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 120ms);
+}
+
+.draw-line {
+  stroke-dasharray: var(--len, 1200);
+  animation: draw 2.2s var(--ease-in-out) both 200ms;
+}
+
+.live-dot {
+  animation: pulse-dot 2.4s var(--ease-in-out) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .js [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .hatch {
+    background-image: none;
+    border: 1px dashed CanvasText;
+  }
+}
