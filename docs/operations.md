@@ -64,6 +64,14 @@ The site is a static export (`next build` → `apps/web/out/`). `bundle.json` (~
 - Pages are rendered with the default view; a shared link's query is applied in the browser
 - `/` picks `/et` or `/en` from the browser language (no server, so no middleware)
 
+Static pages for search engines, built from the same bundle (`lib/data/pages.ts`):
+
+- `/et/margid`, `/et/margid/<brand>`: brands with at least 12 TOP-list months or 100 new cars. New-car counts use the
+  model sheet only in months whose sum matches the stated new-vehicle total (within 1 %); others are left out
+- `/et/kuu`, `/et/kuu/<YYYY-MM>`: every registration month
+- Share images at `/og/<locale>/{site,brand,month}/<name>.png` (`app/og/...`, Archivo TTFs in `assets/og/`)
+- The sitemap lists all of them; the footer links popular brands and recent months from every page
+
 Preview the export locally: `npm run build && npm run preview` (http://localhost:3000/et).
 
 ## Hosting

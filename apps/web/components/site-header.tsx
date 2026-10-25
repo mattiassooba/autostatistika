@@ -28,17 +28,19 @@ export function SiteHeader() {
         </Link>
         <nav aria-label={t("label")} className="flex items-center gap-1 sm:gap-2">
           {[
-            ["#explorer", t("explore")],
-            ["#insights", t("insights")],
-            ["#methodology", t("methodology")],
-          ].map(([href, label]) => (
-            <a
+            ["/#explorer", t("explore"), "md:inline-flex"],
+            ["/margid", t("brands"), "md:inline-flex"],
+            ["/kuu", t("months"), "md:inline-flex"],
+            ["/#insights", t("insights"), "lg:inline-flex"],
+            ["/#methodology", t("methodology"), "lg:inline-flex"],
+          ].map(([href, label, show]) => (
+            <Link
               key={href}
               href={href}
-              className="hidden h-9 items-center rounded-full px-3.5 text-[14px] font-medium text-graphite transition-colors hover:bg-paper-2 hover:text-ink md:inline-flex"
+              className={`hidden h-9 items-center rounded-full px-3.5 text-[14px] font-medium text-graphite transition-colors hover:bg-paper-2 hover:text-ink ${show}`}
             >
               {label}
-            </a>
+            </Link>
           ))}
           <LanguageSwitch label={t("language")} />
         </nav>

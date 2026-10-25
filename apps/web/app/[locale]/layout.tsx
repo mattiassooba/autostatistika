@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import { routing } from "@/i18n/routing";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { ogImagePath, pageMetadata } from "@/lib/seo";
 import "../globals.css";
 
 // Archivo's width axis carries the type system: expanded for display and
@@ -36,28 +36,13 @@ export const viewport: Viewport = {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
-  return {
-    metadataBase: new URL(SITE_URL),
+  return pageMetadata({
+    locale,
+    path: "",
     title: t("title"),
     description: t("description"),
-    alternates: {
-      canonical: `/${locale}`,
-      languages: {
-        et: "/et",
-        en: "/en",
-        "x-default": "/et",
-      },
-    },
-    openGraph: {
-      type: "website",
-      siteName: SITE_NAME,
-      title: t("title"),
-      description: t("description"),
-      url: `/${locale}`,
-      locale: locale === "et" ? "et_EE" : "en_GB",
-      alternateLocale: locale === "et" ? "en_GB" : "et_EE",
-    },
-  };
+    image: ogImagePath(locale, "site", "home"),
+  });
 }
 
 export default async function LocaleLayout({

@@ -103,12 +103,14 @@ export function monthsBetween(a: string, b: string): number {
 
 export function titleCaseBrand(source: string): string {
   // Source brand names are upper case ("MERCEDES-BENZ"). Short acronyms stay upper.
-  const keep = new Set(["BMW", "DAF", "MAN", "KIA", "MG", "BYD", "DS", "GAZ", "UAZ", "VAZ", "AMG", "LDV", "SEAT", "MINI"]);
+  const keep = new Set([
+    "BMW", "DAF", "MAN", "KIA", "MG", "BYD", "DS", "GAZ", "UAZ", "VAZ", "AMG", "LDV", "SEAT", "MINI", "DFSK", "SWM", "GMC", "KG",
+  ]);
   return source
-    .split(/(\s|-)/)
+    .split(/(\s|-|&)/)
     .map((part) => {
       if (keep.has(part)) return part === "SEAT" ? "Seat" : part === "MINI" ? "Mini" : part;
-      if (/^[\s-]$/.test(part) || part.length <= 1) return part;
+      if (/^[\s&-]$/.test(part) || part.length <= 1) return part;
       if (/\d/.test(part) && part.length <= 4) return part;
       return part.charAt(0) + part.slice(1).toLowerCase();
     })
