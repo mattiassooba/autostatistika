@@ -13,7 +13,7 @@
 // Slices are merged into one ExplorerData; rows are deduplicated by their
 // natural key, so overlapping slices never double count.
 
-import type { ExplorerData, PublishedBundle, TabId } from "./types";
+import type { ExplorerData, FleetSource, PublishedBundle, TabId } from "./types";
 import { decodeTable, type EncodedTable } from "./table";
 
 export type Catalog = {
@@ -33,6 +33,7 @@ export type CorePayload = {
   disclaimer: { et: string; en: string };
   insights: PublishedBundle["insights"];
   catalog: Catalog;
+  fleetSources: FleetSource[];
   tables: {
     totals: EncodedTable;
     snapshots: EncodedTable;
@@ -144,6 +145,7 @@ export function buildExplorerData(core: CorePayload, slices: SlicePayload[]): Ex
       brands: fleetBrands,
       regions,
       ages: decodeTable(core.tables.ages),
+      sources: core.fleetSources,
     },
     inspections: {
       national: decodeTable(core.tables.national),

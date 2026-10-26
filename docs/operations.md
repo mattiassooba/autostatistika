@@ -45,6 +45,9 @@ python scripts/diagnose_registrations.py  # optional: per-file parse report -> d
 python scripts/run_backfill.py            # import everything in data/downloads/manifest.json, then publish
 ```
 
+Register snapshots (about 300 MB per date, 1.4 GB for 2020-2026) download to `data/downloads/register_snapshot/`.
+`fetch_backfill.py --kinds …` rewrites the manifest with only those kinds; run it without `--kinds` before a full rebuild.
+
 25 Oct 2026 result: 370 files, 369 imported, 1 skipped (`infoleht-0109-27092014.xls` covers 01.09-27.09.2014 only;
 the complete September 2014 leaflet supersedes it). Runtime about 2 minutes after download.
 
@@ -97,8 +100,11 @@ Preview the export locally: `npm run build && npm run preview` (http://localhost
 ## Alerts and the weekly update
 
 `.github/workflows/ingest.yml` runs Tuesday 04:17 UTC (and on demand). It restores `data/downloads/` from the Actions
-cache, downloads new files, runs the parser tests, rebuilds the warehouse from every file, and compares the new bundle
-with the committed one (`scripts/compare_bundle.py`). If the numbers changed, it commits the bundle and redeploys.
+cache and any missing register snapshots from the `register-archive` release (`scripts/register_archive.py restore`),
+downloads new files, uploads new register snapshots to that release (`… upload`), runs the parser tests, rebuilds the
+warehouse from every file, and compares the new bundle with the committed one (`scripts/compare_bundle.py`). The
+release exists because the open-data catalogue replaces its monthly register file; `fetch_backfill.py` keeps files the
+catalogue no longer lists in the manifest, so a rebuild never loses a snapshot. If the numbers changed, it commits the bundle and redeploys.
 The run fails, and nothing is published, if any table would lose rows. Optional `ALERT_WEBHOOK_URL` (repository secret)
 receives a POST on failure; GitHub also emails the repository owner.
 

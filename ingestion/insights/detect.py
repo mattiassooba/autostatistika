@@ -162,11 +162,28 @@ def _fleet_insights(data: dict) -> list[dict]:
     if not data["snapshots"]:
         return []
     latest = max(r["snapshot_date"] for r in data["snapshots"])
-    buses = sum(
-        r["value"]
-        for r in data["snapshots"]
-        if r["snapshot_date"] == latest and r["category_code"] == "bus"
-    )
+    rows = [r for r in data["snapshots"] if r["snapshot_date"] == latest]
+    by_status = {r["status_code"]: r["value"] for r in rows if r["category_code"] == "passenger_car"}
+    registered, suspended = by_status.get("registered"), by_status.get("suspended")
+    if registered is not None and suspended is not None:
+        # The open register file states the general status of every vehicle.
+        total = registered + suspended
+        return [
+            _insight(
+                "soidukipark",
+                latest,
+                "Sõiduautod registris",
+                f"Seisuga {latest} on registris {_fmt(total)} sõiduautot: {_fmt(registered)} registreeritud ja {_fmt(suspended)} peatatud kandega.",
+                f"On {latest} the register holds {_fmt(total)} passenger cars: {_fmt(registered)} registered and {_fmt(suspended)} suspended.",
+                [
+                    {"metric": "fleet_count", "period": latest, "entity": "passenger_car", "value": total, "unit": "vehicles"},
+                    {"metric": "fleet_count", "period": latest, "entity": "registered", "value": registered, "unit": "vehicles"},
+                    {"metric": "fleet_count", "period": latest, "entity": "suspended", "value": suspended, "unit": "vehicles"},
+                ],
+                title_en="Passenger cars in the register",
+            )
+        ]
+    buses = sum(r["value"] for r in rows if r["category_code"] == "bus")
     if not buses:
         return []
     return [

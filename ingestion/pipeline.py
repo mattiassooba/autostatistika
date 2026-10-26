@@ -389,6 +389,6 @@ def _sha256(path: Path) -> str:
 def _kind(resource: DiscoveredResource) -> str:
     if resource.resource_kind == "inspection_monthly":
         return "inspections"
-    if resource.resource_kind == "fleet_snapshot":
+    if resource.resource_kind in {"fleet_snapshot", "register_snapshot"}:
         return "vehicle_fleet"
     return "registrations"

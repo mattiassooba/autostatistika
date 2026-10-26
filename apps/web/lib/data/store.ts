@@ -75,6 +75,7 @@ function buildIndex(bundle: PublishedBundle): Indexed {
     disclaimer: bundle.disclaimer,
     insights: bundle.insights,
     catalog,
+    fleetSources: bundle.fleet.sources ?? [],
     tables: {
       totals: encodeTable(reg.totals, ["reporting_period", "category_code", "metric_code", "value"]),
       snapshots: encodeTable(bundle.fleet.snapshots, ["snapshot_date", "category_code", "status_code", "value"]),

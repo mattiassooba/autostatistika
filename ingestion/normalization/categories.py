@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from ingestion.normalization.text import clean_text
 
 EU_TO_FAMILY = {
@@ -30,6 +32,32 @@ EU_TO_FAMILY = {
     "T4": "tractor",
     "T5": "tractor",
     "LM": "self_propelled",
+    # Register codes (transpordiamet.ee/soidukite-ja-masinate-kategooriad):
+    # G is the off-road variant of the same category, C1-C5 are tracked
+    # tractors, MS1/MS2 snowmobiles and ATV-type off-road vehicles, R1-R4
+    # trailers for tractors (a separate population from road trailers O1-O4).
+    "M3G": "bus",
+    "T4.1": "tractor",
+    "T4.2": "tractor",
+    "T4.3": "tractor",
+    "C1": "tractor",
+    "C2": "tractor",
+    "C3": "tractor",
+    "C4": "tractor",
+    "C4.1": "tractor",
+    "C4.2": "tractor",
+    "C4.3": "tractor",
+    "C5": "tractor",
+    "MS1": "offroad",
+    "MS2": "offroad",
+    "R1A": "tractor_trailer",
+    "R1B": "tractor_trailer",
+    "R2A": "tractor_trailer",
+    "R2B": "tractor_trailer",
+    "R3A": "tractor_trailer",
+    "R3B": "tractor_trailer",
+    "R4A": "tractor_trailer",
+    "R4B": "tractor_trailer",
 }
 
 LABEL_TO_FAMILY = {
@@ -79,6 +107,9 @@ def canonical_category(value: object) -> tuple[str | None, str | None]:
     eu = text.upper().replace(" ", "")
     if eu in EU_TO_FAMILY:
         return EU_TO_FAMILY[eu], eu
+    # Tractor speed classes: T1a / T1b (up to / over 40 km/h) are still T1.
+    if re.fullmatch(r"[TC]\d(\.\d)?[AB]", eu) and eu[:-1] in EU_TO_FAMILY:
+        return EU_TO_FAMILY[eu[:-1]], eu
     key = (
         text.lower()
         .replace("ä", "a")

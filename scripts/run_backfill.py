@@ -1,7 +1,7 @@
 """Import every file listed in data/downloads/manifest.json (written by
 fetch_backfill.py), then publish the bundle.
 
-    python scripts/run_backfill.py [--kinds registration_infoleht inspection_monthly] [--no-publish]
+    python scripts/run_backfill.py [--kinds registration_infoleht inspection_monthly register_snapshot] [--no-publish]
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ FIELDS = ("source_id", "source_url", "title", "resource_kind", "reporting_period
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--kinds", nargs="+", default=["registration_infoleht", "inspection_monthly"])
+    parser.add_argument("--kinds", nargs="+", default=["registration_infoleht", "inspection_monthly", "register_snapshot"])
     parser.add_argument("--no-publish", action="store_true")
     args = parser.parse_args()
     manifest = json.loads((DOWNLOAD_DIR / "manifest.json").read_text(encoding="utf-8"))

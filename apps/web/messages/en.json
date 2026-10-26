@@ -132,7 +132,9 @@
     "offroad": "Off-road vehicles",
     "tractor": "Tractors",
     "self_propelled": "Self-propelled machines",
-    "watercraft": "Watercraft"
+    "watercraft": "Watercraft",
+    "tractor_trailer": "Tractor trailers",
+    "unclassified": "Unclassified"
   },
   "common": {
     "aboutChart": "About this chart",
@@ -150,7 +152,8 @@
     "period": "Statistical period",
     "processed": "Processed by Autostatistika",
     "limitation": "Missing is not zero. A stock is not a flow. A repeat inspection is not a brand-quality score.",
-    "link": "Open the original source"
+    "link": "Open the original source",
+    "licence": "Licence"
   },
   "reg": {
     "summaryLabel": "Month summary",
@@ -252,11 +255,11 @@
     "asOf": "as of {date}",
     "stock": "In the register",
     "stockMixed": "In the register, incl. suspended",
-    "stockInfo": "Vehicles in the register on a given date. This is a stock, not a flow: counts from different dates are never added. From 12/2014 the source notes that the count includes suspended registrations; earlier leaflets do not say, but the series continues without a break. For 31.12.2014 the source also gives the registered-only count.",
+    "stockInfo": "Vehicles in the register on a given date. This is a stock, not a flow: counts from different dates are never added. 2006–2015: Infoleht tables; from 12.2014 the source notes that the count includes suspended records, earlier leaflets do not say. For 31.12.2014 the source also gives the registered-only count. From 2020: the open register file, one row per vehicle in the register; status is the source's general status (registered or suspended).",
     "statusNote": "The source also includes suspended records. The headline figure is therefore the sum of all statuses and is labelled as such.",
     "dataset": "Registered vehicles",
     "historyTitle": "{category} on other dates",
-    "historyNote": "Each row is a separate snapshot. They are compared side by side, never added.",
+    "historyNote": "Each column is a separate stock date, placed on a time axis. Hatched stretches have no snapshot. Stocks are compared side by side, never added.",
     "historySingle": "Only one snapshot is imported for this type.",
     "selectDate": "Select snapshot {date}",
     "compositionTitle": "Types as of {date}",
@@ -272,24 +275,34 @@
     "countyNone": "No county split is imported for this type.",
     "ageTitle": "Age",
     "ageDescription": "{category} by age band, each snapshot separately.",
-    "ageInfo": "Age bands come from the Infoleht age sheet. Bars show the share of the same snapshot's total.",
+    "ageInfo": "Bars show the share of the vehicles of the same date whose age is known. Up to 2015 the bands come from the Infoleht age sheet; from 2020 they are calculated from the register file by first-registration date.",
     "ageNote": "Pick a row to switch snapshot.",
     "ageDataset": "Infoleht, age",
     "ageUnavailable": "No age split imported for {category}",
-    "ageUnavailableBody": "The age sheet is imported for passenger cars, trucks, trailers and motorcycles.",
+    "ageUnavailableBody": "Age bands are imported from the Infoleht age sheet (up to 2015) and from the register files (from 2020).",
     "brandTitle": "Brands in the fleet",
     "brandDescription": "{category} in the register by brand, as of {date}.",
-    "brandInfo": "Two kinds of source: bus register files give a complete brand split (shown when it matches the stock to within 90%); the Infoleht “most registered” table lists only the largest brands. List share = brand / whole fleet on the same date.",
+    "brandInfo": "Three kinds of source. Register files (from 2020) and bus register files give a complete split by make; it is shown when it matches the stock within 90 %, share = make / sum of make rows. The Infoleht “most registered” table lists only the largest makes; share = make / the whole fleet on the same date.",
     "brandDataset": "Registered vehicles, brands",
     "brandNotReconciled": "Brand rows don't match the snapshot",
     "brandNotReconciledBody": "Brand rows for this snapshot add up to {sum}, but the register holds {stock} vehicles. They come from a different grain, so they are not shown as the fleet's brand split.",
     "brandUnavailable": "No brand split for this snapshot",
-    "brandUnavailableBody": "Brands are imported for the bus register snapshots.",
+    "brandUnavailableBody": "Complete make splits are imported for the register files (from 2020) and the bus register dates.",
     "showMore": "Show {count} brands",
     "showLess": "Show less",
     "brandTopDescription": "The source's {count} brands with the most vehicles, type: {category}, as of {date}.",
     "brandTopNote": "These {count} brands hold {share} of the fleet. The other {rest} vehicles belong to brands the source list does not name.",
-    "unassigned": "County not set"
+    "unassigned": "County not set",
+    "registerDataset": "Status of vehicles in Estonia",
+    "registerCountyDataset": "Status of vehicles in Estonia, county",
+    "registerAgeDataset": "Status of vehicles in Estonia, age",
+    "registerBrandDataset": "Status of vehicles in Estonia, makes",
+    "registerLicence": "CC BY-SA 4.0, Transpordiamet",
+    "retroactive": "Queried retroactively",
+    "retroactiveNote": "The file for this date was queried from the register retroactively, in 2025. The source warns: where the register's history was changed later or is not kept, the count can differ from the state on that date.",
+    "registerCountyNote": "County is the county of the responsible user's (or owner's) address. Total {total}, including records without a county (“County not assigned”).",
+    "registerAgeNote": "From 2020: age in full years from the vehicle's first registration (in any country) to the snapshot date. Up to 2015: the Infoleht age sheet, which does not state what age is counted from. Select a row to change the date.",
+    "historyGap": "No snapshot between {from} and {to}"
   },
   "insp": {
     "summaryLabel": "Inspection month",
@@ -371,6 +384,10 @@
         "title": "A repeat inspection is not a quality score",
         "body": "A repeat is the outcome of an inspection event, not a unique faulty vehicle. The monthly reports have no brand or model, so no claims about brand reliability are made."
       },
+      "register": {
+        "title": "A register snapshot is a count of vehicles",
+        "body": "From 2020 the fleet comes from the open register file, in which every row is one vehicle in the register. The figures count those rows; individual vehicles are not published. Status is the source's general status: registered or suspended. The 2020–2023 files were queried from the register retroactively in 2025 and are marked as such."
+      },
       "missing": {
         "title": "Missing is not zero",
         "body": "Empty cells stay empty. When a brand is missing from a month's ranking, it reads “not ranked”, never zero. Months that were not imported are hatched."
@@ -387,7 +404,7 @@
       "inspections": "Inspections"
     },
     "independentLabel": "Independent publication",
-    "licence": "Public-sector open data. When reusing, credit the source: Transpordiamet."
+    "licence": "Public-sector open data. When reusing, credit the source: Transpordiamet. Figures calculated from the register files (Status of vehicles in Estonia) are licensed CC BY-SA 4.0."
   },
   "footer": {
     "attribution": "Data: Transpordiamet. Reuse with attribution.",

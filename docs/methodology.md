@@ -106,6 +106,27 @@ Each rule has a test in `ingestion/tests/test_parsers.py` that reproduces the so
 - Result: all 231 model months match the stated new-car total within 1 % (07/2024 lists one car fewer than its general
   table; the leaflet's own list total says the same).
 
+## Register snapshots (from 2020, added 26 Oct 2026)
+
+- Source: the open dataset "Sõidukite staatused Eestis", one row per vehicle in the register. Rows are counted;
+  individual vehicles are not published.
+- Status is the source's general status `YLDINE_STAATUS`: registered or suspended. Both are in the register; the
+  headline stock is their sum and is labelled as including suspended records, with the split beside it.
+- Families follow the EU category (transpordiamet.ee/soidukite-ja-masinate-kategooriad): MS1/MS2 are off-road
+  vehicles, C1-C5 and T4.x tractors, speed classes (T1a/T1b) keep their category, R1-R4 are tractor trailers (a
+  separate family from road trailers O1-O4). Codes the page does not define (TR, TH, TR1, TR2, TH1, RO) stay
+  "unclassified" and are never guessed.
+- County is the responsible user's (or owner's) address county; records without one are "Maakond määramata".
+- Age is full years from `ESMANE_REG` (first registration in any country) to the snapshot date, in the same bands as
+  the Infoleht age sheet (0-2, 3-5, 6-10, over 10). The Infoleht sheet does not state its basis, so the two parts of
+  the series are labelled separately. Vehicles without a valid date get no band.
+- `EESTIS_ESMAREG` can be overwritten when a vehicle is re-registered and is not used as a registration series.
+- 1 January 2020-2023 come from files queried in 2025 (the zip's README warns they may differ from the register on
+  those dates); they are marked on the site.
+- Applying the register's category codes to the registration leaflets also restored rows that were dropped before:
+  off-road (MS1/MS2) fuel rows, M3G buses and tractor speed classes. Off-road fuel now matches the stated monthly
+  total in every month that has both.
+
 ## Brand and month pages
 
 - A brand gets a page with at least 12 ranked TOP-list months or at least 100 new cars in the model lists (57 brands).

@@ -14,6 +14,8 @@ CATEGORIES = [
     ("tractor", "Traktorid", "Tractors", "T1,T2,T3,T4,T5"),
     ("self_propelled", "Liikurmasinad", "Self-propelled machines", "LM"),
     ("watercraft", "Veesõidukid", "Watercraft", ""),
+    ("tractor_trailer", "Traktorihaagised", "Tractor trailers", "R1,R2,R3,R4"),
+    ("unclassified", "Liigitamata", "Unclassified", ""),
 ]
 
 FUELS = [
@@ -68,6 +70,7 @@ METRICS = [
 SOURCES = [
     ("ta-infoleht", "Transpordiamet Infoleht", "https://www.transpordiamet.ee/soidukitega-tehtud-toimingute-statistika", "registrations", 40, "www.transpordiamet.ee"),
     ("ta-fleet-archive", "Transpordiamet historical fleet snapshots", "https://www.transpordiamet.ee/soidukitega-tehtud-toimingute-statistika", "vehicle_fleet", 400, "www.transpordiamet.ee"),
+    ("ta-register-opendata", "Transpordiamet register snapshots (Sõidukite staatused Eestis)", "https://andmed.eesti.ee/datasets/soidukite-staatused-eestis", "vehicle_fleet", 31, "andmed.eesti.ee"),
     ("ta-inspections-xls", "Transpordiamet inspection monthlies 2010-2019", "https://www.transpordiamet.ee/tehnoulevaatuste-statistika", "inspections", 40, "www.transpordiamet.ee"),
 ]
 

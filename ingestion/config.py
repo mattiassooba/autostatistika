@@ -12,10 +12,13 @@ TRUSTED_HOSTS = {
     "transpordiamet.ee",
     "www.transpordiamet.ee",
     "andmed.eesti.ee",
+    # Transpordiamet's file share; the open-data catalogue links the current
+    # register snapshots there.
+    "pilv.transpordiamet.ee",
 }
 
 USER_AGENT = "AutostatistikaIngestion/0.1 (+https://autostatistika.ee; source-audit)"
-MAX_FILE_BYTES = 250 * 1024 * 1024
+MAX_FILE_BYTES = 400 * 1024 * 1024
 REQUEST_TIMEOUT = 60
 REQUEST_GAP_SECONDS = 1.0
 
@@ -36,7 +39,9 @@ INSIGHT_MODEL = os.getenv("INSIGHT_MODEL", "gpt-4.1-mini")
 REGISTRATIONS_PAGE = "https://www.transpordiamet.ee/soidukitega-tehtud-toimingute-statistika"
 INSPECTIONS_PAGE = "https://www.transpordiamet.ee/tehnoulevaatuste-statistika"
 FLEET_PAGE = "https://www.transpordiamet.ee/soidukite-statistika"
-TEABEVARAV_API = "https://andmed.eesti.ee/api/v2/datasets"
+# The catalogue's /api/v2/datasets/<slug> returns HTTP 500; /api/datasets/slug/<slug> works.
+OPEN_DATA_API = "https://andmed.eesti.ee/api/datasets"
+REGISTER_DATASET_SLUG = "soidukite-staatused-eestis"
 
 INFOLEHT_DATASET_UUID = "9d2f4b4d-9eab-45f7-97b2-543600621aff"
 

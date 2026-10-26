@@ -62,6 +62,17 @@ const CATEGORY_PATHS: Record<string, React.ReactNode> = {
       {WHEEL(32, 15.4, 2.4)}
     </>
   ),
+  tractor_trailer: (
+    <>
+      <path d="M18.4 14H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h24a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-5.4M30 12h7M10 5V3h14v2" />
+      {WHEEL(21, 14, 3.4)}
+    </>
+  ),
+  unclassified: (
+    <>
+      <rect x="9" y="4" width="22" height="12" rx="1.5" strokeDasharray="2.5 2" />
+    </>
+  ),
   self_propelled: (
     <>
       <path d="M5 17.5a2 2 0 0 1 0-4h17a2 2 0 0 1 0 4zM8 13.5V7h8v6.5M16 10h4l8-6.5 6 5.5-2.6 2" />

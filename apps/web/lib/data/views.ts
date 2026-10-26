@@ -3,7 +3,7 @@
 // Missing stays null: a brand absent from a month's source top list is "not
 // listed", never zero.
 
-import type { ExplorerData } from "./types";
+import type { ExplorerData, FleetSource } from "./types";
 import type { Catalog } from "./slices";
 
 const uniq = <T,>(items: T[]) => [...new Set(items)];
@@ -92,6 +92,8 @@ const CATEGORY_ORDER = [
   "tractor",
   "self_propelled",
   "l_other",
+  "tractor_trailer",
+  "unclassified",
 ];
 
 export function sortCategories(codes: string[]): string[] {
@@ -366,6 +368,11 @@ export function fleetValue(data: ExplorerData, date: string, category: string) {
       .map((row) => ({ status: row.status_code as string, value: row.value })),
     mixedStatus: rows.some((row) => row.status_code && row.status_code !== "registered"),
   };
+}
+
+/** Where a stock date comes from: the open register files (2020+) or the Infoleht tables. */
+export function fleetSourceOf(data: ExplorerData, date: string): FleetSource | null {
+  return data.fleet.sources?.find((row) => row.snapshot_date === date) ?? null;
 }
 
 /** The same category across every snapshot date (stocks compared, not summed). */

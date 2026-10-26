@@ -132,7 +132,9 @@
     "offroad": "Maastikusõidukid",
     "tractor": "Traktorid",
     "self_propelled": "Liikurmasinad",
-    "watercraft": "Veesõidukid"
+    "watercraft": "Veesõidukid",
+    "tractor_trailer": "Traktorihaagised",
+    "unclassified": "Liigitamata"
   },
   "common": {
     "aboutChart": "Selle graafiku kohta",
@@ -150,7 +152,8 @@
     "period": "Statistiline periood",
     "processed": "Autostatistika töötlus",
     "limitation": "Puuduv väärtus ei ole null. Seis ei ole voog. Kordusülevaatus ei ole margi kvaliteedihinne.",
-    "link": "Ava algallikas"
+    "link": "Ava algallikas",
+    "licence": "Litsents"
   },
   "reg": {
     "summaryLabel": "Kuu kokkuvõte",
@@ -252,11 +255,11 @@
     "asOf": "seisuga {date}",
     "stock": "Registris",
     "stockMixed": "Registris, sh peatatud kanded",
-    "stockInfo": "Registris olevate sõidukite arv kindlal kuupäeval. See on seis, mitte voog: eri kuupäevade arve ei liideta. Alates 12.2014 märgib allikas, et arv sisaldab peatatud registrikandega sõidukeid; varasemad lehed seda ei täpsusta, kuid rida jätkub ilma hüppeta. 31.12.2014 seisu kohta annab allikas ka ainult registreeritud sõidukite arvu.",
+    "stockInfo": "Registris olevate sõidukite arv kindlal kuupäeval. See on seis, mitte voog: eri kuupäevade arve ei liideta. 2006–2015: Infolehe tabelid; alates 12.2014 märgib allikas, et arv sisaldab peatatud registrikandega sõidukeid, varasemad lehed seda ei täpsusta. 31.12.2014 kohta annab allikas ka ainult registreeritud sõidukite arvu. Alates 2020: avaandmete registrifail, üks rida iga registris oleva sõiduki kohta; staatus on allika üldstaatus (registreeritud või peatatud).",
     "statusNote": "Allikas sisaldab ka peatatud kandeid. Pealkirja arv on seetõttu kõigi staatuste summa ja on nii märgitud.",
     "dataset": "Arvel olevad sõidukid",
     "historyTitle": "{category} teistel kuupäevadel",
-    "historyNote": "Iga rida on eraldi seis. Neid võrreldakse kõrvuti, mitte ei liideta.",
+    "historyNote": "Iga tulp on eraldi seis, ajateljel oma kohal. Viirutatud vahemikus seisu pole. Seise võrreldakse kõrvuti, mitte ei liideta.",
     "historySingle": "Selle liigi kohta on imporditud ainult üks seis.",
     "selectDate": "Vali seis {date}",
     "compositionTitle": "Liigid seisuga {date}",
@@ -272,24 +275,34 @@
     "countyNone": "Selle liigi maakondade jaotust pole imporditud.",
     "ageTitle": "Vanus",
     "ageDescription": "{category} vanuserühmade kaupa, iga seis eraldi.",
-    "ageInfo": "Vanuserühmad tulevad Infolehe vanuselehelt. Ribad näitavad osakaalu sama seisu koguarvust.",
+    "ageInfo": "Ribad näitavad osakaalu sama seisu sõidukitest, millel vanus on teada. Kuni 2015 tulevad vanuserühmad Infolehe vanuselehelt, alates 2020 arvutatakse need registrifailist esmaregistreerimise kuupäeva järgi.",
     "ageNote": "Vali rida, et vahetada seisu.",
     "ageDataset": "Infoleht, vanus",
     "ageUnavailable": "Liigi „{category}“ vanusejaotust pole imporditud",
-    "ageUnavailableBody": "Vanuseleht on imporditud sõidu- ja veoautode, haagiste ning mootorrataste kohta.",
+    "ageUnavailableBody": "Vanusejaotus on imporditud Infolehe vanuselehelt (kuni 2015) ja registrifailidest (alates 2020).",
     "brandTitle": "Margid pargis",
     "brandDescription": "{category} registris margi järgi, seisuga {date}.",
-    "brandInfo": "Kahte tüüpi allikaid: bussiregistri failid annavad täieliku margijaotuse (näidatakse, kui see vastab seisule vähemalt 90 % ulatuses), Infolehe tabel „enim arvel olevad“ on ainult suurimate markide loend. Loendi osakaal = mark / kogu park samal kuupäeval.",
+    "brandInfo": "Kolme tüüpi allikaid. Registrifailid (alates 2020) ja bussiregistri failid annavad täieliku margijaotuse; see näidatakse, kui see vastab seisule vähemalt 90 % ulatuses, osakaal = mark / margiridade summa. Infolehe tabel „enim arvel olevad“ on ainult suurimate markide loend; osakaal = mark / kogu park samal kuupäeval.",
     "brandDataset": "Arvel olevad sõidukid, margid",
     "brandNotReconciled": "Margiread ei vasta seisule",
     "brandNotReconciledBody": "Selle seisu margiridade summa on {sum}, aga registris on {stock} sõidukit. Need read pärinevad teisest tasemest, seega neid pargi margijaotusena ei näidata.",
     "brandUnavailable": "Selle seisu margijaotust pole",
-    "brandUnavailableBody": "Margid on imporditud bussiregistri seisude kohta.",
+    "brandUnavailableBody": "Täielik margijaotus on imporditud registrifailide (alates 2020) ja bussiregistri seisude kohta.",
     "showMore": "Näita {count} marki",
     "showLess": "Näita vähem",
     "brandTopDescription": "Allika {count} enim registris olevat marki, liik: {category}, seisuga {date}.",
     "brandTopNote": "Need {count} marki katavad {share} pargist. Ülejäänud {rest} sõidukit jagunevad markide vahel, mida allika loend ei nimeta.",
-    "unassigned": "Maakond määramata"
+    "unassigned": "Maakond määramata",
+    "registerDataset": "Sõidukite staatused Eestis",
+    "registerCountyDataset": "Sõidukite staatused Eestis, maakond",
+    "registerAgeDataset": "Sõidukite staatused Eestis, vanus",
+    "registerBrandDataset": "Sõidukite staatused Eestis, margid",
+    "registerLicence": "CC BY-SA 4.0, Transpordiamet",
+    "retroactive": "Päritud tagantjärgi",
+    "retroactiveNote": "Selle seisu fail on registrist päritud tagantjärgi, 2025. aastal. Allika hoiatus: kui registris on ajalugu hiljem muudetud või seda ei hoita, võib arv tollasest seisust erineda.",
+    "registerCountyNote": "Maakond on vastutava kasutaja (või omaniku) aadressi maakond. Kokku {total}, sh kanded, millel maakond puudub („Maakond määramata“).",
+    "registerAgeNote": "Alates 2020: vanus täisaastates sõiduki esmaregistreerimisest (mis tahes riigis) seisu kuupäevani. Kuni 2015: Infolehe vanuseleht, mis ei täpsusta, millest vanust arvestatakse. Vali rida, et vahetada seisu.",
+    "historyGap": "{from} ja {to} vahel seisu pole"
   },
   "insp": {
     "summaryLabel": "Ülevaatuste kuu",
@@ -371,6 +384,10 @@
         "title": "Kordusülevaatus ei ole kvaliteedihinne",
         "body": "Kordus on ülevaatuse sündmuse tulemus, mitte unikaalne rikkis sõiduk. Kuuaruannetes pole marki ega mudelit, seega margi töökindluse kohta väiteid ei esitata."
       },
+      "register": {
+        "title": "Registri seis on sõidukite loendus",
+        "body": "Alates 2020. aastast loetakse sõidukipark avaandmete registrifailist, kus iga rida on üks registris olev sõiduk. Arvud on nende ridade loendus; üksikuid sõidukeid ei avaldata. Staatus on allika üldstaatus: registreeritud või peatatud. 2020–2023 failid päriti registrist tagantjärgi 2025. aastal ja on nii märgitud."
+      },
       "missing": {
         "title": "Puuduv ei ole null",
         "body": "Tühjad lahtrid jäävad tühjaks. Kui mark kuu edetabelis puudub, näidatakse „pole edetabelis“, mitte nulli. Kuud, mida pole imporditud, on viirutatud."
@@ -387,7 +404,7 @@
       "inspections": "Ülevaatused"
     },
     "independentLabel": "Sõltumatu väljaanne",
-    "licence": "Avaliku sektori avaandmed. Taaskasutamisel viita allikale: Transpordiamet."
+    "licence": "Avaliku sektori avaandmed. Taaskasutamisel viita allikale: Transpordiamet. Registrifailidest (Sõidukite staatused Eestis) arvutatud näitajad on litsentsiga CC BY-SA 4.0."
   },
   "footer": {
     "attribution": "Andmed: Transpordiamet. Taaskasutus viitega allikale.",

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { decodeTable, encodeTable } from "./table";
 import { buildExplorerData, isSliceKey, requiredSlices, type Catalog, type CorePayload } from "./slices";
+import { fleetSourceOf } from "./views";
 
 const catalog: Catalog = {
   brandPeriods: { passenger_car: ["2026-08", "2026-09"], truck: ["2026-09"] },
@@ -17,6 +18,7 @@ const core: CorePayload = {
   disclaimer: { et: "", en: "" },
   insights: [],
   catalog,
+  fleetSources: [],
   tables: {
     totals: encodeTable([{ reporting_period: "2026-09", category_code: "passenger_car", metric_code: "first_registrations", value: 3639 }]),
     snapshots: encodeTable([]),
@@ -54,6 +56,13 @@ describe("slices", () => {
     const data = buildExplorerData(core, [a, b]);
     assert.equal(data.registrations.models.length, 1);
     assert.equal(data.registrations.totals[0].value, 3639);
+  });
+
+  it("tells register dates from Infoleht dates", () => {
+    const sources = [{ snapshot_date: "2020-01-01", source: "register" as const, retroactive: true }];
+    const data = buildExplorerData({ ...core, fleetSources: sources }, []);
+    assert.deepEqual(fleetSourceOf(data, "2020-01-01"), sources[0]);
+    assert.equal(fleetSourceOf(data, "2014-12-01"), null);
   });
 
   it("asks only for the slices a view renders", () => {

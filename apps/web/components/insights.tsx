@@ -5,7 +5,7 @@ import { ArrowDownRight } from "@phosphor-icons/react";
 import { useDashboard } from "./dashboard-context";
 import { Reveal } from "./ui/reveal";
 import { DatasetGlyph } from "./ui/glyphs";
-import { localizedLabel, METRIC_LABELS, POPULATION_LABELS } from "@/lib/data/labels";
+import { localizedLabel, METRIC_LABELS, POPULATION_LABELS, STATUS_LABELS } from "@/lib/data/labels";
 import type { DashboardQuery, Insight } from "@/lib/data/types";
 import { fmtDate, fmtNumber, fmtPeriod, titleCaseBrand } from "@/lib/format";
 
@@ -76,6 +76,7 @@ function InsightCard({ insight, lead = false }: { insight: Insight; lead?: boole
   function entityLabel(entity: string) {
     if (CATEGORY_CODES.has(entity)) return tc(entity);
     if (POPULATION_LABELS[entity]) return localizedLabel(POPULATION_LABELS, entity, locale);
+    if (STATUS_LABELS[entity]) return localizedLabel(STATUS_LABELS, entity, locale);
     return titleCaseBrand(entity);
   }
 

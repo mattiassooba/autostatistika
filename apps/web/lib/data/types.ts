@@ -71,6 +71,8 @@ export type PublishedBundle = {
       age_band: string;
       value: number;
     }>;
+    /** Dates counted from the open register files; retroactive: queried later (2025). */
+    sources?: FleetSource[];
   };
   inspections: {
     national: Array<{
@@ -116,3 +118,5 @@ export type DashboardQuery = {
   snapshot?: string;
   population?: string;
 };
+
+export type FleetSource = { snapshot_date: string; source: "register"; retroactive: boolean };

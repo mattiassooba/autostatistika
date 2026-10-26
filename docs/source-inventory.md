@@ -62,15 +62,24 @@ Flow sheets: `esm-06`/`esm-10` (same üldtabel idea), `uued`, `TOP 10`, `uus-sõ
 
 ## 2. Vehicle fleet (stocks)
 
-### A. Teabevärav register snapshots
+### A. Open register snapshots ("Sõidukite staatused Eestis") — imported
 
-| Field | Verified value |
+| Field | Verified value (26 Oct 2026) |
 | --- | --- |
 | Official page | https://andmed.eesti.ee/datasets/soidukite-staatused-eestis |
-| Description | Technical data of registered vehicles. Monthly cadence. Coverage from 2020-01-01. |
-| Resources seen | Dated CSVs (`2026-10-01 M1+M1G`, `2026-10-01 muu`, `2024-01-01 …`), a 2020-2023 zip (~210 MB), README, `ar_metadata.json`. Individual CSVs 67-206 MB. |
-| Automation | Yes in principle via Teabevärav file download-url API once distribution IDs are listed. Slug metadata API returned HTTP 500 in this pass. |
-| Decision | Importer supports Teabevärav when IDs resolve. Historical category snapshots on the Infoleht archive are the verified fallback. |
+| Catalogue API | `https://andmed.eesti.ee/api/datasets/slug/soidukite-staatused-eestis` works; `/api/v2/datasets/<slug>` returns HTTP 500 |
+| Description | One row per vehicle in the register, 46 columns (README in the dataset). `M1+M1G` = passenger cars, `muu` = all other categories |
+| Licence | **CC BY-SA 4.0** (per distribution). Derived figures name Transpordiamet and carry the same licence |
+| Files used | `ar_2026-10-01_*` (current month, on `pilv.transpordiamet.ee`), `ar_2024/2025/2026-01-01_*`, and the zip `ar_2020-2023.zip` (1 January 2020-2023). About 300 MB per date |
+| Files not used | `kat M1 ja M1G 31.12.2022`, `va M1 ja M1G 31.12.2022`, `… 31.12.2023`: older layout, same moments as 1.1.2023 and 1.1.2024 |
+| Caveat | The zip's README: the 2020-2023 files were queried from the register in 2025 and may differ from the state on those dates. The site marks those dates "päritud tagantjärgi" |
+| No identifiers | No registration plate, VIN or owner. Owner data is limited to county (`VKOM_MAAKOND`) and private/legal type (`VKOM_TYYP`) |
+| Update | Monthly; the catalogue replaces the monthly file, so every file is also kept in the repository release `register-archive` |
+| Importer | `ingestion/discovery/opendata.py`, `ingestion/parsers/register.py` |
+
+1 October 2026 check: 788 081 passenger-car rows, 680 843 registered (`YLDINE_STAATUS`) and 107 238 suspended;
+429 592 rows in other categories. Field fill rates for passenger cars: brand, model, dates, body, colour, masses,
+engine size and power 100 %; county 97.1 %; gearbox 90.0 %; Euro class 72.3 %; CO2 NEDC 63.4 %, WLTP 21.3 %.
 
 ### B. Historical "Arvel olevad" workbooks
 
@@ -129,7 +138,7 @@ These files do **not** contain brand or model. They count inspection events at s
 | --- | --- | --- |
 | Infoleht registrations 2006-present | Yes | Layout variants. Parser adapters required. |
 | Fleet snapshots on Infoleht archive | Yes for linked workbooks | Coverage is irregular by category and year. |
-| Teabevärav fleet CSVs | Partial | Need working distribution listing. Manual/authorized import path included. |
+| Open register snapshots 2020+ | Yes | — (imported since 26 Oct 2026) |
 | Inspection workbooks 2010-2019 | Yes | Station-level only. |
 | Inspection CSVs 2010-present | Partial | Same Teabevärav ID listing issue. |
 | Tableau dashboards | No | No verified licensed export. |
@@ -141,4 +150,5 @@ These files do **not** contain brand or model. They count inspection events at s
 - Mopeds appear in modern üldtabel; 2006 üldtabel has tractors instead.
 - Watercraft sheets exist and are stored only if explicitly in scope. Default dashboards are land vehicles.
 - Inspection repeat share is events directed to repeat inspection, not a brand reliability score.
-- Current fleet stock after 2021 is not fully imported until Teabevärav CSVs are wired.
+- Fleet stock 2016-2019: no register snapshots in the open data (it starts 2020-01-01). Irregular extracts on the
+  Infoleht page (e.g. `arvel-m1-310717.csv`, `arvel-m1_311217.xlsx`) are not imported yet.

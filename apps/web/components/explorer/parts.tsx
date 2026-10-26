@@ -9,6 +9,7 @@ import { fmtDate } from "@/lib/format";
 export const SOURCES = {
   registrations: "https://www.transpordiamet.ee/soidukitega-tehtud-toimingute-statistika",
   fleet: "https://www.transpordiamet.ee/soidukitega-tehtud-toimingute-statistika",
+  register: "https://andmed.eesti.ee/datasets/soidukite-staatused-eestis",
   inspections: "https://www.transpordiamet.ee/tehnoulevaatuste-statistika",
 } as const;
 
@@ -89,12 +90,14 @@ export function SourceTag({
   period,
   generatedAt,
   note,
+  licence,
 }: {
   href: string;
   dataset: string;
   period: string;
   generatedAt: string;
   note?: ReactNode;
+  licence?: string;
 }) {
   const t = useTranslations("source");
   const locale = useLocale();
@@ -130,6 +133,12 @@ export function SourceTag({
           <dd className="tabular">{period}</dd>
           <dt className="text-muted">{t("processed")}</dt>
           <dd className="tabular">{fmtDate(generatedAt, locale)}</dd>
+          {licence && (
+            <>
+              <dt className="text-muted">{t("licence")}</dt>
+              <dd>{licence}</dd>
+            </>
+          )}
         </dl>
         {note && <p className="mt-3 border-t border-rule pt-3 text-muted">{note}</p>}
         <p className="mt-3 border-t border-rule pt-3 text-muted">{t("limitation")}</p>

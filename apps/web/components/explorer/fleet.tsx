@@ -16,12 +16,28 @@ import {
   fleetComposition,
   fleetHistory,
   fleetRegions,
+  fleetSourceOf,
   fleetValue,
   nearestItems,
   regionDatesOf,
 } from "@/lib/data/views";
 import { countyName, fmtDate, fmtNumber, fmtPercent, fmtPeriodList, titleCaseBrand } from "@/lib/format";
 import { ordinal, textOn } from "@/lib/design/tokens";
+
+/** Source tag fields for a stock date: the open register file (2020+) or Infoleht. */
+function useFleetSource(date: string) {
+  const t = useTranslations("fleet");
+  const { data } = useDashboard();
+  const source = fleetSourceOf(data, date);
+  const register = source?.source === "register";
+  return {
+    register,
+    retroactive: Boolean(source?.retroactive),
+    href: register ? SOURCES.register : SOURCES.fleet,
+    licence: register ? t("registerLicence") : undefined,
+    dataset: (infoleht: string, registerKey: string) => (register ? t(registerKey) : infoleht),
+  };
+}
 
 export function Fleet() {
   const t = useTranslations("fleet");
@@ -36,6 +52,7 @@ export function Fleet() {
   const compositionMax = Math.max(1, ...composition.map((row) => row.value));
   const format = useCallback((value: number) => fmtNumber(value, locale), [locale]);
   const dateText = fmtDate(date, locale);
+  const source = useFleetSource(date);
 
   if (!date) {
     return <Empty title={t("none")} />;
@@ -51,6 +68,9 @@ export function Fleet() {
               {tc(category)}
             </span>
             <span className="tabular">{t("asOf", { date: dateText })}</span>
+            {source.retroactive && (
+              <span className="rounded-full bg-paper-2 px-2.5 py-0.5 text-[12px] text-graphite ring-1 ring-rule">{t("retroactive")}</span>
+            )}
           </div>
           <div className="mt-5" />
           <Figure
@@ -88,7 +108,14 @@ export function Fleet() {
             </div>
           )}
           <div className="mt-4">
-            <SourceTag href={SOURCES.fleet} dataset={t("dataset")} period={dateText} generatedAt={data.generatedAt} />
+            <SourceTag
+              href={source.href}
+              dataset={source.dataset(t("dataset"), "registerDataset")}
+              period={dateText}
+              generatedAt={data.generatedAt}
+              licence={source.licence}
+              note={source.retroactive ? t("retroactiveNote") : undefined}
+            />
           </div>
         </div>
 
@@ -104,6 +131,7 @@ export function Fleet() {
                 formatValue={format}
                 formatLabel={(key) => fmtDate(key, locale)}
                 label={t("historyTitle", { category: tc(category) })}
+                gapLabel={(from, to) => t("historyGap", { from: fmtDate(from, locale), to: fmtDate(to, locale) })}
               />
             </div>
           ) : (
@@ -170,6 +198,7 @@ function CountyBlock() {
   const regionDates = regionDatesOf(data, category);
   const max = rows[0]?.value ?? 1;
   const total = rows.reduce((sum, row) => sum + row.value, 0);
+  const source = useFleetSource(date);
 
   return (
     <Block
@@ -179,7 +208,14 @@ function CountyBlock() {
       info={t("countyInfo")}
       footer={
         rows.length > 0 && (
-          <SourceTag href={SOURCES.fleet} dataset={t("countyDataset")} period={fmtDate(date, locale)} generatedAt={data.generatedAt} note={t("countyNote", { total: fmtNumber(total, locale) })} />
+          <SourceTag
+            href={source.href}
+            dataset={source.dataset(t("countyDataset"), "registerCountyDataset")}
+            period={fmtDate(date, locale)}
+            generatedAt={data.generatedAt}
+            licence={source.licence}
+            note={t(source.register ? "registerCountyNote" : "countyNote", { total: fmtNumber(total, locale) })}
+          />
         )
       }
     >
@@ -248,6 +284,7 @@ function AgeBlock() {
     if (keep.size < 3) keep.add(middle);
     return all.filter((row) => keep.has(row.date));
   }, [data, category, date]);
+  const anyRegister = rows.some((row) => fleetSourceOf(data, row.date));
 
   return (
     <Block
@@ -255,7 +292,27 @@ function AgeBlock() {
       title={t("ageTitle")}
       description={t("ageDescription", { category: tc(category).toLowerCase() })}
       info={t("ageInfo")}
-      footer={rows.length > 0 && <SourceTag href={SOURCES.fleet} dataset={t("ageDataset")} period={fmtPeriodList(rows.map((r) => r.date), locale, (d) => fmtDate(d, locale))} generatedAt={data.generatedAt} />}
+      footer={
+        rows.length > 0 && (
+          // The rows can mix Infoleht dates and register dates: one tag per source.
+          <div className="flex flex-wrap gap-x-4">
+            {[false, true].map((register) => {
+              const dates = rows.map((r) => r.date).filter((d) => Boolean(fleetSourceOf(data, d)) === register);
+              if (!dates.length) return null;
+              return (
+                <SourceTag
+                  key={String(register)}
+                  href={register ? SOURCES.register : SOURCES.fleet}
+                  dataset={t(register ? "registerAgeDataset" : "ageDataset")}
+                  period={fmtPeriodList(dates, locale, (d) => fmtDate(d, locale))}
+                  generatedAt={data.generatedAt}
+                  licence={register ? t("registerLicence") : undefined}
+                />
+              );
+            })}
+          </div>
+        )
+      }
     >
       {rows.length === 0 ? (
         <Empty title={t("ageUnavailable", { category: tc(category) })}>{t("ageUnavailableBody")}</Empty>
@@ -307,7 +364,7 @@ function AgeBlock() {
               );
             })}
           </div>
-          <p className="mt-4 text-[12.5px] leading-relaxed text-muted">{t("ageNote")}</p>
+          <p className="mt-4 text-[12.5px] leading-relaxed text-muted">{t(anyRegister ? "registerAgeNote" : "ageNote")}</p>
         </div>
       )}
     </Block>
@@ -325,6 +382,7 @@ function FleetBrandBlock() {
   const available = nearestItems(fleetBrandDatesOf(data, category).filter((d) => d !== date), date);
   const visible = expanded ? brands.rows.slice(0, 30) : brands.rows.slice(0, 10);
   const max = brands.rows[0]?.value ?? 1;
+  const source = useFleetSource(date);
 
   return (
     <Block
@@ -338,7 +396,13 @@ function FleetBrandBlock() {
       info={t("brandInfo")}
       footer={
         brands.kind !== "none" && brands.reconciles && (
-          <SourceTag href={SOURCES.fleet} dataset={t("brandDataset")} period={fmtDate(date, locale)} generatedAt={data.generatedAt} />
+          <SourceTag
+            href={source.href}
+            dataset={source.dataset(t("brandDataset"), "registerBrandDataset")}
+            period={fmtDate(date, locale)}
+            generatedAt={data.generatedAt}
+            licence={source.licence}
+          />
         )
       }
     >

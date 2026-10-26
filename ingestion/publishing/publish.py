@@ -248,11 +248,26 @@ def _fleet(conn) -> dict:
 
     regions = by_grain("region", "region_code, MAX(region_source) AS region_source")
     ages = by_grain("age", "age_band")
+    # Which snapshot dates come from the open register files, and which of
+    # those were queried retroactively (the 2020-2023 zip, see its README).
+    sources = [
+        {"snapshot_date": r["snapshot_date"], "source": "register", "retroactive": bool(r["retroactive"])}
+        for r in conn.execute(
+            """
+            SELECT snapshot_date, MAX(IFNULL(json_extract(extra_json, '$.retroactive'), 0)) AS retroactive
+            FROM fleet_facts
+            WHERE publication_status='published' AND json_extract(extra_json, '$.source')='register'
+            GROUP BY 1 ORDER BY 1
+            """
+        ).fetchall()
+        if any(row["snapshot_date"] == r["snapshot_date"] for row in snapshot_rows)
+    ]
     return {
         "snapshots": snapshot_rows,
         "brands": brands,
         "regions": regions,
         "ages": ages,
+        "sources": sources,
     }
 
 

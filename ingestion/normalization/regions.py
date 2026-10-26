@@ -34,6 +34,22 @@ COUNTY_ALIASES = {
     "VALGAMAA": "valga",
     "VILJANDIMAA": "viljandi",
     "VÕRUMAA": "voru",
+    # Register snapshots (VKOM_MAAKOND) use the bare county name.
+    "HARJU": "harju",
+    "HIIU": "hiiu",
+    "IDA-VIRU": "ida-viru",
+    "JÕGEVA": "jogevamaa",
+    "JÄRVA": "jarva",
+    "LÄÄNE": "laane",
+    "LÄÄNE-VIRU": "laane-viru",
+    "PÕLVA": "polva",
+    "PÄRNU": "parnu",
+    "RAPLA": "rapla",
+    "SAARE": "saare",
+    "TARTU": "tartu",
+    "VALGA": "valga",
+    "VILJANDI": "viljandi",
+    "VÕRU": "voru",
     # Vehicles without a county in the register.
     "MÄÄRAMATA": "unassigned",
 }

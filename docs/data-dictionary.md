@@ -28,10 +28,12 @@ Canonical codes are stable. Original source strings are stored beside them.
 | `motorcycle` | Mootorrattad | Motorcycles | Mootorrattad, L3e, L4e, L5e |
 | `moped` | Mopeedid | Mopeds | Mopeedid, L1e, L2e |
 | `l_other` | Muud L-kategooria | Other L-category | L6e, L7e |
-| `offroad` | Maastikusõidukid | Off-road vehicles | Maastikusõidukid |
-| `tractor` | Traktorid | Tractors | Traktorid, T1-T5 |
+| `offroad` | Maastikusõidukid | Off-road vehicles | Maastikusõidukid, MS1, MS2 |
+| `tractor` | Traktorid | Tractors | Traktorid, T1-T5 (incl. a/b speed classes), C1-C5 |
 | `self_propelled` | Liikurmasinad | Self-propelled machines | LM, Liikurmasinad |
 | `watercraft` | Veesõidukid | Watercraft | Esm-vees6iduk |
+| `tractor_trailer` | Traktorihaagised | Tractor trailers | R1a-R4b, Traktorihaagised |
+| `unclassified` | Liigitamata | Unclassified | register codes without an official definition (TR, TH, RO, …) |
 
 EU category codes (`M1`, `L3e`) are stored on facts when the sheet has them. Family is the dashboard filter.
 

@@ -5,7 +5,8 @@ name: Ingest official sources
 #
 # The SQLite warehouse is not kept between runs. Downloaded source files are
 # (actions/cache), and a rebuild from them reproduces the published bundle
-# exactly, in about two minutes.
+# exactly, in about four minutes. Register snapshots are also kept in the
+# "register-archive" release, because the catalogue replaces its monthly file.
 on:
   schedule:
     - cron: "17 4 * * 2"
@@ -43,8 +44,16 @@ jobs:
           path: data/downloads
           key: downloads-${{ github.run_id }}
           restore-keys: downloads-
+      - name: Restore archived register snapshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/register_archive.py restore
       - name: Download new files
         run: python scripts/fetch_backfill.py
+      - name: Archive register snapshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/register_archive.py upload
       - name: Parser tests
         run: pytest ingestion/tests -q
       - name: Rebuild warehouse and publish
