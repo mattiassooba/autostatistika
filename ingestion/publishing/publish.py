@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from ingestion.config import PUBLISH_DIR, ensure_dirs
+from ingestion.config import PUBLISH_DIR, REGISTER_INDEX_DIR, ensure_dirs
 from ingestion.db import session
 from ingestion.insights.detect import build_insights
 from ingestion.seeds import seed
@@ -31,6 +31,11 @@ def publish_bundle(dest: Path | None = None) -> Path:
             "inspections": _inspections(conn),
         }
         bundle["insights"] = build_insights(bundle)
+        # The /otsing search files built by scripts/register_index.py, if any:
+        # the deploy fetches exactly this release asset (checksummed).
+        index = REGISTER_INDEX_DIR / "index.json"
+        if index.exists():
+            bundle["registerIndex"] = json.loads(index.read_text(encoding="utf-8"))
         path = out_dir / "bundle.json"
         path.write_text(json.dumps(bundle, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
         return path

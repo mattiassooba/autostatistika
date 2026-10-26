@@ -17,13 +17,15 @@ type Props = {
   tone?: "light" | "dark";
   width?: string;
   label: string;
+  /** Fill the parent's width (form fields) instead of sizing to the trigger. */
+  block?: boolean;
 };
 
 /**
  * Lightweight disclosure popover: click/Enter to open, Escape or outside click
  * to close, focus returns to the trigger. Content is a labelled dialog region.
  */
-export function Popover({ trigger, children, align = "start", side = "bottom", tone = "light", width = "w-80", label }: Props) {
+export function Popover({ trigger, children, align = "start", side = "bottom", tone = "light", width = "w-80", label, block = false }: Props) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -67,7 +69,7 @@ export function Popover({ trigger, children, align = "start", side = "bottom", t
   const dark = tone === "dark";
 
   return (
-    <div className="relative inline-flex">
+    <div className={`relative ${block ? "flex w-full" : "inline-flex"}`}>
       {trigger({
         open,
         toggle: () => setOpen((value) => !value),

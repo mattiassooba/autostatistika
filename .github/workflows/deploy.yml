@@ -35,6 +35,17 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
       - run: npm ci
+      - name: Fetch the search index named in the bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          asset=$(node -e "const b = require('./data/published/bundle.json'); console.log(b.registerIndex ? b.registerIndex.asset : '')")
+          if [ -n "$asset" ]; then
+            mkdir -p public/register
+            gh release download register-index --repo "$GITHUB_REPOSITORY" --pattern "$asset" --output - | tar -x -C public/register
+            ls public/register
+          fi
       - run: npm test
       - run: npm run build
       - uses: actions/upload-pages-artifact@v5

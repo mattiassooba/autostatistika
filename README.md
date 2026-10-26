@@ -26,7 +26,8 @@ the weekly update.
 | --- | --- |
 | `/et`, `/en` | Hero (blueprint drawing, selected-month figures, animated brand ranking with logos, timeline, brand duel) and the explorer: registrations, fleet, inspections, insights, methodology |
 | `/et/margid`, `/et/margid/<brand>` | 57 brand pages: new cars by year, month and model, first-registration ranking, trucks |
-| `/et/kuu`, `/et/kuu/<YYYY-MM>` | 249 month pages: vehicle types, brand rankings, new cars by brand and model, fuels |
+| `/et/kuu`, `/et/kuu/<YYYY-MM>` | 249 month pages: vehicle types, brand rankings, new cars by brand and model, fuels, new cars by county, power, gearbox and colour |
+| `/et/otsing` | Vehicle search over the latest register snapshot: make, model, year, power, fuel, gearbox, body, county, status and technical filters; results as variants with counts and spec ranges |
 | `/og/...png` | A share image per page; `sitemap.xml` lists all 618 pages |
 
 URL segments are Estonian in both languages (`/en/margid/bmw`).

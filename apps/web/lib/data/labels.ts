@@ -90,6 +90,7 @@ export const BREAKDOWN_LABELS: Record<string, Record<string, { et: string; en: s
     tumesinine: { et: "Tumesinine", en: "Dark blue" },
     punane: { et: "Punane", en: "Red" },
     tumepunane: { et: "Tumepunane", en: "Dark red" },
+    helepunane: { et: "Helepunane", en: "Light red" },
     roheline: { et: "Roheline", en: "Green" },
     heleroheline: { et: "Heleroheline", en: "Light green" },
     tumeroheline: { et: "Tumeroheline", en: "Dark green" },

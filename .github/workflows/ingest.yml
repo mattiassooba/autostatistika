@@ -54,6 +54,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python scripts/register_archive.py upload
+      - name: Build and upload the search index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/register_index.py build
+          python scripts/register_index.py upload
       - name: Parser tests
         run: pytest ingestion/tests -q
       - name: Rebuild warehouse and publish

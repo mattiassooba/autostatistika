@@ -42,3 +42,7 @@ Thumbs.db
 coverage/
 htmlcov/
 .sentryclirc
+
+# search files for /otsing (release asset "register-index")
+apps/web/public/register/
+data/register-index/

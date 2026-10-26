@@ -142,6 +142,19 @@ Each rule has a test in `ingestion/tests/test_parsers.py` that reproduces the so
 - Fuel and new cars to private owners are not taken from this list: the fuel sheet and the general table already
   publish them.
 
+## Vehicle search (/otsing, added 27 Oct 2026)
+
+- Built from the latest register snapshot only. Every vehicle in the register is searchable; identical vehicles are
+  stored once with a count. No plate, VIN or owner is in the source and none is published; dates are cut to the year.
+- Results are variants (same make, model, first-registration year, fuel, power in whole kW, gearbox and body) with the
+  number of vehicles. A variant's technical data are shown as ranges over its vehicles, with how many have a value.
+  The site never shows one vehicle as a record.
+- A range filter (for example CO2 WLTP up to 130 g/km) excludes vehicles without that value, and the page says how
+  many were left out. The "more filters" fields show the share of the type's vehicles that have a value.
+- Searches across all makes use a light index (make, model, year, power, fuel, gearbox, body, status, county).
+  Colour, owner type, dimensions, masses and emissions need the makes' own files: choose makes, or load all of them.
+- The files carry the source licence (CC BY-SA 4.0, Transpordiamet).
+
 ## Brand and month pages
 
 - A brand gets a page with at least 12 ranked TOP-list months or at least 100 new cars in the model lists (57 brands).

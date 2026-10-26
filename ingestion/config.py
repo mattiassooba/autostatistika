@@ -27,6 +27,8 @@ DOWNLOAD_DIR = DATA_DIR / "downloads"
 SAMPLE_DIR = DATA_DIR / "source-samples"
 DB_PATH = Path(os.getenv("INGESTION_DB", DATA_DIR / "autostatistika.db"))
 PUBLISH_DIR = Path(os.getenv("PUBLISH_DIR", ROOT / "apps" / "web" / "data" / "published"))
+# Search files for /otsing (not committed; published as a release asset).
+REGISTER_INDEX_DIR = Path(os.getenv("REGISTER_INDEX_DIR", DATA_DIR / "register-index"))
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")

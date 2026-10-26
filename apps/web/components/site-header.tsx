@@ -29,6 +29,7 @@ export function SiteHeader() {
         <nav aria-label={t("label")} className="flex items-center gap-1 sm:gap-2">
           {[
             ["/#explorer", t("explore"), "md:inline-flex"],
+            ["/otsing", t("search"), "md:inline-flex"],
             ["/margid", t("brands"), "md:inline-flex"],
             ["/kuu", t("months"), "md:inline-flex"],
             ["/#insights", t("insights"), "lg:inline-flex"],

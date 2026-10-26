@@ -100,6 +100,8 @@ export type PublishedBundle = {
       value: number;
     }>;
   };
+  /** The /otsing search files for this bundle (release asset "register-index"). */
+  registerIndex?: { snapshot: string; vehicles: number; files: number; bytes: number; sha256: string; asset: string };
   insights: Array<{
     tab: TabId;
     period: string;

@@ -58,7 +58,7 @@ Flow sheets: `esm-06`/`esm-10` (same üldtabel idea), `uued`, `TOP 10`, `uus-sõ
 | Official page | https://andmed.eesti.ee/datasets/esmaselt-registreeritud-soidukid |
 | Resources seen | Annual CSVs labelled 2023, 2024, 2025, 2026. Daily update cadence claimed. Temporal coverage from 2023-01-01. |
 | Automation | Catalogue UI is JS-rendered. Slug API `/api/v2/datasets/esmaselt-registreeritud-soidukid` returned HTTP 500 on 25 Oct 2026. UUID API for the Infoleht dataset works. Vehicle-level distribution IDs were not stably resolved in this pass. |
-| Decision | Primary registration importer uses Transpordiamet Infoleht files. Vehicle-level CSVs are a future adapter, aggregated before publish. Individual vehicle rows are never exposed. |
+| Decision | Primary registration importer uses Transpordiamet Infoleht files. Vehicle-level CSVs are a future adapter, aggregated before publish. |
 
 ## 2. Vehicle fleet (stocks)
 
@@ -90,7 +90,7 @@ Published on the same Transpordiamet Infoleht page. Examples verified:
 | `bussid-311220.xlsx` | 2020-12-31 | One row per bus. Title: 5235 buses, including suspended and temporarily deleted records. Columns: `Üldstaatus`, `Kategooria`, `Mark`, `Mudel`, `Keretüüp`, `Esm reg aasta`, `Registrimass`, `Täismass` |
 | `arvel_olevad_bussid_seisuga_31.12.2010.xls` | 2010-12-31 | Already aggregated: `Kat`, `Mark`, `Mudel`, `Väljalaske aasta`, `Mootori tüüp`, `Keretüüp`, `Arv` |
 
-Passenger-car snapshots exist (e.g. 31.12.2021, ~55 MB) and must be aggregated, never published as vehicle rows.
+Passenger-car snapshots exist (e.g. 31.12.2021, ~55 MB). Register rows are counted into facts; the /otsing search files keep vehicle attributes without identifiers or exact dates (see methodology, "Vehicle search").
 
 ### C. Transpordiamet "Sõidukite statistika"
 

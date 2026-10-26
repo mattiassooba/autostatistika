@@ -55,6 +55,15 @@ Re-importing a file replaces everything that file produced before, so parser fix
 When a month has several files (stock leaflet + first-registration leaflet, re-uploads), publishing takes every
 fact key from one file only: the newest upload folder in the official URL.
 
+## Vehicle search files
+
+`python scripts/register_index.py build` writes the /otsing files for the latest register snapshot to
+`data/register-index/<date>/` (about 29 MB of gzip files, one minute) and `index.json`, which `publish` copies into the
+bundle as `registerIndex` (snapshot, checksum, asset name). The weekly job uploads them as one tar to the
+`register-index` release (`… upload`, skipped when present); the deploy downloads exactly the asset the bundle names
+into `apps/web/public/register/` and fails if it is missing. For a local build run `… build` and `… install`.
+The files are not committed (`.gitignore`).
+
 ## Data delivery (web)
 
 The site is a static export (`next build` → `apps/web/out/`). `bundle.json` (~25 MB) is never sent to the browser;

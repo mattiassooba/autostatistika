@@ -15,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "", priority: 1, changeFrequency: "weekly" },
     { path: "/margid", priority: 0.9, changeFrequency: "weekly" },
     { path: "/kuu", priority: 0.8, changeFrequency: "weekly" },
+    ...(bundle.registerIndex ? [{ path: "/otsing", priority: 0.9, changeFrequency: "monthly" as const }] : []),
     ...brandSlugs(bundle).map((slug) => ({ path: `/margid/${slug}`, priority: 0.8, changeFrequency: "weekly" as const })),
     // Recent months can still be revised; older ones are settled.
     ...[...periods].reverse().map((period) => ({

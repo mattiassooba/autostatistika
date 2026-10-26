@@ -62,6 +62,7 @@ Every fact stores `source_file_id`, `metric_code`, `unit`, `publication_status`.
 | Hero | `components/hero/*` | `HeroProvider` holds one selected month, vehicle type and picked brands for the figures, ranking, timeline and duel |
 | Brand and month pages | `app/[locale]/margid`, `app/[locale]/kuu`, `lib/data/pages.ts` | Read models over the bundle, tested in `lib/data/pages.test.ts` |
 | Share images | `app/og/[locale]/[kind]/[file]/route.tsx` | 1200×630 PNG per page, rendered with `next/og` at build |
+| Vehicle search | `app/[locale]/otsing`, `components/search/*`, `lib/search/*` | Static page; a Web Worker loads gzip-compressed column files from `/register/<date>/` (built by `ingestion/publishing/register_index.py`, shipped as the `register-index` release asset), filters and groups into variants in the browser. Tested in `lib/search/*.test.ts` |
 | SEO | `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts` | Canonical + hreflang, Open Graph, `Dataset` and `BreadcrumbList` JSON-LD |
 | Brand marks | `public/logos`, `components/ui/brand-logo.tsx` | CSS-mask SVGs; monogram fallback |
 
