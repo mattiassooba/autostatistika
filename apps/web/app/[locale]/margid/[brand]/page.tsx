@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { PageShell } from "@/components/pages/page-shell";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import {
   Breadcrumbs,
   ButtonLink,
@@ -91,6 +92,7 @@ export default async function BrandPage({ params }: { params: Promise<Params> })
       <PageIntro
         plate={t("plate")}
         title={t("title", { name: d.name })}
+        mark={{ slug: d.slug, name: d.name }}
         lede={t("lede", { from: fmtPeriodShort(first, locale), to: fmtPeriodShort(d.latest, locale) })}
       >
         {latestRank && (
@@ -221,8 +223,9 @@ export default async function BrandPage({ params }: { params: Promise<Params> })
             <li key={entry.slug}>
               <Link
                 href={`/margid/${entry.slug}`}
-                className="press inline-flex h-9 items-center rounded-full bg-paper-2 px-4 text-[14px] font-medium ring-1 ring-rule transition-colors hover:bg-paper-3"
+                className="press inline-flex h-10 items-center gap-2 rounded-full bg-paper-2 pl-1.5 pr-4 text-[14px] font-medium ring-1 ring-rule transition-colors hover:bg-paper-3"
               >
+                <BrandLogo slug={entry.slug} name={entry.name} tone="light" className="h-7 w-7 bg-paper text-[9.5px] text-ink" />
                 {entry.name}
               </Link>
             </li>

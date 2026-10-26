@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { PageShell } from "@/components/pages/page-shell";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { Breadcrumbs, PageIntro, Section, SourceNote, fmtChange } from "@/components/pages/parts";
 import { loadBundle } from "@/lib/data/load";
 import { brandSummaries, latestPeriod, monthPeriods, shiftPeriod } from "@/lib/data/pages";
@@ -77,10 +78,13 @@ export default async function BrandIndexPage({ params }: { params: Promise<{ loc
             <tbody>
               {cars.map((brand) => (
                 <tr key={brand.slug} className="border-b border-rule">
-                  <th scope="row" className="py-2.5 pr-4 text-left font-medium">
-                    <Link href={`/margid/${brand.slug}`} className="underline decoration-rule-strong underline-offset-4 hover:decoration-ink">
-                      {brand.name}
-                    </Link>
+                  <th scope="row" className="py-2 pr-4 text-left font-medium">
+                    <span className="flex items-center gap-3">
+                      <BrandLogo slug={brand.slug} name={brand.name} tone="light" className="h-8 w-8 text-[10.5px] text-ink" />
+                      <Link href={`/margid/${brand.slug}`} className="underline decoration-rule-strong underline-offset-4 hover:decoration-ink">
+                        {brand.name}
+                      </Link>
+                    </span>
                   </th>
                   <td className="tabular py-2.5 pl-4 text-right font-medium">{fmtNumber(brand.last12, locale)}</td>
                   <td className="tabular py-2.5 pl-4 text-right text-muted">{fmtNumber(brand.prev12, locale)}</td>
@@ -97,10 +101,13 @@ export default async function BrandIndexPage({ params }: { params: Promise<{ loc
         <Section id="trucks" title={t("trucksTitle")} note={t("trucksNote", { period: fmtPeriod(latest, locale) })}>
           <ol className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
             {[...trucks, ...truckOnly].map((brand) => (
-              <li key={brand.slug} className="flex items-baseline justify-between border-b border-rule py-2.5 text-[15px]">
-                <Link href={`/margid/${brand.slug}`} className="font-medium underline decoration-rule-strong underline-offset-4 hover:decoration-ink">
-                  {brand.name}
-                </Link>
+              <li key={brand.slug} className="flex items-center justify-between border-b border-rule py-2 text-[15px]">
+                <span className="flex items-center gap-3">
+                  <BrandLogo slug={brand.slug} name={brand.name} tone="light" className="h-8 w-8 text-[10.5px] text-ink" />
+                  <Link href={`/margid/${brand.slug}`} className="font-medium underline decoration-rule-strong underline-offset-4 hover:decoration-ink">
+                    {brand.name}
+                  </Link>
+                </span>
                 <span className="t-meta tabular text-muted">{brand.truckRank != null ? `#${brand.truckRank}` : ""}</span>
               </li>
             ))}

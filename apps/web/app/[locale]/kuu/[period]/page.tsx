@@ -145,6 +145,7 @@ export default async function MonthPage({ params }: { params: Promise<Params> })
           <RankedBars
             locale={locale}
             linkFor={linkFor}
+            logos
             valueLabel={t("count")}
             rows={d.carBrands.map((row) => ({ key: row.slug, rank: row.rank, name: row.name, value: row.value, share: row.share, slug: row.slug }))}
           />
@@ -158,6 +159,7 @@ export default async function MonthPage({ params }: { params: Promise<Params> })
           <RankedBars
             locale={locale}
             linkFor={linkFor}
+            logos
             valueLabel={t("count")}
             rows={d.modelBrands.map((row, index) => ({
               key: row.slug,
@@ -176,6 +178,7 @@ export default async function MonthPage({ params }: { params: Promise<Params> })
           <RankedBars
             locale={locale}
             linkFor={linkFor}
+            logos
             valueLabel={t("count")}
             rows={d.models.map((row, index) => ({
               key: `${row.slug}|${row.model}`,
@@ -235,6 +238,7 @@ export default async function MonthPage({ params }: { params: Promise<Params> })
           <RankedBars
             locale={locale}
             linkFor={linkFor}
+            logos
             valueLabel={t("count")}
             rows={d.truckBrands.map((row) => ({ key: row.slug, rank: row.rank, name: row.name, value: row.value, share: row.share, slug: row.slug }))}
           />

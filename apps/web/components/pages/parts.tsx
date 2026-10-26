@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { CaretRight } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
+import { BrandLogo } from "../ui/brand-logo";
 import { Plate } from "../ui/plate";
 import { SITE_URL } from "@/lib/site";
 import { fmtNumber, fmtPercent } from "@/lib/format";
@@ -47,18 +48,36 @@ export async function Breadcrumbs({ locale, items }: { locale: string; items: Ar
   );
 }
 
-export function PageIntro({ plate, title, lede, children }: { plate: string; title: string; lede: string; children?: ReactNode }) {
+export function PageIntro({
+  plate,
+  title,
+  lede,
+  mark,
+  children,
+}: {
+  plate: string;
+  title: string;
+  lede: string;
+  /** A brand's mark, set beside the title on brand pages. */
+  mark?: { slug: string; name: string };
+  children?: ReactNode;
+}) {
   return (
     <header className={`${pageX} pb-10 pt-8 md:pb-14 md:pt-10`}>
       <div className="enter-fade" style={{ ["--i" as string]: 0 }}>
         <Plate>{plate}</Plate>
       </div>
-      <h1
-        className="t-display enter-rise mt-5 max-w-[18ch] text-[clamp(2.4rem,8vw,5.6rem)] text-ink"
-        style={{ ["--i" as string]: 1 }}
-      >
-        {title}
-      </h1>
+      <div className="enter-rise mt-5 flex items-center gap-4 md:gap-6" style={{ ["--i" as string]: 1 }}>
+        {mark && (
+          <BrandLogo
+            slug={mark.slug}
+            name={mark.name}
+            tone="light"
+            className="h-16 w-16 text-[19px] text-ink md:h-[5.5rem] md:w-[5.5rem] md:text-[24px]"
+          />
+        )}
+        <h1 className="t-display min-w-0 max-w-[18ch] text-[clamp(2.4rem,8vw,5.6rem)] text-ink">{title}</h1>
+      </div>
       <p className="enter-rise mt-5 max-w-[60ch] text-[17px] leading-[1.55] text-graphite" style={{ ["--i" as string]: 2 }}>
         {lede}
       </p>
@@ -159,11 +178,14 @@ export function RankedBars({
   locale,
   linkFor,
   valueLabel,
+  logos = false,
 }: {
   rows: Array<{ key: string; rank?: number; name: string; detail?: string; value: number; share?: number | null; slug?: string }>;
   locale: string;
   linkFor?: (slug: string) => string | null;
   valueLabel: string;
+  /** Show each row's brand mark before its name. */
+  logos?: boolean;
 }) {
   const max = Math.max(1, ...rows.map((row) => row.value));
   return (
@@ -180,9 +202,12 @@ export function RankedBars({
         return (
           <li key={row.key} className="grid grid-cols-[2.2rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5 sm:grid-cols-[2.4rem_minmax(9rem,16rem)_minmax(0,1fr)_6rem_5rem]">
             <span className="t-meta tabular text-muted">{row.rank != null ? String(row.rank).padStart(2, "0") : ""}</span>
-            <span className="min-w-0 truncate text-[15px]">
-              {name}
-              {row.detail && <span className="ml-1.5 text-muted">{row.detail}</span>}
+            <span className="flex min-w-0 items-center gap-2.5 text-[15px]">
+              {logos && row.slug && <BrandLogo slug={row.slug} name={row.name} tone="light" className="h-7 w-7 text-[9.5px] text-ink" />}
+              <span className="min-w-0 truncate">
+                {name}
+                {row.detail && <span className="ml-1.5 text-muted">{row.detail}</span>}
+              </span>
             </span>
             <span aria-hidden className="hidden h-2.5 rounded-full bg-paper-3 sm:block">
               <span className="block h-full rounded-full bg-ink" style={{ width: `${(row.value / max) * 100}%` }} />
