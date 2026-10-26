@@ -48,7 +48,25 @@ def parse_registrations(path: Path, reporting_period: str | None) -> list[Parsed
         facts.extend(_parse_new_car_models(path, xl, period))
     if find_sheet(xl, "Järelturg"):
         facts.extend(_parse_aftermarket(path, xl, period))
-    return _drop_implausible_brands(facts)
+    return _drop_unreconciled_models(_drop_implausible_brands(facts))
+
+
+def _drop_unreconciled_models(facts: list[ParsedFact]) -> list[ParsedFact]:
+    """The new-car model list can never add up to more than the stated new
+    passenger cars. If it does, it read a total or a second table as cars, and
+    the model facts are dropped rather than published doubled."""
+    stated = next(
+        (
+            f.value
+            for f in facts
+            if f.metric_code == "new_vehicles" and f.category_code == "passenger_car" and not f.brand_slug and not f.fuel_code
+        ),
+        None,
+    )
+    listed = sum(f.value for f in facts if f.model_source is not None and f.metric_code == "new_vehicles" and f.category_code == "passenger_car")
+    if stated is None or listed <= stated * 1.01:
+        return facts
+    return [f for f in facts if not (f.model_source is not None and f.metric_code == "new_vehicles")]
 
 
 def _drop_implausible_brands(facts: list[ParsedFact]) -> list[ParsedFact]:
@@ -324,6 +342,8 @@ def _parse_brand_year_mix(path: Path, xl, period: str, *needles: str, category: 
     if header_idx is None:
         return []
     header = [str(v).strip().lower() for v in df.iloc[header_idx].tolist()]
+    # Brands sit under "Mark"; 08/2024 put a rank column ("jrkNr") before it.
+    brand_col = next((i for i, value in enumerate(header) if value == "mark"), 0)
     last_year_col = max(year_cols)
     older_col = next(
         (i for i in range(last_year_col + 1, len(header)) if header[i].startswith("van")),
@@ -337,7 +357,7 @@ def _parse_brand_year_mix(path: Path, xl, period: str, *needles: str, category: 
     merged: dict[str, dict] = {}
     seen_labels: set[str] = set()
     for _, row in df.iloc[header_idx + 1 :].iterrows():
-        brand_source = clean_text(row.iloc[0])
+        brand_source = clean_text(row.iloc[brand_col])
         if not brand_source or is_total_label(brand_source):
             continue
         lowered = brand_source.lower()
@@ -409,28 +429,57 @@ def _parse_brand_year_mix(path: Path, xl, period: str, *needles: str, category: 
     return facts
 
 
+CATEGORY_HEADERS = {"KAT", "KATEG", "KATEGOORIA"}
+
+
 def _parse_new_car_models(path: Path, xl, period: str) -> list[ParsedFact]:
     sheet = find_sheet(xl, "Sõidu-uus", "uus-sõidu")
     df = read_sheet(path, sheet)
     header_idx = None
     for idx, row in df.iterrows():
         values = [str(v).upper() if v is not None else "" for v in row.tolist()]
-        if any(v == "KAT" or v == "KATEG" for v in values) and any("MARK" in v for v in values):
+        if any(v in CATEGORY_HEADERS for v in values) and any("MARK" in v for v in values):
             header_idx = idx
             break
     if header_idx is None:
         return []
     header = [clean_text(v) or "" for v in df.iloc[header_idx].tolist()]
-    kat_col = next((i for i, v in enumerate(header) if v.upper() in {"KAT", "KATEG"}), 0)
+    # The first match: the list's own column, not the one of a table beside it
+    # (09/2010 heads its list "Kategooria" and the pivot beside it "KAT").
+    kat_col = next((i for i, v in enumerate(header) if v.upper() in CATEGORY_HEADERS), 0)
     mark_col = next((i for i, v in enumerate(header) if v.upper() == "MARK"), 1)
     model_col = next((i for i, v in enumerate(header) if "MUDEL" in v.upper()), 2)
-    count_col = next((i for i, v in enumerate(header) if v.upper() in {"KOKKU", "ARV"}), 6)
+    count_col = next((i for i, v in enumerate(header) if v.upper() in {"KOKKU", "ARV", "TOTAL"}), 6)
+    # Only this list's own columns: 2024 leaflets put a pivot of the same cars
+    # beside it, and its "Grand Total" must not end or feed this list.
+    span = range(min(kat_col, mark_col, model_col), count_col + 1)
     facts: list[ParsedFact] = []
+    eu = brand_source = model = None
     for _, row in df.iloc[header_idx + 1 :].iterrows():
-        eu = clean_text(row.iloc[kat_col] if kat_col < len(row) else None)
-        brand_source = clean_text(row.iloc[mark_col] if mark_col < len(row) else None)
-        model = clean_text(row.iloc[model_col] if model_col < len(row) else None)
+        labels = [cell.lower() for cell in (clean_text(row.iloc[i]) for i in span if i < len(row)) if cell]
+        # The list ends at its total (KOKKU, Grand Total). The total can share a
+        # row with stray cells of another listing (06/2024), so stop, don't skip.
+        if any(is_total_label(label) for label in labels):
+            break
+        # Pivot layouts (05-12/2010) add per-brand and per-category subtotals.
+        if any(label.endswith(" kokku") for label in labels):
+            continue
+        row_eu = clean_text(row.iloc[kat_col] if kat_col < len(row) else None)
+        row_brand = clean_text(row.iloc[mark_col] if mark_col < len(row) else None)
+        row_model = clean_text(row.iloc[model_col] if model_col < len(row) else None)
+        # Pivot layouts print category, brand and model once per group.
+        if row_eu:
+            eu = row_eu
+        if row_brand:
+            brand_source, model = row_brand, row_model
+        elif row_model:
+            model = row_model
         value = to_number(row.iloc[count_col] if count_col < len(row) else None)
+        # A count with no description at all is the list's unlabelled total
+        # (2007-2017); a pivot continuation row always describes something.
+        described = any(clean_text(row.iloc[i]) for i in span if i != count_col and i < len(row))
+        if value is not None and not described:
+            break
         if not brand_source or value is None:
             continue
         family, eu_code = canonical_category(eu or "M1")

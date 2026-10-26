@@ -92,4 +92,5 @@ def to_number(value: object) -> float | None:
 
 def is_total_label(value: object) -> bool:
     text = str(value or "").strip().lower()
-    return text in {"kokku", "total", "summa"} or text.startswith("kokku")
+    # "Üldkokkuvõte" (grand summary) ends the 12/2010 model list.
+    return text in {"kokku", "total", "summa", "grand total"} or text.startswith(("kokku", "üldkokku"))
