@@ -22,7 +22,6 @@ const core: CorePayload = {
   tables: {
     totals: encodeTable([{ reporting_period: "2026-09", category_code: "passenger_car", metric_code: "first_registrations", value: 3639 }]),
     snapshots: encodeTable([]),
-    ages: encodeTable([]),
     national: encodeTable([]),
   },
 };
@@ -75,5 +74,8 @@ describe("slices", () => {
     assert.deepEqual(requiredSlices(view, catalog).sort(), ["brands:passenger_car", "brands:truck", "month:2026-09"]);
     const insp = { ...view, tab: "ulevaatused" as const, inspections: { period: "2010-01" } };
     assert.deepEqual(requiredSlices(insp, catalog), ["brands:passenger_car"]);
+    // Age bands are only needed on the fleet tab.
+    const fleet = { ...view, tab: "soidukipark" as const, fleet: { date: "2026-10-01" } };
+    assert.deepEqual(requiredSlices(fleet, catalog).sort(), ["ages:all", "brands:passenger_car", "fleet:2026-10-01"]);
   });
 });

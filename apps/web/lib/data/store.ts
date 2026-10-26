@@ -79,7 +79,6 @@ function buildIndex(bundle: PublishedBundle): Indexed {
     tables: {
       totals: encodeTable(reg.totals, ["reporting_period", "category_code", "metric_code", "value"]),
       snapshots: encodeTable(bundle.fleet.snapshots, ["snapshot_date", "category_code", "status_code", "value"]),
-      ages: encodeTable(bundle.fleet.ages, ["snapshot_date", "category_code", "age_band", "value"]),
       national: encodeTable(bundle.inspections.national, ["reporting_period", "population", "metric_code", "value"]),
     },
   };
@@ -130,6 +129,7 @@ export async function allSliceKeys(): Promise<string[]> {
     ...[...months].sort().map((period) => `month:${period}`),
     ...[...dates].sort().map((date) => `fleet:${date}`),
     ...catalog.stationPeriods.map((period) => `stations:${period}`),
+    "ages:all",
   ].filter(isSliceKey);
 }
 
@@ -183,6 +183,10 @@ export async function getSlice(key: string): Promise<SlicePayload | null> {
         regions: encodeTable(s.regionsByDate.get(arg) ?? [], ["snapshot_date", "category_code", "region_code", "region_source", "value"]),
       },
     };
+  }
+  if (kind === "ages" && arg === "all") {
+    const bundle = await loadBundle();
+    return { key, tables: { ages: encodeTable(bundle.fleet.ages, ["snapshot_date", "category_code", "age_band", "value"]) } };
   }
   if (kind === "stations") {
     return {

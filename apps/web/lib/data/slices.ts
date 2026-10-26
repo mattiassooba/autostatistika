@@ -10,6 +10,7 @@
 //                         12 months up to it (the models table trend)
 //     fleet:<YYYY-MM-DD>  county split and brand lists for one stock date
 //     stations:<YYYY-MM>  inspection stations for one month
+//     ages:all            fleet age bands for every stock date (fleet tab only)
 // Slices are merged into one ExplorerData; rows are deduplicated by their
 // natural key, so overlapping slices never double count.
 
@@ -37,12 +38,11 @@ export type CorePayload = {
   tables: {
     totals: EncodedTable;
     snapshots: EncodedTable;
-    ages: EncodedTable;
     national: EncodedTable;
   };
 };
 
-export type SliceTable = "brands" | "fuels" | "models" | "fleetBrands" | "regions" | "stations";
+export type SliceTable = "brands" | "fuels" | "models" | "fleetBrands" | "regions" | "stations" | "ages";
 
 export type SlicePayload = {
   key: string;
@@ -56,6 +56,7 @@ const SLICE_PATTERNS = [
   /^month:\d{4}-\d{2}$/,
   /^fleet:\d{4}-\d{2}-\d{2}$/,
   /^stations:\d{4}-\d{2}$/,
+  /^ages:all$/,
 ];
 
 export function isSliceKey(key: string): boolean {
@@ -90,6 +91,7 @@ export function requiredSlices(
     if (catalog.brandPeriods[view.registrations.category]) keys.add(`brands:${view.registrations.category}`);
     if (view.registrations.period) keys.add(`month:${view.registrations.period}`);
   }
+  if (view.tab === "soidukipark") keys.add("ages:all");
   if (view.tab === "soidukipark" && view.fleet.date) keys.add(`fleet:${view.fleet.date}`);
   if (view.tab === "ulevaatused" && view.inspections.period && catalog.stationPeriods.includes(view.inspections.period)) {
     keys.add(`stations:${view.inspections.period}`);
@@ -144,7 +146,7 @@ export function buildExplorerData(core: CorePayload, slices: SlicePayload[]): Ex
       snapshots: decodeTable(core.tables.snapshots),
       brands: fleetBrands,
       regions,
-      ages: decodeTable(core.tables.ages),
+      ages: dedupe(pick<ExplorerData["fleet"]["ages"][number]>("ages"), (r) => `${r.snapshot_date}|${r.category_code}|${r.age_band}`),
       sources: core.fleetSources,
     },
     inspections: {

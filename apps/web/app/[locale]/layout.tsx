@@ -21,6 +21,8 @@ const mono = IBM_Plex_Mono({
   weight: ["400", "500"],
   variable: "--font-plex-mono",
   display: "swap",
+  // Small labels only: not worth a preload on the critical path.
+  preload: false,
 });
 
 export function generateStaticParams() {

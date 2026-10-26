@@ -25,10 +25,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const query = parseQuery({});
   const core = await getCore();
 
-  // Render the default view with its slices already in place, so the first
-  // paint never waits on a client fetch.
+  // Inline only the brand history the hero shows above the fold; the explorer's
+  // other slices (below the fold) load in the browser after the first paint.
   const coreData = buildExplorerData(core, []);
-  const keys = requiredSlices(resolveView(coreData, query), core.catalog);
+  const keys = requiredSlices(resolveView(coreData, query), core.catalog).filter((key) => key.startsWith("brands:"));
   const initialSlices = (await Promise.all(keys.map((key) => getSlice(key)))).filter(Boolean) as SlicePayload[];
 
   const periods = registrationPeriodsOf(coreData);

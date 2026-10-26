@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 import type { EChartsOption } from "echarts";
 import type { ChartEvents } from "./chart-impl";
 
@@ -26,7 +27,8 @@ function ChartSkeleton() {
 /**
  * Chart container. Reserves its height before the chart code loads (no layout
  * shift), exposes an accessible name, and keeps ECharts in merge mode so data
- * changes morph instead of re-mounting.
+ * changes morph instead of re-mounting. ECharts loads only when the chart
+ * comes within a screen of the viewport, so it never weighs on the first paint.
  */
 export function Chart({
   option,
@@ -41,9 +43,30 @@ export function Chart({
   onEvents?: ChartEvents;
   className?: string;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || near) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setNear(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNear(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "100% 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [near]);
   return (
-    <div role="img" aria-label={label} className={`relative w-full ${className}`} style={{ height }}>
-      <ChartImpl option={option} height={height} onEvents={onEvents} />
+    <div ref={ref} role="img" aria-label={label} className={`relative w-full ${className}`} style={{ height }}>
+      {near ? <ChartImpl option={option} height={height} onEvents={onEvents} /> : <ChartSkeleton />}
     </div>
   );
 }
