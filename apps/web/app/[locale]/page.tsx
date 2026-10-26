@@ -7,10 +7,11 @@ import { Methodology } from "@/components/methodology";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { loadBundle } from "@/lib/data/load";
+import { brandSlugs } from "@/lib/data/pages";
 import { resolveView } from "@/lib/data/resolve";
 import { buildExplorerData, requiredSlices, type SlicePayload } from "@/lib/data/slices";
 import { getCore, getSlice } from "@/lib/data/store";
-import { registrationPeriodsOf, registrationSeries } from "@/lib/data/views";
+import { registrationPeriodsOf } from "@/lib/data/views";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { parseQuery } from "@/lib/url-state";
 
@@ -31,8 +32,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const initialSlices = (await Promise.all(keys.map((key) => getSlice(key)))).filter(Boolean) as SlicePayload[];
 
   const periods = registrationPeriodsOf(coreData);
-  const cars = registrationSeries(coreData, "passenger_car");
-  const latest = cars.filter((p) => p.first != null).at(-1) ?? null;
   const bundle = await loadBundle();
   const sources = ((bundle as unknown as { sources?: Source[] }).sources ?? []) as Source[];
 
@@ -61,7 +60,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       />
       <SiteHeader />
       <main id="main">
-        <Hero latest={latest} span={[periods[0]?.slice(0, 4) ?? "", periods.at(-1)?.slice(0, 4) ?? ""]} />
+        <Hero
+          span={[periods[0]?.slice(0, 4) ?? "", periods.at(-1)?.slice(0, 4) ?? ""]}
+          brandPages={brandSlugs(bundle)}
+        />
         <Explorer />
         <Insights />
         <Methodology data={coreData} sources={sources} />

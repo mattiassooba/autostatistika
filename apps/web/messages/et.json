@@ -28,7 +28,12 @@
       "Avasta, mis",
       "liigub",
       "Eestis."
-    ]
+    ],
+    "summaryLabel": {
+      "passenger_car": "Sõiduautode esmaregistreerimised",
+      "truck": "Veoautode esmaregistreerimised"
+    },
+    "yearAgo": "Aasta varem"
   },
   "heroRace": {
     "title": "Margid esmaregistreerimistes",
@@ -37,14 +42,31 @@
     "play": "Esita",
     "pause": "Peata",
     "listLabel": "Margid, {period}",
-    "rowLabel": "Koht {rank}: {brand}, {value} sõidukit, {share} kuu esmaregistreerimistest. Ava võrdluses.",
-    "readout": "– {share} kuu esmaregistreerimistest, koht {rank}, {period}.",
-    "clickToCompare": "Klõpsa, et võrrelda.",
-    "hint": "Vali mark, et seda võrrelda. Allika edetabelis on {count} marki.",
+    "rowLabel": "Koht {rank}: {brand}, {value} sõidukit, {share} kuu esmaregistreerimistest. Vali võrdlemiseks.",
+    "hint": "Vali kuni {max} marki, et neid võrrelda. Allika edetabelis on {count} marki.",
     "timelineLabel": "Imporditud kuud",
     "gapTitle": "{distance} järgmise imporditud kuuni, vahepealseid kuid pole imporditud",
     "gapNote": "Viirutatud vahemike kohta andmeid ei imporditud. Kuud ei ole järjestikused.",
-    "gapNoteDense": "{count} kuud. Viirutatud kohtades selle liigi margiedetabelit ei ole. Lohista või kasuta nooleklahve."
+    "gapNoteDense": "{count} kuud. Viirutatud kohtades selle liigi margiedetabelit ei ole. Lohista või kasuta nooleklahve.",
+    "previousMonth": "Eelmine kuu",
+    "nextMonth": "Järgmine kuu",
+    "noRanking": "Selle kuu kohta margiedetabelit ei ole.",
+    "tipFirst": "Esmaregistreerimised",
+    "tipShare": "Osakaal",
+    "tipRank": "Koht",
+    "tipWas": "varem {rank}",
+    "tipNotRanked": "polnud TOP-is",
+    "tipPick": "Klõpsa, et lisada võrdlusse.",
+    "tipRemove": "Klõpsa, et eemaldada võrdlusest.",
+    "tipFull": "Võrdluses on {max} marki. Uus asendab esimesena valitud margi.",
+    "duelTitle": "Markide duell",
+    "pickedTitle": "Valitud mark",
+    "duelRange": "{from}–{to}",
+    "duelChart": "Valitud markide esmaregistreerimised kuude kaupa",
+    "notRankedThisMonth": "selle kuu TOP-is pole",
+    "removeBrand": "Eemalda {brand} võrdlusest",
+    "compareHistory": "Võrdle kogu ajalugu",
+    "clearBrands": "Tühjenda"
   },
   "tabs": {
     "registreerimised": "Registreerimised",

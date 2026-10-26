@@ -72,6 +72,11 @@ Static pages for search engines, built from the same bundle (`lib/data/pages.ts`
 - Share images at `/og/<locale>/{site,brand,month}/<name>.png` (`app/og/...`, Archivo TTFs in `assets/og/`)
 - The sitemap lists all of them; the footer links popular brands and recent months from every page
 
+Brand marks: `apps/web/public/logos/*.svg` come from Simple Icons (CC0, pinned in `package.json`) via
+`npm run logos`, which also writes `lib/brand-logos.ts` (available marks and a weight-balancing scale per mark).
+Brands without an official mark there (Mercedes-Benz, Jaguar, Lexus, Cupra, BYD, Land Rover, Alfa Romeo, Isuzu)
+show a typographic monogram. Add a brand by mapping its slug in `scripts/build-logos.mjs`.
+
 Preview the export locally: `npm run build && npm run preview` (http://localhost:3000/et).
 
 ## Hosting

@@ -28,7 +28,12 @@
       "See what",
       "moves in",
       "Estonia."
-    ]
+    ],
+    "summaryLabel": {
+      "passenger_car": "Passenger-car first registrations",
+      "truck": "Truck first registrations"
+    },
+    "yearAgo": "A year earlier"
   },
   "heroRace": {
     "title": "Brands in first registrations",
@@ -37,14 +42,31 @@
     "play": "Play",
     "pause": "Pause",
     "listLabel": "Brands, {period}",
-    "rowLabel": "Rank {rank}: {brand}, {value} vehicles, {share} of the month's first registrations. Open in comparison.",
-    "readout": "– {share} of the month's first registrations, rank {rank}, {period}.",
-    "clickToCompare": "Click to compare.",
-    "hint": "Pick a brand to compare it. The source lists {count} brands.",
+    "rowLabel": "Rank {rank}: {brand}, {value} vehicles, {share} of the month's first registrations. Pick to compare.",
+    "hint": "Pick up to {max} brands to compare them. The source lists {count} brands.",
     "timelineLabel": "Imported months",
     "gapTitle": "{distance} until the next imported month, months in between are not imported",
     "gapNote": "Hatched stretches have no imported data. The months are not consecutive.",
-    "gapNoteDense": "{count} months. Hatched stretches have no brand ranking for this type. Drag or use the arrow keys."
+    "gapNoteDense": "{count} months. Hatched stretches have no brand ranking for this type. Drag or use the arrow keys.",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "noRanking": "No brand ranking for this month.",
+    "tipFirst": "First registrations",
+    "tipShare": "Share",
+    "tipRank": "Rank",
+    "tipWas": "was {rank}",
+    "tipNotRanked": "not ranked",
+    "tipPick": "Click to add to the comparison.",
+    "tipRemove": "Click to remove from the comparison.",
+    "tipFull": "The comparison holds {max} brands. A new pick replaces the first one.",
+    "duelTitle": "Brand duel",
+    "pickedTitle": "Picked brand",
+    "duelRange": "{from}–{to}",
+    "duelChart": "First registrations of the picked brands by month",
+    "notRankedThisMonth": "not ranked this month",
+    "removeBrand": "Remove {brand} from the comparison",
+    "compareHistory": "Compare the full history",
+    "clearBrands": "Clear"
   },
   "tabs": {
     "registreerimised": "Registrations",

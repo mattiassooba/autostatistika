@@ -258,6 +258,67 @@ body {
   animation: pulse-dot 2.4s var(--ease-in-out) infinite;
 }
 
+/* Hero blueprint intro (components/hero/vehicle-blueprint.tsx). Paths use
+   pathLength="1", so dash lengths are fractions of each path. Runs once. */
+.bp-draw {
+  stroke-dasharray: 1 1;
+  animation: bp-draw 1600ms var(--ease-in-out) 200ms both;
+}
+
+.bp-detail {
+  animation: fade 600ms var(--ease-out) 1350ms both;
+}
+
+.bp-guide {
+  animation: fade 700ms var(--ease-out) 1650ms both;
+}
+
+.bp-sweep {
+  stroke-dasharray: 0.16 1.3;
+  animation: bp-sweep 800ms var(--ease-in-out) 1950ms both;
+}
+
+/* Hero brand ranking (components/hero/brand-race.tsx): rows rise in once with
+   a stagger; brands that enter the top list later fade in. Kept in CSS so row
+   state survives React moving rows when the ranking changes. */
+.race-enter {
+  animation: race-rise 600ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 65ms + 150ms);
+}
+
+.race-in {
+  animation: fade 280ms var(--ease-out) both;
+}
+
+@keyframes race-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bp-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes bp-sweep {
+  from {
+    stroke-dashoffset: 0.16;
+  }
+  to {
+    stroke-dashoffset: -1.15;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

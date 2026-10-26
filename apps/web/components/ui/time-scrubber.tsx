@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, type KeyboardEvent, type PointerEvent } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 
 const monthIndex = (period: string) => {
   const [y, m] = period.split("-").map(Number);
@@ -12,6 +12,8 @@ const monthIndex = (period: string) => {
  * position on one track; months without data are hatched gaps on the same
  * track, so coverage stays honest at any density. Slider semantics: arrows
  * step one available month, PageUp/PageDown a year, Home/End the ends.
+ * Pointer: a 48px hit area, a preview of the month under the cursor, and a
+ * thumb that follows the finger without easing while dragging.
  */
 export function TimeScrubber({
   stops,
@@ -19,6 +21,7 @@ export function TimeScrubber({
   onChange,
   label,
   formatValue,
+  formatShort = formatValue,
   tone = "dark",
 }: {
   stops: string[];
@@ -26,9 +29,13 @@ export function TimeScrubber({
   onChange: (stop: string) => void;
   label: string;
   formatValue: (stop: string) => string;
+  /** Compact label for the thumb and the hover preview. */
+  formatShort?: (stop: string) => string;
   tone?: "light" | "dark";
 }) {
   const track = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
   const dark = tone === "dark";
   const sorted = useMemo(() => [...stops].sort(), [stops]);
   const first = monthIndex(sorted[0]);
@@ -68,10 +75,21 @@ export function TimeScrubber({
   }
 
   function onPointer(event: PointerEvent<HTMLDivElement>) {
-    if (event.type === "pointerdown") (event.target as HTMLElement).setPointerCapture?.(event.pointerId);
-    if (event.type === "pointermove" && event.buttons !== 1) return;
+    if (event.type === "pointerdown") {
+      (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
+      setDragging(true);
+    }
     const stop = nearest(event.clientX);
+    if (event.type === "pointermove" && event.buttons !== 1) {
+      if (event.pointerType === "mouse") setPreview(stop);
+      return;
+    }
+    setPreview(null);
     if (stop !== value) onChange(stop);
+  }
+
+  function endDrag() {
+    setDragging(false);
   }
 
   function onKey(event: KeyboardEvent<HTMLDivElement>) {
@@ -105,7 +123,10 @@ export function TimeScrubber({
         onKeyDown={onKey}
         onPointerDown={onPointer}
         onPointerMove={onPointer}
-        className="relative h-10 cursor-pointer touch-none select-none rounded-md"
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onPointerLeave={() => setPreview(null)}
+        className="group/track relative h-12 cursor-pointer touch-none select-none rounded-md"
       >
         <span className={`absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full ${dark ? "bg-paper/25" : "bg-graphite/25"}`} />
         {gaps.map((gap) => (
@@ -121,12 +142,34 @@ export function TimeScrubber({
           style={{ left: 0, width: `${pos(value)}%` }}
           aria-hidden="true"
         />
+        {preview && preview !== value && (
+          <span
+            className={`pointer-events-none absolute -top-5 -translate-x-1/2 whitespace-nowrap rounded-[5px] px-1.5 py-0.5 text-[11px] font-medium ${
+              dark ? "bg-paper/90 text-ink" : "bg-ink text-paper"
+            }`}
+            style={{ left: `${pos(preview)}%` }}
+            aria-hidden="true"
+          >
+            {formatShort(preview)}
+          </span>
+        )}
+        {preview && preview !== value && (
+          <span
+            className={`pointer-events-none absolute top-1/2 h-3 w-px -translate-y-1/2 ${dark ? "bg-paper/70" : "bg-ink/60"}`}
+            style={{ left: `${pos(preview)}%` }}
+            aria-hidden="true"
+          />
+        )}
         <span
-          className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 transition-[left] duration-200 ease-out"
+          className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 ${dragging ? "" : "transition-[left] duration-200 ease-out"}`}
           style={{ left: `${pos(value)}%` }}
           aria-hidden="true"
         >
-          <span className={`block h-5 w-5 rounded-full ring-4 ${dark ? "bg-lime ring-lime/20" : "bg-ink ring-ink/10"}`} />
+          <span
+            className={`block h-5 w-5 rounded-full ring-4 transition-transform duration-150 group-hover/track:scale-110 ${
+              dragging ? "scale-110" : ""
+            } ${dark ? "bg-lime ring-lime/20" : "bg-ink ring-ink/10"}`}
+          />
         </span>
       </div>
       <div className="relative mt-1 h-4" aria-hidden="true">
