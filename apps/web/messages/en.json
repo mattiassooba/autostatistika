@@ -537,7 +537,15 @@
       "prev": "Previous month",
       "next": "Next month",
       "sameMonthLastYear": "Same month a year earlier",
-      "allMonths": "All months"
+      "allMonths": "All months",
+      "splitTitle": "New passenger cars in detail",
+      "splitNote": "The Infoleht list of new vehicles: county (address of the responsible user or owner), engine power, gearbox and colour. Each split adds up to the month's new passenger cars; share = row / all new passenger cars. Only splits that the month's leaflet has are shown.",
+      "split": {
+        "county": "County",
+        "power_band": "Engine power",
+        "gearbox": "Gearbox",
+        "colour": "Colour"
+      }
     },
     "footer": {
       "brands": "Popular brands",

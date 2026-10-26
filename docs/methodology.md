@@ -127,6 +127,21 @@ Each rule has a test in `ingestion/tests/test_parsers.py` that reproduces the so
   off-road (MS1/MS2) fuel rows, M3G buses and tractor speed classes. Off-road fuel now matches the stated monthly
   total in every month that has both.
 
+## New vehicles in detail (Infoleht "Uued sõidukid", added 26 Oct 2026)
+
+- Every leaflet from 2011 lists the month's new vehicles (one row per vehicle, or per identical vehicles with a
+  count). Autostatistika publishes one dimension at a time per vehicle family: county (responsible user's or owner's
+  address), engine power band (kW: up to 70, 71-100, 101-150, 151-200, 201-300, over 300), gearbox and colour.
+- Which dimensions exist depends on the year: county from 2011, power 2011 and 2017 onwards (not 2012-2016),
+  colour 2011 and 2021 onwards, gearbox from 05/2022. A dimension the leaflet lacks is not shown, never zero.
+- Pivot layouts (10/2017, 01/2018, 03-04/2019) print a value once per group; leading blank cells take the value of
+  the row above and subtotal rows are skipped.
+- A family's splits are published only when its rows add up to the new vehicles stated in the same leaflet's general
+  table (within 1 %). Result: every published split adds up; 2 588 of 2 635 exactly.
+- Missing values are their own row ("Allikas ei märgi"), so each split still adds up to the total.
+- Fuel and new cars to private owners are not taken from this list: the fuel sheet and the general table already
+  publish them.
+
 ## Brand and month pages
 
 - A brand gets a page with at least 12 ranked TOP-list months or at least 100 new cars in the model lists (57 brands).

@@ -17,7 +17,7 @@ import {
   pageX,
 } from "@/components/pages/parts";
 import { loadBundle } from "@/lib/data/load";
-import { FUEL_LABELS, localizedLabel } from "@/lib/data/labels";
+import { BREAKDOWN_LABELS, FUEL_LABELS, UNKNOWN_LABEL, localizedLabel } from "@/lib/data/labels";
 import { brandSlugs, monthDetail, monthPeriods, type MonthDetail } from "@/lib/data/pages";
 import { fmtNumber, fmtPercent, fmtPeriod } from "@/lib/format";
 import { ogImagePath, pageMetadata } from "@/lib/seo";
@@ -229,6 +229,31 @@ export default async function MonthPage({ params }: { params: Promise<Params> })
                 ))}
               </tbody>
             </table>
+          </div>
+        </Section>
+      )}
+
+      {d.newCarSplits.length > 0 && (
+        <Section id="new-cars" title={t("splitTitle")} note={t("splitNote")}>
+          <div className="grid gap-x-12 gap-y-12 lg:grid-cols-2">
+            {d.newCarSplits.map((split) => (
+              <div key={split.dimension} className="min-w-0">
+                <h3 className="t-title mb-3 text-[17px]">{t(`split.${split.dimension}`)}</h3>
+                <RankedBars
+                  locale={locale}
+                  valueLabel={t("neu")}
+                  rows={split.rows.map((row) => ({
+                    key: row.code,
+                    name:
+                      row.code === "unknown"
+                        ? UNKNOWN_LABEL[locale === "en" ? "en" : "et"]
+                        : localizedLabel(BREAKDOWN_LABELS[split.dimension] ?? {}, row.code, locale, row.code.replace(/_/g, " ")),
+                    value: row.value,
+                    share: row.share,
+                  }))}
+                />
+              </div>
+            ))}
           </div>
         </Section>
       )}

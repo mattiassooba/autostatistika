@@ -8,6 +8,7 @@ import pandas as pd
 from ingestion.normalization.brands import canonical_brand
 from ingestion.normalization.categories import canonical_category
 from ingestion.normalization.fuels import canonical_fuel
+from ingestion.normalization.regions import canonical_region
 from ingestion.normalization.text import clean_text
 from ingestion.parsers.excel import find_sheet, is_total_label, open_workbook, read_sheet, to_number
 from ingestion.parsers.records import ParsedFact
@@ -48,7 +49,9 @@ def parse_registrations(path: Path, reporting_period: str | None) -> list[Parsed
         facts.extend(_parse_new_car_models(path, xl, period))
     if find_sheet(xl, "Järelturg"):
         facts.extend(_parse_aftermarket(path, xl, period))
-    return _drop_unreconciled_models(_drop_implausible_brands(facts))
+    if find_sheet(xl, "Uued sõidukid"):
+        facts.extend(_parse_new_vehicle_breakdowns(path, xl, period))
+    return _drop_unreconciled_breakdowns(_drop_unreconciled_models(_drop_implausible_brands(facts)))
 
 
 def _drop_unreconciled_models(facts: list[ParsedFact]) -> list[ParsedFact]:
@@ -67,6 +70,23 @@ def _drop_unreconciled_models(facts: list[ParsedFact]) -> list[ParsedFact]:
     if stated is None or listed <= stated * 1.01:
         return facts
     return [f for f in facts if not (f.model_source is not None and f.metric_code == "new_vehicles")]
+
+
+def _drop_unreconciled_breakdowns(facts: list[ParsedFact]) -> list[ParsedFact]:
+    """A family's breakdowns are kept only when its rows add up to the new
+    vehicles stated in the same leaflet's general table (within 1 %). Families
+    the general table does not state cannot be checked and are dropped."""
+    stated = {
+        f.category_code: f.value
+        for f in facts
+        if f.metric_code == "new_vehicles" and f.dimension is None and not f.brand_slug and not f.fuel_code and not f.model_source
+    }
+    listed: dict[str, float] = {}
+    for f in facts:
+        if f.dimension == "county":
+            listed[f.category_code] = listed.get(f.category_code, 0) + f.value
+    keep = {family for family, value in listed.items() if stated.get(family) and abs(value - stated[family]) <= stated[family] * 0.01}
+    return [f for f in facts if f.dimension is None or f.category_code in keep]
 
 
 def _drop_implausible_brands(facts: list[ParsedFact]) -> list[ParsedFact]:
@@ -537,3 +557,113 @@ def _parse_aftermarket(path: Path, xl, period: str) -> list[ParsedFact]:
             )
         )
     return facts
+
+
+# Columns of the "Uued sõidukid" list (one row per vehicle, or per identical
+# vehicles with a count). Header names changed over the years.
+NEW_VEHICLE_COLUMNS = {
+    "category": ("kategooria", "kat"),
+    "county": ("maakond", "v.kas/om maako"),
+    "gearbox": ("käigukasti tüüp", "kaigukasti_tyy", "käigukasti tüü"),
+    "power": ("mootori võimsus", "mootori võimsu", "mootori_voimsu", "võimsus"),
+    "colour": ("värv", "varv"),
+    "count": ("arv", "kokku", "tk", "total", "summa kogusummast arv"),
+}
+# Engine power bands in kW; vehicles without a stated power are "unknown".
+POWER_BANDS = [(0, 70, "0-70"), (70, 100, "71-100"), (100, 150, "101-150"), (150, 200, "151-200"), (200, 300, "201-300"), (300, 1e9, "over-300")]
+
+
+def _new_vehicle_header(df) -> tuple[int, dict[str, int]] | None:
+    """The last header row in the first lines: pivot layouts (2019) repeat it
+    below a "Sum of Arv" line."""
+    found = None
+    for idx, row in df.head(12).iterrows():
+        values = [(clean_text(v) or "").lower() for v in row.tolist()]
+        if any(v in ("kategooria", "kat") for v in values) and "mark" in values:
+            found = (idx, values)
+    if found is None:
+        return None
+    idx, values = found
+    columns: dict[str, int] = {}
+    for name, labels in NEW_VEHICLE_COLUMNS.items():
+        for i, value in enumerate(values):
+            if any(value == label or value.startswith(label) for label in labels):
+                columns.setdefault(name, i)
+    return idx, columns
+
+
+def _power_band(value: object) -> str:
+    number = to_number(value)
+    if number is None or number <= 0:
+        return "unknown"
+    return next(label for low, high, label in POWER_BANDS if low < number <= high or (low == 0 and number <= high))
+
+
+def _parse_new_vehicle_breakdowns(path: Path, xl, period: str) -> list[ParsedFact]:
+    """New vehicles by county, gearbox, power band and colour, one dimension at
+    a time. Pivot layouts (10/2017, 01/2018, 03-04/2019) print a value once per
+    group: leading blank cells inherit from the row above."""
+    df = read_sheet(path, find_sheet(xl, "Uued sõidukid"))
+    found = _new_vehicle_header(df)
+    if not found:
+        return []
+    header_idx, columns = found
+    if "category" not in columns:
+        return []
+    counts: dict[tuple[str, str, str], float] = {}
+    previous: list = []
+    for _, row in df.iloc[header_idx + 1 :].iterrows():
+        cells = row.tolist()
+        texts = [clean_text(v) for v in cells]
+        if any(is_total_label(v) or (v or "").lower().endswith(" kokku") for v in texts if v):
+            continue
+        first = next((i for i, v in enumerate(texts) if v), None)
+        if first is None:
+            continue
+        if previous and first > 0:
+            cells = previous[:first] + cells[first:]
+        previous = cells
+        family = canonical_category(cells[columns["category"]])[0]
+        if not family:
+            continue
+        number = 1.0 if "count" not in columns else to_number(cells[columns["count"]])
+        if number is None:
+            continue
+        values = {
+            "county": canonical_region(cells[columns["county"]])[0] or "unassigned" if "county" in columns else None,
+            "gearbox": _code(cells[columns["gearbox"]]) if "gearbox" in columns else None,
+            "power_band": _power_band(cells[columns["power"]]) if "power" in columns else None,
+            "colour": _code(cells[columns["colour"]]) if "colour" in columns else None,
+        }
+        for dimension, value in values.items():
+            if value is None:
+                continue
+            key = (family, dimension, value)
+            counts[key] = counts.get(key, 0) + number
+    return [
+        ParsedFact(
+            table="registration_facts",
+            metric_code="new_vehicles",
+            value=value,
+            unit="vehicles",
+            reporting_period=period,
+            category_code=family,
+            dimension=dimension,
+            dimension_value=code,
+            extra={"source_sheet": "uued_soidukid"},
+        )
+        for (family, dimension, code), value in counts.items()
+    ]
+
+
+def _code(value: object) -> str:
+    """Source codes as stable lowercase ASCII keys, spelled the way the register
+    writes Estonian without diacritics (KONSTANTNE_YLEKANNE, BEEZ, HOBEDANE).
+    Empty and "(tühi)" are unknown."""
+    text = clean_text(value)
+    if not text:
+        return "unknown"
+    text = text.lower().replace("ü", "y").replace("õ", "o").replace("ä", "a").replace("ö", "o").replace("š", "s").replace("ž", "z")
+    code = re.sub(r"[^a-z0-9]+", "_", text).strip("_")
+    return "unknown" if code in {"tyhi", "blank", "maaramata", ""} else code
+

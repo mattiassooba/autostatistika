@@ -19,6 +19,8 @@ class ParsedFact:
     fuel_code: str | None = None
     fuel_source: str | None = None
     vehicle_first_reg_year: int | None = None
+    dimension: str | None = None
+    dimension_value: str | None = None
     region_code: str | None = None
     region_source: str | None = None
     status_code: str | None = None

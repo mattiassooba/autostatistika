@@ -537,7 +537,15 @@
       "prev": "Eelmine kuu",
       "next": "Järgmine kuu",
       "sameMonthLastYear": "Sama kuu aasta varem",
-      "allMonths": "Kõik kuud"
+      "allMonths": "Kõik kuud",
+      "splitTitle": "Uued sõiduautod lähemalt",
+      "splitNote": "Infolehe uute sõidukite loend: maakond (vastutava kasutaja või omaniku aadress), mootori võimsus, käigukast ja värv. Iga jaotus annab kokku kuu uute sõiduautode arvu; osakaal = rida / kõik uued sõiduautod. Näidatakse ainult jaotusi, mis selle kuu lehel on.",
+      "split": {
+        "county": "Maakond",
+        "power_band": "Mootori võimsus",
+        "gearbox": "Käigukast",
+        "colour": "Värv"
+      }
     },
     "footer": {
       "brands": "Populaarsed margid",

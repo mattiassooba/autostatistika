@@ -111,6 +111,9 @@ CREATE TABLE IF NOT EXISTS registration_facts (
   fuel_code TEXT REFERENCES fuel_types(code),
   fuel_source TEXT,
   vehicle_first_reg_year INTEGER,
+  -- One-dimensional breakdown of a total (county, gearbox, power_band, colour).
+  dimension TEXT,
+  dimension_value TEXT,
   value REAL NOT NULL,
   unit TEXT NOT NULL,
   publication_status TEXT NOT NULL DEFAULT 'published',
@@ -125,7 +128,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_registration_facts ON registration_facts (
   IFNULL(brand_slug, ''),
   IFNULL(model_source, ''),
   IFNULL(fuel_code, ''),
-  IFNULL(vehicle_first_reg_year, -1)
+  IFNULL(vehicle_first_reg_year, -1),
+  IFNULL(dimension, ''),
+  IFNULL(dimension_value, '')
 );
 
 CREATE TABLE IF NOT EXISTS vehicle_fleet_facts (

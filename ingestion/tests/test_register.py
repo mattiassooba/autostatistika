@@ -112,3 +112,8 @@ def test_register_codes_normalise() -> None:
     assert canonical_category("T4.3a")[0] == "tractor"
     assert canonical_region("Lääne-Viru")[0] == "laane-viru"
     assert canonical_region("Jõgeva")[0] == "jogevamaa"
+
+
+def test_county_spellings() -> None:
+    assert canonical_region("IDA-VIRUMAAKOND")[0] == "ida-viru"
+    assert canonical_region("Põlva  Maakond")[0] == "polva"

@@ -59,7 +59,8 @@ def _dedupe_views(conn) -> None:
             SELECT f.*, ROW_NUMBER() OVER (
               PARTITION BY f.reporting_period, f.metric_code, IFNULL(f.category_code, ''), IFNULL(f.eu_category, ''),
                            IFNULL(f.brand_slug, ''), IFNULL(f.model_source, ''), IFNULL(f.fuel_code, ''),
-                           IFNULL(f.vehicle_first_reg_year, -1), IFNULL(json_extract(f.extra_json, '$.rollup'), '')
+                           IFNULL(f.vehicle_first_reg_year, -1), IFNULL(f.dimension, ''), IFNULL(f.dimension_value, ''),
+                           IFNULL(json_extract(f.extra_json, '$.rollup'), '')
               ORDER BY r.upload_month DESC, r.url_length DESC, f.id DESC) AS rn
             FROM registration_facts f JOIN file_rank r ON r.file_id = f.source_file_id
           ) WHERE rn = 1;
@@ -108,6 +109,7 @@ def _registrations(conn) -> dict:
           AND brand_slug IS NULL
           AND fuel_code IS NULL
           AND model_source IS NULL
+          AND dimension IS NULL
         GROUP BY 1,2,3
         ORDER BY 1
         """
@@ -121,6 +123,7 @@ def _registrations(conn) -> dict:
           AND brand_slug IS NOT NULL
           AND vehicle_first_reg_year IS NULL
           AND extra_json LIKE '%brand_month_total%'
+          AND dimension IS NULL
         GROUP BY 1,2,3
         """
     ).fetchall()
@@ -129,7 +132,7 @@ def _registrations(conn) -> dict:
         SELECT reporting_period, category_code, fuel_code, GROUP_CONCAT(DISTINCT fuel_source) AS fuel_source, metric_code,
                SUM(value) AS value
         FROM reg_facts
-        WHERE publication_status='published' AND fuel_code IS NOT NULL AND brand_slug IS NULL
+        WHERE publication_status='published' AND fuel_code IS NOT NULL AND brand_slug IS NULL AND dimension IS NULL
         GROUP BY 1,2,3,5
         """
     ).fetchall()
@@ -138,8 +141,18 @@ def _registrations(conn) -> dict:
         SELECT reporting_period, category_code, brand_slug, MAX(brand_source) AS brand_source, model_source,
                SUM(value) AS value
         FROM reg_facts
-        WHERE publication_status='published' AND metric_code='new_vehicles' AND model_source IS NOT NULL
+        WHERE publication_status='published' AND metric_code='new_vehicles' AND model_source IS NOT NULL AND dimension IS NULL
         GROUP BY 1,2,3,5
+        """
+    ).fetchall()
+    # New vehicles split one dimension at a time (Infoleht "Uued sõidukid").
+    breakdowns = conn.execute(
+        """
+        SELECT reporting_period, category_code, dimension, dimension_value, SUM(value) AS value
+        FROM reg_facts
+        WHERE publication_status='published' AND metric_code='new_vehicles' AND dimension IS NOT NULL
+        GROUP BY 1,2,3,4
+        ORDER BY 1,2,3,4
         """
     ).fetchall()
     return {
@@ -147,6 +160,7 @@ def _registrations(conn) -> dict:
         "brands": [dict(r) for r in brands],
         "fuels": [dict(r) for r in fuels],
         "models": [dict(r) for r in models],
+        "breakdowns": [dict(r) for r in breakdowns],
     }
 
 

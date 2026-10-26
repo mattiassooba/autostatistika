@@ -389,3 +389,47 @@ def test_model_list_unlabelled_total_row_is_not_a_car(tmp_path: Path) -> None:
         },
     )
     assert _models(path) == [("peugeot", "308", 72), ("volvo", "XC60", 1)]
+
+
+def test_new_vehicle_breakdowns_reconcile() -> None:
+    path = SAMPLES / "INFOLEHT-092026.xlsx"
+    if not path.exists():
+        return
+    facts = parse_registrations(path, "2026-09")
+    cars = [f for f in facts if f.dimension and f.category_code == "passenger_car"]
+    for dimension in ("county", "gearbox", "power_band", "colour"):
+        # Every dimension adds up to the 1 670 new passenger cars of the general table.
+        assert sum(f.value for f in cars if f.dimension == dimension) == 1670
+    assert {"harju", "tartu"} <= {f.dimension_value for f in cars if f.dimension == "county"}
+    assert "automaat" in {f.dimension_value for f in cars if f.dimension == "gearbox"}
+
+
+def test_new_vehicle_pivot_layout(tmp_path: Path) -> None:
+    """10/2017-style pivot: the category is printed once per group, subtotals in between."""
+    from openpyxl import Workbook
+
+    wb = Workbook()
+    general = wb.active
+    general.title = "Esm(üldtabel)"
+    general.append(["2017.aasta esmased registreerimised"])
+    general.append(["Oktoober"])
+    general.append([None])
+    general.append([None, "Sõiduautod", "Veoautod", "Bussid"])
+    general.append(["Kokku", 10, 5, 2])
+    general.append(["sh uued", 3, 1, 0])
+    sheet = wb.create_sheet("Uued sõidukid")
+    sheet.append(["Liiklusregistris esmaselt registreeritud uued sõidukid, oktoober 2017 aasta."])
+    sheet.append([None])
+    sheet.append(["Kategooria", "Mark", "Mudel", "Mootori võimsus", "Maakond", "Kokku"])
+    sheet.append(["M1", "TOYOTA", "RAV4", 131, "Harju Maakond", 2])
+    sheet.append([None, "SKODA", "OCTAVIA", 110, "Tartu Maakond", 1])
+    sheet.append(["M1 kokku", None, None, None, None, 3])
+    sheet.append(["N1", "FORD", "TRANSIT", 96, "(tühi)", 1])
+    sheet.append(["Kokku", None, None, None, None, 4])
+    path = tmp_path / "infoleht-1017.xlsx"
+    wb.save(path)
+    facts = [f for f in parse_registrations(path, "2017-10") if f.dimension]
+    county = {(f.category_code, f.dimension_value): f.value for f in facts if f.dimension == "county"}
+    assert county == {("passenger_car", "harju"): 2, ("passenger_car", "tartu"): 1, ("truck", "unassigned"): 1}
+    power = {(f.category_code, f.dimension_value): f.value for f in facts if f.dimension == "power_band"}
+    assert power == {("passenger_car", "101-150"): 3, ("truck", "71-100"): 1}

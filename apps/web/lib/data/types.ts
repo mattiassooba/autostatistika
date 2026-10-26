@@ -33,12 +33,22 @@ export type ModelRow = {
   value: number;
 };
 
+/** New vehicles split one dimension at a time (Infoleht "Uued sõidukid"). */
+export type BreakdownRow = {
+  reporting_period: string;
+  category_code: string | null;
+  dimension: string;
+  dimension_value: string;
+  value: number;
+};
+
 export type PublishedBundle = {
   generatedAt: string;
   disclaimer: { et: string; en: string };
   registrations: {
     totals: TotalsRow[];
     brands: BrandRow[];
+    breakdowns?: BreakdownRow[];
     fuels: FuelRow[];
     models: ModelRow[];
   };

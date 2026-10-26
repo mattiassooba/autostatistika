@@ -50,6 +50,17 @@ EU category codes (`M1`, `L3e`) are stored on facts when the sheet has them. Fam
 | `gas` | Gaas | Gas | CNG, LPG, GAAS |
 | `other` | Muu | Other | unmapped values, flagged |
 
+## New-vehicle breakdowns
+
+`registration_facts.dimension` / `dimension_value`, metric `new_vehicles`:
+
+| dimension | values |
+| --- | --- |
+| `county` | county codes as for the fleet (`harju`, …, `unassigned`) |
+| `power_band` | `0-70`, `71-100`, `101-150`, `151-200`, `201-300`, `over-300` (kW), `unknown` |
+| `gearbox` | source codes in lowercase ASCII (`automaat`, `manuaal`, `cvt`, `dct`, `amt`, `automat_manuaal`, `konstantne_ylekanne`, `hydrauliline`, `rummusisene`, `muu`), `unknown` |
+| `colour` | source colour names in lowercase ASCII (`must`, `hobedane`, `beez`, …), `unknown` |
+
 ## Registration status
 
 | code | ET | EN |

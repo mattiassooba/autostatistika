@@ -23,6 +23,8 @@ const CAR = "passenger_car";
 const TRUCK = "truck";
 /** Source renames of the same make; the old slug's rows count under the new one. */
 const ALIASES: Record<string, string> = { "tesla-motors": "tesla" };
+const SPLIT_ORDER = ["county", "power_band", "gearbox", "colour"];
+const POWER_ORDER = ["0-70", "71-100", "101-150", "151-200", "201-300", "over-300"];
 const CATEGORY_ORDER = ["passenger_car", "truck", "bus", "trailer", "motorcycle", "moped", "offroad", "tractor"];
 
 export type Ranked = { slug: string; name: string; value: number; rank: number; share: number | null };
@@ -79,6 +81,8 @@ export type MonthDetail = {
   models: Array<{ slug: string; brand: string; model: string; value: number }> | null;
   modelBrands: Array<{ slug: string; name: string; value: number; share: number }> | null;
   fuels: Array<{ code: string; source: string; first: number | null; neu: number | null }>;
+  /** New passenger cars by county, power band, gearbox and colour; only dimensions the leaflet has. */
+  newCarSplits: Array<{ dimension: string; rows: Array<{ code: string; value: number; share: number | null }> }>;
 };
 
 export type MonthIndex = Array<{
@@ -422,8 +426,26 @@ export function monthDetail(bundle: PublishedBundle, period: string): MonthDetai
   });
   fuels.sort((a, b) => (b.first ?? 0) - (a.first ?? 0));
 
+  // Each dimension is published only when it adds up to the stated new cars
+  // (checked at import); share = rows / the stated new passenger cars.
+  const statedNew = m.totals.get(CAR)?.get(period)?.new_vehicles ?? null;
+  const splitRows = (m.bundle.registrations.breakdowns ?? []).filter((row) => row.category_code === CAR && row.reporting_period === period);
+  const newCarSplits = SPLIT_ORDER.flatMap((dimension) => {
+    const rows = splitRows
+      .filter((row) => row.dimension === dimension)
+      .map((row) => ({ code: row.dimension_value, value: row.value, share: statedNew ? (row.value / statedNew) * 100 : null }));
+    if (!rows.length) return [];
+    const order = dimension === "power_band" ? POWER_ORDER : null;
+    rows.sort((a, b) => {
+      if (a.code === "unknown" || b.code === "unknown") return a.code === "unknown" ? 1 : -1;
+      return order ? order.indexOf(a.code) - order.indexOf(b.code) : b.value - a.value || a.code.localeCompare(b.code);
+    });
+    return [{ dimension, rows }];
+  });
+
   return {
     period,
+    newCarSplits,
     prev: m.periods[index - 1] ?? null,
     next: m.periods[index + 1] ?? null,
     yearAgo: hasYearAgo ? yearAgo : null,

@@ -111,6 +111,35 @@ describe("brand pages", () => {
     assert.deepEqual(bmw.fleetTrucks, []);
   });
 
+  it("splits a month's new cars by dimension, with the stated new cars as denominator", () => {
+    const b = bundle();
+    const row = (dimension: string, value: string, n: number) => ({
+      reporting_period: "2026-09",
+      category_code: "passenger_car",
+      dimension,
+      dimension_value: value,
+      value: n,
+    });
+    b.registrations.breakdowns = [
+      row("power_band", "unknown", 5),
+      row("power_band", "101-150", 40),
+      row("power_band", "0-70", 55),
+      row("county", "tartu", 30),
+      row("county", "harju", 70),
+      { ...row("county", "harju", 9), category_code: "truck" },
+    ];
+    const month = monthDetail(b, "2026-09")!;
+    assert.deepEqual(
+      month.newCarSplits.map((split) => [split.dimension, split.rows.map((r) => [r.code, r.value, Math.round(r.share! * 100) / 100])]),
+      [
+        ["county", [["harju", 70, 70], ["tartu", 30, 30]]],
+        // Power bands keep their order; "unknown" goes last and is never zero-filled.
+        ["power_band", [["0-70", 55, 55], ["101-150", 40, 40], ["unknown", 5, 5]]],
+      ],
+    );
+    assert.deepEqual(monthDetail(b, "2026-08")!.newCarSplits, []);
+  });
+
   it("totals a year only when all twelve months exist", () => {
     const index = monthIndex(bundle());
     assert.deepEqual(

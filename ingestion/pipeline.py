@@ -241,7 +241,7 @@ def import_local_samples() -> list[dict]:
 UNIQUE_KEYS = {
     "registration_facts": (
         "reporting_period", "metric_code", "category_code", "eu_category", "brand_slug",
-        "model_source", "fuel_code", "vehicle_first_reg_year",
+        "model_source", "fuel_code", "vehicle_first_reg_year", "dimension", "dimension_value",
     ),
     "vehicle_fleet_facts": (
         "snapshot_date", "metric_code", "category_code", "eu_category", "brand_slug", "model_source",
@@ -292,8 +292,8 @@ def _store_facts(conn, facts, file_id: str, run_id: str) -> int:
                 INSERT OR REPLACE INTO registration_facts(
                   source_file_id, import_run_id, reporting_period, metric_code, category_code, eu_category,
                   brand_slug, brand_source, model_source, fuel_code, fuel_source, vehicle_first_reg_year,
-                  value, unit, publication_status, extra_json
-                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'published',?)
+                  dimension, dimension_value, value, unit, publication_status, extra_json
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'published',?)
                 """,
                 (
                     file_id,
@@ -308,6 +308,8 @@ def _store_facts(conn, facts, file_id: str, run_id: str) -> int:
                     fact.fuel_code,
                     fact.fuel_source,
                     fact.vehicle_first_reg_year,
+                    fact.dimension,
+                    fact.dimension_value,
                     fact.value,
                     fact.unit,
                     extra,

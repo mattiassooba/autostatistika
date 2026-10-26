@@ -64,6 +64,10 @@ def canonical_region(value: object) -> tuple[str | None, str | None, str]:
         return None, source, "subtotal"
     if key in COUNTY_ALIASES:
         return COUNTY_ALIASES[key], source, "mapped"
+    # "IDA-VIRUMAAKOND", "Põlva  maakond": the bare county name decides.
+    bare = key.replace("MAAKOND", "").strip()
+    if bare in COUNTY_ALIASES:
+        return COUNTY_ALIASES[bare], source, "mapped"
     if "MAAKOND" in key:
         return slugify(source), source, "canonical"
     return None, source, "unmapped"
