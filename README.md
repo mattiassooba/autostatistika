@@ -77,8 +77,9 @@ Archivo (width axis) for type, IBM Plex Mono for ranks. Tokens live in `apps/web
 
 - Fleet 2016-2019 has no snapshots (the open register files start in 2020)
 - Brand rankings combine new and used registrations (the source's TOP sheets), so there is no new/used split per brand
-- Alfa Romeo has no free official mark and shows a monogram; share images carry no brand marks
-- Core Web Vitals have not been measured on real devices
+- Alfa Romeo has no free official mark: a monogram on the site, no mark on its share image
+- Core Web Vitals: lab only so far (Lighthouse mobile, 27 Oct 2026: /et 70, brand page 89, /otsing 81; CLS 0). Field data comes
+  from Search Console once Google has enough visits
 - Supabase Postgres/Storage and Sentry need account credentials; Teabevärav vehicle-level CSVs are not imported
   (the slug API returned HTTP 500); Tableau dashboards are not a source
 - Optional AI phrasing needs `OPENAI_API_KEY`; the site uses deterministic, evidence-backed sentences without it

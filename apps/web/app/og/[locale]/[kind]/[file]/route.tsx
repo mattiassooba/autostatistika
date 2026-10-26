@@ -6,6 +6,7 @@ import { routing } from "@/i18n/routing";
 import { loadBundle } from "@/lib/data/load";
 import { brandDetail, brandSlugs, carSeries, latestPeriod, monthDetail, monthPeriods, shiftPeriod } from "@/lib/data/pages";
 import { color } from "@/lib/design/tokens";
+import { BRAND_LOGOS } from "@/lib/brand-logos";
 import { fmtDate, fmtNumber, fmtPeriod } from "@/lib/format";
 
 // Share images (Open Graph / Twitter cards), 1200×630 PNG, written at build
@@ -24,6 +25,8 @@ type Card = {
   /** Index of the bar to highlight; defaults to the last one. */
   highlight?: number;
   tagline: string;
+  /** The brand's mark as an SVG data URI, painted in the card's text colour. */
+  mark?: { src: string; width: number; height: number };
 };
 
 const SITE_FILES = ["home", "margid", "kuu", "otsing"];
@@ -51,6 +54,35 @@ function loadFonts() {
     })),
   ]);
   return fonts;
+}
+
+/**
+ * A brand mark for the card: the official SVG from public/logos with every
+ * visible fill and stroke set to one colour (the site paints the same files
+ * through a CSS mask, which keeps only the shape). fill="none" stays none.
+ */
+async function brandMark(slug: string): Promise<Card["mark"]> {
+  const scale = BRAND_LOGOS.get(slug);
+  if (scale == null) return undefined;
+  let svg = await readFile(path.join(process.cwd(), "public", "logos", `${slug}.svg`), "utf8");
+  svg = svg
+    .replace(/<\?xml[^>]*>/, "")
+    .replace(/\b(fill|stroke)\s*=\s*"(?!none")[^"]*"/g, `$1="${color.paper}"`)
+    .replace(/\b(fill|stroke)\s*:\s*(?!none)[^;"]+/g, `$1:${color.paper}`);
+  // Shapes without their own fill inherit black from the root element.
+  svg = svg.replace(/<svg\b([^>]*)>/, (tag, attrs: string) => (/\bfill=/.test(attrs) ? tag : `<svg fill="${color.paper}"${attrs}>`));
+  // Fit the mark into its box with its own proportions (wordmarks are wide).
+  const root = svg.match(/<svg\b[^>]*>/)?.[0] ?? "";
+  const box = root.match(/viewBox\s*=\s*"[\d.\s-]*?([\d.]+)\s+([\d.]+)\s*"/);
+  const w = Number(box?.[1] ?? root.match(/\bwidth\s*=\s*"([\d.]+)/)?.[1] ?? 1);
+  const h = Number(box?.[2] ?? root.match(/\bheight\s*=\s*"([\d.]+)/)?.[1] ?? 1);
+  const side = 54 * scale;
+  const aspect = w / h || 1;
+  return {
+    src: `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`,
+    width: Math.round(aspect >= 1 ? side : side * aspect),
+    height: Math.round(aspect >= 1 ? side / aspect : side),
+  };
 }
 
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -121,6 +153,7 @@ async function card({ locale, kind, file }: Params): Promise<Card | null> {
       figureLabel,
       bars: useNew ? window(latest, newValues) : window(latest, new Map(d.cars.map((entry) => [entry.period, entry.value]))),
       tagline: t("og.source"),
+      mark: await brandMark(name),
     };
   }
   if (kind === "month") {
@@ -184,6 +217,24 @@ export async function GET(_request: Request, { params }: { params: Promise<Param
 
         <div style={{ display: "flex", flex: 1, alignItems: "flex-end", justifyContent: "space-between", gap: 48, paddingBottom: 36 }}>
           <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
+            {content.mark && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 104,
+                  height: 104,
+                  marginBottom: 26,
+                  borderRadius: 52,
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1.5px solid rgba(255,255,255,0.12)",
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- rendered to PNG by next/og */}
+                <img src={content.mark.src} width={content.mark.width} height={content.mark.height} alt="" />
+              </div>
+            )}
             <div
               style={{
                 display: "flex",
