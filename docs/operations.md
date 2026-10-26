@@ -72,10 +72,11 @@ Static pages for search engines, built from the same bundle (`lib/data/pages.ts`
 - Share images at `/og/<locale>/{site,brand,month}/<name>.png` (`app/og/...`, Archivo TTFs in `assets/og/`)
 - The sitemap lists all of them; the footer links popular brands and recent months from every page
 
-Brand marks: `apps/web/public/logos/*.svg` come from Simple Icons (CC0, pinned in `package.json`) via
-`npm run logos`, which also writes `lib/brand-logos.ts` (available marks and a weight-balancing scale per mark).
-Brands without an official mark there (Mercedes-Benz, Jaguar, Lexus, Cupra, BYD, Land Rover, Alfa Romeo, Isuzu)
-show a typographic monogram. Add a brand by mapping its slug in `scripts/build-logos.mjs`.
+Brand marks: `apps/web/public/logos/*.svg` come from Simple Icons (CC0, pinned in `package.json`) and, for
+brands Simple Icons lacks, from Wikimedia Commons files kept in `apps/web/scripts/logo-sources/` (public domain
+or CC0; source page and licence per file in `public/logos/NOTICE.md`). `npm run logos` regenerates them and
+`lib/brand-logos.ts` (available marks and a weight-balancing scale per mark). Alfa Romeo has no free official
+mark and shows a typographic monogram. Add a brand by mapping its slug in `scripts/build-logos.mjs`.
 
 Preview the export locally: `npm run build && npm run preview` (http://localhost:3000/et).
 
