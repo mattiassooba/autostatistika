@@ -89,6 +89,33 @@ Autostatistika is an independent project. It is not an official service of Trans
 - **"Enim arvel olevad" brand tables are top lists** (top 17-21), published with `complete: false`; shares use the
   snapshot stock as denominator and the remainder is stated as not listed.
 
+## Rules added with the parser fixes (26 Oct 2026)
+
+Each rule has a test in `ingestion/tests/test_parsers.py` that reproduces the source layout.
+
+- **Total labels**: `Kokku`, `Total`, `Summa`, `Grand Total` and `Üldkokkuvõte` mark a total, never a brand or a car.
+- **TOP lists read brands from the `Mark` column**, not the first column (08/2024 adds a `jrkNr` rank column before it).
+- **New-car model lists end at their own total.** Only the list's own columns count: 2024 leaflets put a pivot of the
+  same cars beside the list, and its `KOKKU` row shared a row with stray cells (once read as 1 820 BMW X7s).
+  A count with no description at all is an unlabelled total (2007-2017) and also ends the list.
+- **Pivot layouts (05-12/2010)** print category, brand and model once per group: they carry down to the following rows,
+  and `AUDI kokku`-style subtotals are skipped. The list's category column is the first `KAT`/`KATEG`/`KATEGOORIA`
+  header (09/2010 and 03-12/2015 head it `Kategooria`).
+- **Safeguard**: a model list that adds up to more than the stated new passenger cars (+1 %) is dropped rather than
+  published doubled.
+- Result: all 231 model months match the stated new-car total within 1 % (07/2024 lists one car fewer than its general
+  table; the leaflet's own list total says the same).
+
+## Brand and month pages
+
+- A brand gets a page with at least 12 ranked TOP-list months or at least 100 new cars in the model lists (57 brands).
+- New-car counts per brand come from the model lists and only from months that reconcile with the stated new-vehicle
+  total within 1 %. There, a brand without rows really had zero new cars; elsewhere the month is left empty.
+- 12-month figures need all 12 months to reconcile; yearly bars mark years with fewer months as partial.
+- Brand names follow the source; the only merge is a pure rename: `TESLA MOTORS` (to 06/2019) counts as Tesla.
+- The TOP lists rank first registrations (new and used together); a brand outside the list is "not ranked", and a
+  month without any list shows "—", not "not ranked".
+
 ## Cross-check
 
 Monthly first registrations 2006-2014 were compared with Transpordiamet's consolidated

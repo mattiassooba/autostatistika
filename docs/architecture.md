@@ -7,10 +7,12 @@ Autostatistika.ee is a bilingual statistics explorer for official Estonian vehic
 ## Decisions
 
 1. **Infoleht is the registration source of record.** Monthly Transpordiamet workbooks cover 2006-present and distinguish first registrations from new vehicles. Vehicle-level Teabevärav CSVs are an optional later adapter.
-2. **Facts stay in a warehouse. The website reads published aggregates.** Python writes SQLite or Postgres, then emits a versioned JSON bundle. Next.js server routes read that bundle (and optionally Postgres). The public site does not talk to Supabase from the browser.
+2. **Facts stay in a warehouse. The website reads published aggregates.** Python writes SQLite (or Postgres), then emits a versioned JSON bundle (`apps/web/data/published/bundle.json`, committed). `next build` turns that bundle into a fully static site; there is no server, API route or middleware at runtime.
 3. **Tableau is not a source.** Embeds on transpordiamet.ee are documented and ignored by importers.
 4. **Local-first.** The repo runs without Supabase credentials. `DATABASE_URL` and `SUPABASE_*` unlock archival storage and a hosted warehouse. Missing credentials are a documented limitation, not a mocked success.
 5. **One explorer, three tabs.** Shared filter/URL contract. Each tab declares its own coverage.
+6. **Static hosting only.** GitHub Pages serves `apps/web/out/`. Anything per-request (server rendering, API routes,
+   middleware, redirects) is out; equivalents are built at export time or run in the browser.
 
 ## Runtime
 
@@ -51,14 +53,21 @@ data              local warehouse and downloads (not committed)
 
 Every fact stores `source_file_id`, `metric_code`, `unit`, `publication_status`. Unique constraints make reruns idempotent.
 
-## Query contract
+## Web layer (`apps/web`)
 
-Public API routes accept a validated `DashboardQuery`:
+| Piece | Where | Notes |
+| --- | --- | --- |
+| Home explorer `/[locale]` | `app/[locale]/page.tsx`, `components/explorer/*` | Pre-rendered with the default view; `DashboardProvider` applies a shared link's query in the browser and loads slices on demand |
+| Data slices | `app/data/[generation]/[kind]/[file]/route.ts` | One static JSON file per brand category, month, fleet date and station month; the generation segment versions them |
+| Hero | `components/hero/*` | `HeroProvider` holds one selected month, vehicle type and picked brands for the figures, ranking, timeline and duel |
+| Brand and month pages | `app/[locale]/margid`, `app/[locale]/kuu`, `lib/data/pages.ts` | Read models over the bundle, tested in `lib/data/pages.test.ts` |
+| Share images | `app/og/[locale]/[kind]/[file]/route.tsx` | 1200×630 PNG per page, rendered with `next/og` at build |
+| SEO | `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts` | Canonical + hreflang, Open Graph, `Dataset` and `BreadcrumbList` JSON-LD |
+| Brand marks | `public/logos`, `components/ui/brand-logo.tsx` | CSS-mask SVGs; monogram fallback |
 
-- `tab`: `registreerimised` \| `soidukipark` \| `ulevaatused`
-- `from`, `to`: `YYYY-MM`
-- `category`, `brands`, `models`, `fuel`, `region`, `status`
-- Unknown or unsupported filters are ignored and listed in the response `ignored` array. They are not silently filled.
+The explorer's URL query (`lib/url-state.ts`) is validated with zod: `tab` (`registreerimised` \| `soidukipark` \|
+`ulevaatused`), `category`, `brands` (up to 8), `from`/`to` (`YYYY-MM`), `fuel`, `snapshot` (`YYYY-MM-DD`),
+`population`. Invalid values are dropped, never guessed; `lib/data/resolve.ts` falls back to what the data can show.
 
 ## Cost
 
