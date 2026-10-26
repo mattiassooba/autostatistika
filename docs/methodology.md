@@ -149,6 +149,8 @@ Each rule has a test in `ingestion/tests/test_parsers.py` that reproduces the so
 - Results are variants (same make, model, first-registration year, fuel, power in whole kW, gearbox and body) with the
   number of vehicles. A variant's technical data are shown as ranges over its vehicles, with how many have a value.
   The site never shows one vehicle as a record.
+- Passenger-car variants (M1/M1G) get a side-view drawing with the measured length and height on its guides. The
+  silhouette is generic and labelled "not to scale"; other vehicle types get no drawing rather than a wrong one.
 - A range filter (for example CO2 WLTP up to 130 g/km) excludes vehicles without that value, and the page says how
   many were left out. The "more filters" fields show the share of the type's vehicles that have a value.
 - Searches across all makes use a light index (make, model, year, power, fuel, gearbox, body, status, county).

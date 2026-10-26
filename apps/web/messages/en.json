@@ -563,7 +563,9 @@
       "source": "Data: Transport Administration",
       "firstPlain": "passenger-car first registrations",
       "newCars12": "new passenger cars in the last 12 months",
-      "newCarsSince": "new passenger cars since {year}"
+      "newCarsSince": "new passenger cars since {year}",
+      "searchTagline": "Every vehicle in the register",
+      "inRegister": "vehicles in the register, {date}"
     }
   },
   "search": {
@@ -711,6 +713,7 @@
       "ev_range": "Electric range",
       "noise": "Drive-by noise",
       "euro": "Emission standard"
-    }
+    },
+    "notToScale": "Generic drawing, not to scale; the figures are this variant's vehicles."
   }
 }

@@ -563,7 +563,9 @@
       "source": "Andmed: Transpordiamet",
       "firstPlain": "sõiduauto esmaregistreerimist",
       "newCars12": "uut sõiduautot viimase 12 kuu jooksul",
-      "newCarsSince": "uut sõiduautot alates {year}"
+      "newCarsSince": "uut sõiduautot alates {year}",
+      "searchTagline": "Kõik registris olevad sõidukid",
+      "inRegister": "sõidukit registris, {date}"
     }
   },
   "search": {
@@ -711,6 +713,7 @@
       "ev_range": "Elektriline sõiduulatus",
       "noise": "Sõidumüra",
       "euro": "Heitmenorm"
-    }
+    },
+    "notToScale": "Joonis on üldine, mitte mõõtkavas; numbrid on selle variandi sõidukitelt."
   }
 }

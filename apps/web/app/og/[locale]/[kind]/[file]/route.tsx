@@ -6,7 +6,7 @@ import { routing } from "@/i18n/routing";
 import { loadBundle } from "@/lib/data/load";
 import { brandDetail, brandSlugs, carSeries, latestPeriod, monthDetail, monthPeriods, shiftPeriod } from "@/lib/data/pages";
 import { color } from "@/lib/design/tokens";
-import { fmtNumber, fmtPeriod } from "@/lib/format";
+import { fmtDate, fmtNumber, fmtPeriod } from "@/lib/format";
 
 // Share images (Open Graph / Twitter cards), 1200×630 PNG, written at build
 // time: /og/<locale>/site/{home,margid,kuu}.png, /og/<locale>/brand/<slug>.png,
@@ -26,7 +26,7 @@ type Card = {
   tagline: string;
 };
 
-const SITE_FILES = ["home", "margid", "kuu"];
+const SITE_FILES = ["home", "margid", "kuu", "otsing"];
 
 export async function generateStaticParams(): Promise<Params[]> {
   const bundle = await loadBundle();
@@ -68,6 +68,22 @@ async function card({ locale, kind, file }: Params): Promise<Card | null> {
   const carValues = new Map(series.map((point) => [point.period, point.value]));
   const latestCars = carValues.get(latest);
 
+  if (kind === "site" && name === "otsing") {
+    const index = bundle.registerIndex;
+    if (!index) return null;
+    const ts = await getTranslations({ locale, namespace: "search" });
+    // Every vehicle in the register on each register snapshot date (as the figure).
+    const dates = (bundle.fleet.sources ?? []).map((row) => row.snapshot_date).sort();
+    const stock = (date: string) => bundle.fleet.snapshots.filter((row) => row.snapshot_date === date).reduce((sum, row) => sum + row.value, 0) || null;
+    return {
+      eyebrow: t("og.searchTagline"),
+      title: ts("title"),
+      figure: number(index.vehicles, locale),
+      figureLabel: t("og.inRegister", { date: fmtDate(index.snapshot, locale) }),
+      bars: dates.map(stock),
+      tagline: t("og.source"),
+    };
+  }
   if (kind === "site" && SITE_FILES.includes(name)) {
     const tm = await getTranslations({ locale, namespace: "meta" });
     const title = name === "margid" ? t("brandIndex.title") : name === "kuu" ? t("monthIndex.title") : tm("title").split(" — ")[1] ?? "Autostatistika";
@@ -182,7 +198,7 @@ export async function GET(_request: Request, { params }: { params: Promise<Param
             </div>
             {content.figure && (
               <div style={{ display: "flex", alignItems: "flex-end", gap: 20, marginTop: 30 }}>
-                <div style={{ display: "flex", fontFamily: "Archivo Expanded", fontWeight: 800, fontSize: 88, lineHeight: 0.9, color: color.lime }}>
+                <div style={{ display: "flex", flexShrink: 0, fontFamily: "Archivo Expanded", fontWeight: 800, fontSize: content.figure.length > 7 ? 64 : 88, lineHeight: 0.9, color: color.lime }}>
                   {content.figure}
                 </div>
                 <div style={{ display: "flex", maxWidth: 280, paddingBottom: 6, fontSize: 24, fontWeight: 500, lineHeight: 1.2, color: color.ruleStrong }}>

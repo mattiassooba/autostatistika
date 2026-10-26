@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     path: "/otsing",
     title: t("metaTitle"),
     description: index ? t("metaDescription", { count: fmtNumber(index.vehicles, locale), date: fmtDate(index.snapshot, locale) }) : t("title"),
-    image: ogImagePath(locale, "site", "home"),
+    image: ogImagePath(locale, "site", index ? "otsing" : "home"),
   });
 }
 

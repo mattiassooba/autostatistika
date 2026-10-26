@@ -1,9 +1,12 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { motion as tokens } from "@/lib/design/tokens";
 import { CaretDown, CircleNotch } from "@phosphor-icons/react";
 import { AnimatedNumber } from "../ui/animated-number";
 import { BrandLogo } from "../ui/brand-logo";
+import { VehicleBlueprint } from "../hero/vehicle-blueprint";
 import { BarRow, Empty } from "../explorer/parts";
 import { fmtBytes, UNITS, type ResultMessage } from "./search-app";
 import type { Facet, Range, SortKey, TextFilter, Variant, VariantDetail } from "@/lib/search/engine";
@@ -67,7 +70,10 @@ export function SearchResults({
           <h2 id="results-title" className="text-[13.5px] text-muted">
             {t("resultLabel")}
           </h2>
-          <p className="mt-1 flex items-baseline gap-3">
+          <p className="sr-only" aria-live="polite">
+            {r && !search.busy ? `${fmtNumber(r.vehicles, locale)} ${t("vehicles", { count: r.vehicles })}, ${t("variants", { count: r.variantsTotal })}` : ""}
+          </p>
+          <p className="mt-1 flex items-baseline gap-3" aria-hidden="true">
             <span className="t-figure tabular text-[clamp(2.8rem,6vw,4.6rem)] leading-none text-ink">
               <AnimatedNumber value={r?.vehicles ?? null} format={(value) => fmtNumber(value, locale)} />
             </span>
@@ -135,9 +141,10 @@ export function SearchResults({
               </label>
             </div>
             <ol className="mt-4 divide-y divide-rule border-y border-rule">
-              {r.variants.map((variant) => (
+              {r.variants.map((variant, index) => (
                 <VariantRow
                   key={variant.id}
+                  index={index}
                   variant={variant}
                   name={makeNames.get(variant.make) ?? variant.make}
                   open={search.detail?.id === variant.id}
@@ -267,12 +274,14 @@ function Years({ years, total, onPick }: { years: Array<{ year: number; vehicles
 }
 
 function VariantRow({
+  index,
   variant,
   name,
   open,
   detail,
   onToggle,
 }: {
+  index: number;
   variant: Variant;
   name: string;
   open: boolean;
@@ -290,8 +299,14 @@ function VariantRow({
     variant.body ? label("body", variant.body) : null,
   ].filter(Boolean);
   const id = `variant-${variant.id}`;
+  const reduce = useReducedMotion();
   return (
-    <li>
+    <motion.li
+      initial={reduce ? false : { opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      // Rows added by "show more" or a new search arrive in a short, capped wave.
+      transition={{ duration: tokens.ui, ease: tokens.easeOut, delay: reduce ? 0 : Math.min(index % 25, 12) * 0.018 }}
+    >
       <button
         type="button"
         onClick={onToggle}
@@ -312,12 +327,24 @@ function VariantRow({
         </span>
         <CaretDown size={14} weight="bold" className={`text-muted transition-transform group-hover:text-ink ${open ? "rotate-180" : ""}`} aria-hidden />
       </button>
-      {open && (
-        <div id={id} className="px-1 pb-6 pt-2">
-          {detail ? <DetailPanel detail={detail} /> : <CircleNotch size={16} className="m-3 animate-spin text-muted motion-reduce:animate-none" aria-label={t("loadingData")} />}
-        </div>
-      )}
-    </li>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            id={id}
+            key="detail"
+            initial={reduce ? false : { height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={reduce ? undefined : { height: 0, opacity: 0 }}
+            transition={{ duration: tokens.ui, ease: tokens.easeOut }}
+            className="overflow-hidden"
+          >
+            <div className="px-1 pb-6 pt-2">
+              {detail ? <DetailPanel detail={detail} /> : <CircleNotch size={16} className="m-3 animate-spin text-muted motion-reduce:animate-none" aria-label={t("loadingData")} />}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.li>
   );
 }
 
@@ -337,8 +364,26 @@ function DetailPanel({ detail }: { detail: VariantDetail }) {
   const decimals = new Intl.NumberFormat(locale === "en" ? "en-GB" : "et-EE", { maximumFractionDigits: 1 });
   const fmt = (value: number) => decimals.format(value);
   const label = (dimension: string, value: string) => valueLabel(dimension, value, locale, t("notStated"));
+  const span = (key: string) => {
+    const entry = detail.numbers[key];
+    if (!entry) return undefined;
+    return `${entry.min === entry.max ? fmt(entry.min) : `${fmt(entry.min)}–${fmt(entry.max)}`} ${t("unit.mm")}`;
+  };
+  // The drawing is a generic passenger car: only M1/M1G variants get it.
+  const categories = detail.texts.category?.filter((row) => row.value) ?? [];
+  const car = categories.length > 0 && categories.every((row) => row.value.startsWith("M1"));
+  const drawing = car && (detail.numbers.length || detail.numbers.height);
   return (
     <div>
+      {drawing && (
+        <figure className="mb-7 rounded-[14px] bg-paper px-4 pb-3 pt-4 ring-1 ring-rule">
+          <VehicleBlueprint still labels={{ length: span("length"), height: span("height") }} className="mx-auto block w-full max-w-[620px]" />
+          <figcaption className="mt-2 flex flex-wrap justify-between gap-x-4 text-[12px] text-muted">
+            <span>{span("width") ? `${tl("width")} ${span("width")}` : ""}</span>
+            <span>{t("notToScale")}</span>
+          </figcaption>
+        </figure>
+      )}
       <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
         {GROUPS.map((group) => {
           const rows = [

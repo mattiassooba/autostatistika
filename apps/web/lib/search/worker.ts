@@ -57,8 +57,9 @@ function familyFiles(family: string): string[] {
   return [...new Set(manifest!.makes.filter((make) => make.families[family]).map((make) => make.file))];
 }
 
-async function load(seq: number, files: string[]): Promise<Table[]> {
-  post({ type: "loading", seq, files: files.length, bytes: files.reduce((sum, file) => sum + (manifest!.files[file] ?? 0), 0) });
+/** Loads files; a search (not a variant's detail) reports what it is loading. */
+async function load(files: string[], seq?: number): Promise<Table[]> {
+  if (seq != null) post({ type: "loading", seq, files: files.length, bytes: files.reduce((sum, file) => sum + (manifest!.files[file] ?? 0), 0) });
   return Promise.all(files.map((file) => loadTable(base, file)));
 }
 
@@ -72,7 +73,7 @@ async function search(seq: number, state: SearchState, limit: number, allMakes: 
   let tables: Table[] = [lite];
   let source: SearchSource = "lite";
   if (state.makes.length) {
-    tables = await load(seq, makeFiles(state.makes, state.family));
+    tables = await load(makeFiles(state.makes, state.family), seq);
     source = "makes";
   } else if (needsFullFiles(state, lite)) {
     const files = familyFiles(state.family);
@@ -80,7 +81,7 @@ async function search(seq: number, state: SearchState, limit: number, allMakes: 
       post({ type: "needs-makes", seq, bytes: files.reduce((sum, file) => sum + (manifest!.files[file] ?? 0), 0) });
       return;
     }
-    tables = await load(seq, files);
+    tables = await load(files, seq);
     source = "all";
   }
   const optionKey = `${state.family}|${source}|${[...state.makes].sort().join(",")}`;
@@ -98,7 +99,7 @@ async function search(seq: number, state: SearchState, limit: number, allMakes: 
 }
 
 async function detail(seq: number, state: SearchState, variant: Variant) {
-  const tables = await load(seq, makeFiles([variant.make], state.family));
+  const tables = await load(makeFiles([variant.make], state.family));
   post({ type: "detail", seq, detail: variantDetail(tables, { ...state, makes: [variant.make] }, variant.id) });
 }
 

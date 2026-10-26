@@ -1,5 +1,8 @@
 // Technical side elevation of a generic modern passenger car: hairline body,
 // detail lines, wheel construction and dimension guides (no invented figures).
+// With `still`, it is drawn without the intro (the /otsing spec card), and
+// `labels` writes measured values on the length and height guides; the
+// silhouette itself is generic and not to scale.
 // The intro is pure CSS (globals.css, .bp-*): the outline draws itself, details
 // and guides fade in, one lime pass runs along the roof and bonnet, then the
 // drawing stays still. Reduced motion shows the finished drawing.
@@ -18,15 +21,18 @@ const BODY =
 const SWEEP =
   "M146 102C168 86 196 70 226 62C276 50 372 48 430 56C462 60 488 76 514 96C526 104 540 108 560 111C600 116 636 120 658 127";
 
-function Wheel({ cx }: { cx: number }) {
+type Mode = { still: boolean };
+const cls = ({ still }: Mode, name: string) => (still ? undefined : name);
+
+function Wheel({ cx, mode }: { cx: number; mode: Mode }) {
   const spokes = [0, 72, 144, 216, 288].map((angle) => {
     const rad = ((angle - 90) * Math.PI) / 180;
     return `M${cx + Math.cos(rad) * 8} ${AXLE + Math.sin(rad) * 8}L${cx + Math.cos(rad) * 21} ${AXLE + Math.sin(rad) * 21}`;
   });
   return (
     <g>
-      <circle className="bp-draw" pathLength={1} cx={cx} cy={AXLE} r="36" />
-      <g className="bp-detail">
+      <circle className={cls(mode, "bp-draw")} pathLength={1} cx={cx} cy={AXLE} r="36" />
+      <g className={cls(mode, "bp-detail")}>
         <g opacity="0.6">
           <circle cx={cx} cy={AXLE} r="24" />
           <circle cx={cx} cy={AXLE} r="6" />
@@ -47,11 +53,20 @@ function Arrow({ x, y, dir }: { x: number; y: number; dir: "left" | "right" | "u
   return <path d={d} fill="currentColor" stroke="none" />;
 }
 
-export function VehicleBlueprint({ className = "" }: { className?: string }) {
+export function VehicleBlueprint({
+  className = "",
+  still = false,
+  labels,
+}: {
+  className?: string;
+  still?: boolean;
+  labels?: { length?: string; height?: string };
+}) {
+  const mode = { still };
   return (
     <svg viewBox="0 14 720 230" className={className} fill="none" aria-hidden="true" focusable="false">
       {/* Dimension guides: overall length, wheelbase, height */}
-      <g className="bp-guide">
+      <g className={cls(mode, "bp-guide")}>
       <g className="text-graphite" stroke="currentColor" strokeWidth="0.9" opacity="0.45">
         <path d={`M80 188V240M684 188V240`} strokeDasharray="2 4" />
         <path d="M80 234H684" />
@@ -74,7 +89,7 @@ export function VehicleBlueprint({ className = "" }: { className?: string }) {
       </g>
 
       {/* Ground */}
-      <g className="bp-guide">
+      <g className={cls(mode, "bp-guide")}>
         <g className="text-graphite" stroke="currentColor" strokeWidth="1">
           <path d={`M24 ${GROUND}H700`} opacity="0.6" />
           <path d={`M24 ${GROUND + 6}H700`} opacity="0.3" strokeDasharray="1 7" />
@@ -83,12 +98,12 @@ export function VehicleBlueprint({ className = "" }: { className?: string }) {
 
       <g className="text-ink" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
         {/* Body outline */}
-        <path className="bp-draw" pathLength={1} d={BODY} strokeWidth="1.6" opacity="0.85" />
-        <Wheel cx={REAR} />
-        <Wheel cx={FRONT} />
+        <path className={cls(mode, "bp-draw")} pathLength={1} d={BODY} strokeWidth="1.6" opacity="0.85" />
+        <Wheel cx={REAR} mode={mode} />
+        <Wheel cx={FRONT} mode={mode} />
 
         {/* Details */}
-        <g className="bp-detail">
+        <g className={cls(mode, "bp-detail")}>
         <g strokeWidth="1.1" opacity="0.55">
           {/* side glass and pillars */}
           <path d="M160 104C184 90 208 78 234 72C280 62 368 60 424 66C448 69 468 80 490 98L492 102C400 104 260 106 166 110Z" />
@@ -107,7 +122,7 @@ export function VehicleBlueprint({ className = "" }: { className?: string }) {
 
         {/* Headlamp: the one lime detail that stays */}
         <path
-          className="bp-detail"
+          className={cls(mode, "bp-detail")}
           d="M636 122C652 124 668 128 676 136L674 142C660 140 646 136 636 130Z"
           fill="var(--color-lime)"
           strokeWidth="1.1"
@@ -115,7 +130,25 @@ export function VehicleBlueprint({ className = "" }: { className?: string }) {
       </g>
 
       {/* One lime pass along the roof and bonnet, then gone */}
-      <path className="bp-sweep" pathLength={1} d={SWEEP} stroke="var(--color-lime-deep)" strokeWidth="3.2" strokeLinecap="round" />
+      {!still && <path className="bp-sweep" pathLength={1} d={SWEEP} stroke="var(--color-lime-deep)" strokeWidth="3.2" strokeLinecap="round" />}
+
+      {/* Measured values on the guides (spec card) */}
+      {labels?.length && (
+        <g>
+          <rect x={382 - labels.length.length * 4.6 - 8} y={224} width={labels.length.length * 9.2 + 16} height={20} rx={4} fill="var(--color-paper)" />
+          <text x={382} y={238} textAnchor="middle" fontSize="14" fontWeight="600" fill="var(--color-ink)" className="tabular">
+            {labels.length}
+          </text>
+        </g>
+      )}
+      {labels?.height && (
+        <g transform={`translate(707 ${(49 + GROUND) / 2}) rotate(-90)`}>
+          <rect x={-labels.height.length * 4.6 - 8} y={-10} width={labels.height.length * 9.2 + 16} height={20} rx={4} fill="var(--color-paper)" />
+          <text x={0} y={5} textAnchor="middle" fontSize="14" fontWeight="600" fill="var(--color-ink)" className="tabular">
+            {labels.height}
+          </text>
+        </g>
+      )}
     </svg>
   );
 }
