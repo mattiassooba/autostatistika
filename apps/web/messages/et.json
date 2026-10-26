@@ -479,7 +479,16 @@
       "compare": "Võrdle teiste markidega",
       "allBrands": "Kõik margid",
       "otherBrands": "Teised margid",
-      "noModels": "Viimase 12 kuu mudeliandmed puuduvad."
+      "noModels": "Viimase 12 kuu mudeliandmed puuduvad.",
+      "registerTitle": "{name} registris",
+      "registerNote": "Kõik registris olevad sõidukid, sh peatatud kandega, avaandmete registrifailist (Sõidukite staatused Eestis, CC BY-SA 4.0, Transpordiamet). Koht ja osakaal on arvutatud kõigi markide hulgas samal kuupäeval.",
+      "registerCars": "Sõiduautod registris, {date}",
+      "registerTrucks": "Veoautod registris, {date}",
+      "registerRank": "{rank}. koht markide seas · {share} kõigist",
+      "registerSeriesTitle": "Sõiduautod registris seisude kaupa",
+      "registerSeriesNote": "Iga tulp on eraldi seis, mitte aasta summa. 1.1.2020–2023 seisud päriti registrist tagantjärgi 2025. aastal ja võivad tollasest seisust erineda.",
+      "registerRetroactive": "päritud tagantjärgi",
+      "registerOpen": "Vaata kogu sõidukiparki"
     },
     "monthIndex": {
       "metaTitle": "Autode registreerimised kuude kaupa {from}–{to} | Autostatistika",

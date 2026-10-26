@@ -83,6 +83,34 @@ describe("brand pages", () => {
     );
   });
 
+  it("ranks a make in the register only on register dates, within the complete split", () => {
+    const b = bundle();
+    b.fleet.sources = [
+      { snapshot_date: "2020-01-01", source: "register", retroactive: true },
+      { snapshot_date: "2026-10-01", source: "register", retroactive: false },
+    ];
+    b.fleet.brands = [
+      // An Infoleht top list on another date is not a complete split: never ranked here.
+      { snapshot_date: "2014-12-01", category_code: "passenger_car", brand_slug: "bmw", brand_source: "BMW", value: 9, complete: false },
+      { snapshot_date: "2020-01-01", category_code: "passenger_car", brand_slug: "bmw", brand_source: "BMW", value: 30, complete: true },
+      { snapshot_date: "2020-01-01", category_code: "passenger_car", brand_slug: "tesla-motors", brand_source: "TESLA MOTORS", value: 10, complete: true },
+      { snapshot_date: "2020-01-01", category_code: "passenger_car", brand_slug: "tesla", brand_source: "TESLA", value: 60, complete: true },
+      { snapshot_date: "2026-10-01", category_code: "passenger_car", brand_slug: "bmw", brand_source: "BMW", value: 80, complete: true },
+      { snapshot_date: "2026-10-01", category_code: "passenger_car", brand_slug: "tesla", brand_source: "TESLA", value: 20, complete: true },
+    ];
+    const bmw = brandDetail(b, "bmw")!;
+    assert.deepEqual(
+      bmw.fleetCars.map((p) => [p.date, p.value, p.rank, p.share, p.retroactive]),
+      [
+        ["2020-01-01", 30, 2, 30, true],
+        ["2026-10-01", 80, 1, 80, false],
+      ],
+    );
+    // TESLA MOTORS counts as Tesla.
+    assert.equal(brandDetail(b, "tesla")!.fleetCars[0].value, 70);
+    assert.deepEqual(bmw.fleetTrucks, []);
+  });
+
   it("totals a year only when all twelve months exist", () => {
     const index = monthIndex(bundle());
     assert.deepEqual(

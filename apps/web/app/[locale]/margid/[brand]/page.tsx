@@ -19,7 +19,7 @@ import {
 } from "@/components/pages/parts";
 import { loadBundle } from "@/lib/data/load";
 import { brandDetail, brandSlugs, brandSummaries, shiftPeriod, type BrandDetail } from "@/lib/data/pages";
-import { fmtNumber, fmtPercent, fmtPeriod, fmtPeriodShort } from "@/lib/format";
+import { fmtDate, fmtNumber, fmtPercent, fmtPeriod, fmtPeriodShort } from "@/lib/format";
 import { ogImagePath, pageMetadata } from "@/lib/seo";
 
 export const dynamicParams = false;
@@ -196,6 +196,47 @@ export default async function BrandPage({ params }: { params: Promise<Params> })
               share: model.share,
             }))}
           />
+        </Section>
+      )}
+
+      {d.fleetCars.length > 0 && (
+        <Section id="register" title={t("registerTitle", { name: d.name })} note={t("registerNote")}>
+          <div className="grid gap-px sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { points: d.fleetCars, label: "registerCars" },
+              { points: d.fleetTrucks, label: "registerTrucks" },
+            ].map(({ points, label }) => {
+              const last = points[points.length - 1];
+              return last ? (
+                <Stat
+                  key={label}
+                  label={t(label, { date: fmtDate(last.date, locale) })}
+                  value={fmtNumber(last.value, locale)}
+                  sub={t("registerRank", { rank: last.rank, share: fmtPercent(last.share, locale) })}
+                />
+              ) : null;
+            })}
+          </div>
+          <h3 className="t-title mt-12 text-[19px]">{t("registerSeriesTitle")}</h3>
+          <p className="mt-2 max-w-[72ch] text-[13.5px] text-muted">{t("registerSeriesNote")}</p>
+          <div className="mt-6">
+            <Columns
+              locale={locale}
+              showValues
+              height={180}
+              items={d.fleetCars.map((point) => ({
+                key: point.date,
+                label: point.date.endsWith("-01-01") ? point.date.slice(0, 4) : fmtPeriodShort(point.date.slice(0, 7), locale),
+                value: point.value,
+                title: `${fmtDate(point.date, locale)}: ${fmtNumber(point.value, locale)}${point.retroactive ? ` (${t("registerRetroactive")})` : ""}`,
+              }))}
+            />
+          </div>
+          <div className="mt-8">
+            <ButtonLink href="/?tab=soidukipark&category=passenger_car#fleet-brands" tone="light">
+              {t("registerOpen")} <ArrowRight size={16} aria-hidden />
+            </ButtonLink>
+          </div>
         </Section>
       )}
 

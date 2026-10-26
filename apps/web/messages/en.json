@@ -479,7 +479,16 @@
       "compare": "Compare with other brands",
       "allBrands": "All brands",
       "otherBrands": "Other brands",
-      "noModels": "No model data for the last 12 months."
+      "noModels": "No model data for the last 12 months.",
+      "registerTitle": "{name} in the register",
+      "registerNote": "All vehicles in the register, including suspended records, from the open register file (Status of vehicles in Estonia, CC BY-SA 4.0, Transpordiamet). Rank and share are among all makes on the same date.",
+      "registerCars": "Passenger cars in the register, {date}",
+      "registerTrucks": "Trucks in the register, {date}",
+      "registerRank": "No. {rank} among makes · {share} of all",
+      "registerSeriesTitle": "Passenger cars in the register by snapshot",
+      "registerSeriesNote": "Each column is a separate snapshot, not a yearly total. The 1 Jan 2020–2023 snapshots were queried from the register retroactively in 2025 and may differ from the state on those dates.",
+      "registerRetroactive": "queried retroactively",
+      "registerOpen": "See the whole fleet"
     },
     "monthIndex": {
       "metaTitle": "Car registrations by month {from}–{to} | Autostatistika",

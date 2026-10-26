@@ -27,6 +27,8 @@ const CATEGORY_ORDER = ["passenger_car", "truck", "bus", "trailer", "motorcycle"
 
 export type Ranked = { slug: string; name: string; value: number; rank: number; share: number | null };
 export type MonthValue = { period: string; value: number };
+/** A brand in one register snapshot: rank and share within the complete split by make. */
+export type FleetPoint = { date: string; value: number; rank: number; share: number | null; retroactive: boolean };
 
 export type BrandSummary = {
   slug: string;
@@ -54,6 +56,9 @@ export type BrandDetail = BrandSummary & {
   /** Months that have a TOP list at all; elsewhere "not ranked" would be a guess. */
   carListPeriods: string[];
   truckListPeriods: string[];
+  /** Register snapshots (open register files, 2020+); empty when the brand has none. */
+  fleetCars: FleetPoint[];
+  fleetTrucks: FleetPoint[];
 };
 
 export type MonthDetail = {
@@ -94,6 +99,9 @@ type Model = {
   models: Map<string, ModelRow[]>;
   names: Map<string, string>;
   pageBrands: string[];
+  /** category|date → complete make ranking from the register files. */
+  fleet: Map<string, Ranked[]>;
+  fleetDates: Array<{ date: string; retroactive: boolean }>;
 };
 
 const cache = new WeakMap<PublishedBundle, Model>();
@@ -189,8 +197,34 @@ function build(bundle: PublishedBundle): Model {
     })
     .sort();
 
+  // Register snapshots only: their split by make is complete, so a rank means
+  // something. Infoleht top lists and bus files are left to the fleet tab.
+  const fleetDates = (bundle.fleet.sources ?? []).map((row) => ({ date: row.snapshot_date, retroactive: row.retroactive })).sort((a, b) => a.date.localeCompare(b.date));
+  const registerDates = new Set(fleetDates.map((row) => row.date));
+  const fleetSums = new Map<string, Map<string, number>>();
+  for (const row of bundle.fleet.brands) {
+    if (!registerDates.has(row.snapshot_date) || row.complete === false) continue;
+    if (row.category_code !== CAR && row.category_code !== TRUCK) continue;
+    const key = `${row.category_code}|${row.snapshot_date}`;
+    const sums = fleetSums.get(key) ?? fleetSums.set(key, new Map()).get(key)!;
+    const slug = canonical(row);
+    sums.set(slug, (sums.get(slug) ?? 0) + row.value);
+  }
+  const fleet = new Map<string, Ranked[]>();
+  for (const [key, sums] of fleetSums) {
+    const total = [...sums.values()].reduce((sum, value) => sum + value, 0);
+    fleet.set(
+      key,
+      [...sums.entries()]
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([slug, value], index) => ({ slug, name: names.get(slug) ?? slug, value, rank: index + 1, share: total ? (value / total) * 100 : null })),
+    );
+  }
+
   return {
     bundle,
+    fleet,
+    fleetDates,
     periods,
     latest: periods[periods.length - 1] ?? "",
     totals,
@@ -322,7 +356,16 @@ export function brandDetail(bundle: PublishedBundle, slug: string): BrandDetail 
     trucks: history(TRUCK),
     carListPeriods: m.periods.filter((period) => m.rankings.get(`${CAR}|${period}`)?.length),
     truckListPeriods: m.periods.filter((period) => m.rankings.get(`${TRUCK}|${period}`)?.length),
+    fleetCars: fleetPoints(m, CAR, slug),
+    fleetTrucks: fleetPoints(m, TRUCK, slug),
   };
+}
+
+function fleetPoints(m: Model, category: string, slug: string): FleetPoint[] {
+  return m.fleetDates.flatMap(({ date, retroactive }) => {
+    const entry = m.fleet.get(`${category}|${date}`)?.find((ranked) => ranked.slug === slug);
+    return entry ? [{ date, value: entry.value, rank: entry.rank, share: entry.share, retroactive }] : [];
+  });
 }
 
 export function monthPeriods(bundle: PublishedBundle): string[] {
