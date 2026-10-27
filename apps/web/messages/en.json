@@ -405,7 +405,8 @@
       "inspections": "Inspections"
     },
     "independentLabel": "Independent publication",
-    "licence": "Public-sector open data. When reusing, credit the source: Transpordiamet. Figures calculated from the register files (Status of vehicles in Estonia) are licensed CC BY-SA 4.0."
+    "licence": "Public-sector open data. When reusing, credit the source: Transpordiamet. Figures calculated from the register files (Status of vehicles in Estonia) are licensed CC BY-SA 4.0.",
+    "analytics": "Visits are counted with Cloudflare Web Analytics: no cookies and no personal data."
   },
   "footer": {
     "attribution": "Data: Transpordiamet. Reuse with attribution.",

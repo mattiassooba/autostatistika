@@ -405,7 +405,8 @@
       "inspections": "Ülevaatused"
     },
     "independentLabel": "Sõltumatu väljaanne",
-    "licence": "Avaliku sektori avaandmed. Taaskasutamisel viita allikale: Transpordiamet. Registrifailidest (Sõidukite staatused Eestis) arvutatud näitajad on litsentsiga CC BY-SA 4.0."
+    "licence": "Avaliku sektori avaandmed. Taaskasutamisel viita allikale: Transpordiamet. Registrifailidest (Sõidukite staatused Eestis) arvutatud näitajad on litsentsiga CC BY-SA 4.0.",
+    "analytics": "Külastusi loendatakse Cloudflare Web Analyticsiga: küpsiseid ei kasutata ja isikuandmeid ei koguta."
   },
   "footer": {
     "attribution": "Andmed: Transpordiamet. Taaskasutus viitega allikale.",

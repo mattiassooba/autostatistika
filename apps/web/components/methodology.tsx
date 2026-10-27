@@ -172,6 +172,7 @@ export async function Methodology({ data, sources }: { data: ExplorerData; sourc
             </p>
             <p className="mt-2 text-[15px] leading-relaxed text-paper/85">{data.disclaimer[locale === "en" ? "en" : "et"]}</p>
             <p className="mt-2 text-[13.5px] leading-relaxed text-paper/55">{t("licence")}</p>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-paper/55">{t("analytics")}</p>
           </div>
         </Reveal>
       </div>

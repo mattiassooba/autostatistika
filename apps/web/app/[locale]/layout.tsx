@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
+import Script from "next/script";
 import { routing } from "@/i18n/routing";
 import { ogImagePath, pageMetadata } from "@/lib/seo";
 import "../globals.css";
@@ -66,6 +67,12 @@ export default async function LocaleLayout({
       </head>
       <body className="bg-paper font-sans text-ink antialiased">
         <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        {/* Cloudflare Web Analytics: no cookies, no personal data; loads after the page is interactive. */}
+        <Script
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "9d18060472274148ae62aa53d496fe46"}'
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
