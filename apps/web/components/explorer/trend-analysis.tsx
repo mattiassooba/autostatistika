@@ -6,17 +6,15 @@ import { useCallback, useId, useRef, useState, type ReactNode } from "react";
 import { ArrowClockwise, ArrowUpRight, Check, Copy, X } from "@phosphor-icons/react";
 import { SOURCES } from "./parts";
 import type { RenderedTrend, Translate } from "@/lib/analysis/render";
-import type { TrendInput } from "@/lib/analysis/trend";
+import type { TrendSelection } from "@/lib/analysis/build";
 import type { AnalysisItem, AnalysisText } from "@/lib/analysis/validate";
-import { fmtDate } from "@/lib/format";
+import type { ExplorerData } from "@/lib/data/types";
 import { motion as tokens } from "@/lib/design/tokens";
 
-// The engine (trend.ts, render.ts, validate.ts, client.ts) loads on the first
-// click, so the comparison chart's page carries only this component.
+// The engine (build.ts and what it uses, client.ts) loads on the first click, so
+// the comparison chart's page carries only this component.
 const loadEngine = () =>
-  Promise.all([import("@/lib/analysis/trend"), import("@/lib/analysis/render"), import("@/lib/analysis/client")]).then(
-    ([trend, render, client]) => ({ ...trend, ...render, ...client }),
-  );
+  Promise.all([import("@/lib/analysis/build"), import("@/lib/analysis/client")]).then(([build, client]) => ({ ...build, ...client }));
 const AI_CONFIGURED = Boolean(process.env.NEXT_PUBLIC_TREND_API_URL);
 
 type Result = {
@@ -40,32 +38,28 @@ function modelName(id: string): string {
 
 /**
  * Trend analysis for the brand comparison: a button beside the period control and
- * a card above the chart. Figures come from trend.ts; with a Worker configured,
- * Claude rewords them and the page shows that text only if it passes the checks
- * in validate.ts. A result belongs to the selection it was made for: once brands
+ * a card above the chart. Figures come from build.ts (the same window the chart
+ * draws); with a Worker configured, Claude rewords them and the page shows that
+ * text only if it passes the checks in validate.ts. A result belongs to the selection it was made for: once brands
  * or period change it is marked out of date and offers a new run.
  */
 export function TrendAnalysis({
   toolbar,
-  input,
+  data,
+  selection,
   selectionKey,
-  category,
-  brands,
-  period,
-  generatedAt,
+  categoryLabel,
   shareUrl,
 }: {
   toolbar: ReactNode;
-  input: () => TrendInput;
+  data: ExplorerData;
+  selection: Omit<TrendSelection, "locale">;
   selectionKey: string;
-  category: string;
-  brands: string[];
-  period: string;
-  generatedAt: string;
+  categoryLabel: string;
   shareUrl: () => string;
 }) {
   const t = useTranslations("trend");
-  const locale = useLocale() === "en" ? "en" : "et";
+  const locale: "et" | "en" = useLocale() === "en" ? "en" : "et";
   const reduce = useReducedMotion();
   const uid = useId();
   const [open, setOpen] = useState(false);
@@ -89,23 +83,24 @@ export function TrendAnalysis({
         return;
       }
       if (id !== run.current) return;
-      const { trendFacts, trendStatements, renderTrend, requestWording } = engine;
-      const facts = trendFacts(input());
-      const brandList = new Intl.ListFormat(locale === "et" ? "et-EE" : "en-GB", { type: "conjunction" }).format(brands);
-      const rendered = renderTrend(trendStatements(facts), { locale, category, brands, period, source: t("source", { period, date: fmtDate(generatedAt, locale) }) }, translate);
-      const base: Result = { key: selectionKey, rendered, text: rendered.analysis, mode: "computed", brands: brandList, period, category };
+      const { buildTrend, requestWording } = engine;
+      const full = { ...selection, locale };
+      const { facts, rendered } = buildTrend(data, full, categoryLabel, translate);
+      const { context } = rendered.request;
+      const brandList = new Intl.ListFormat(locale === "et" ? "et-EE" : "en-GB", { type: "conjunction" }).format(context.brands);
+      const base: Result = { key: selectionKey, rendered, text: rendered.analysis, mode: "computed", brands: brandList, period: context.period, category: categoryLabel };
       if (facts.status !== "ok" || !AI_CONFIGURED) {
         setLoading(false);
         setResult(base);
         return;
       }
       setLoading(true);
-      const answer = await requestWording(rendered.request, { fresh });
+      const answer = await requestWording(rendered.request, { ...full, generatedAt: data.generatedAt }, { fresh });
       if (id !== run.current) return;
       setResult(answer.ok ? { ...base, text: answer.analysis, mode: "ai", model: answer.model } : { ...base, mode: "fallback", reason: answer.reason });
       setLoading(false);
     },
-    [input, locale, category, brands, period, generatedAt, selectionKey, t, translate],
+    [data, selection, locale, categoryLabel, selectionKey, translate],
   );
 
   const close = () => {

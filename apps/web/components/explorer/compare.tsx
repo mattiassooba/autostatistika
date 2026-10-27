@@ -12,7 +12,7 @@ import { Sheet } from "../ui/sheet";
 import { Block, Empty, SourceTag, SOURCES, ViewToggle } from "./parts";
 import { CompareAdd } from "./controls";
 import { TrendAnalysis } from "./trend-analysis";
-import { brandHistory, brandPeriodsOf, brandRanking, brandUniverse, registrationSeries } from "@/lib/data/views";
+import { brandHistory, brandPeriodsOf, brandRanking, brandUniverse, brandWindow } from "@/lib/data/views";
 import { fmtGap, fmtNumber, fmtPercent, fmtPeriodList, fmtPeriodShort, shiftPeriod, titleCaseBrand } from "@/lib/format";
 import { MAX_COMPARE, motion as tokens, seriesColor } from "@/lib/design/tokens";
 
@@ -39,11 +39,8 @@ export function Compare() {
   const allPeriods = useMemo(() => brandPeriodsOf(data, reg.category), [data, reg.category]);
   const latest = allPeriods[allPeriods.length - 1];
   const from = reg.brandFrom;
-  const periods = useMemo(() => (from ? allPeriods.filter((period) => period >= from) : allPeriods), [allPeriods, from]);
-  const history = useMemo(() => {
-    const full = brandHistory(data, reg.category, reg.brands);
-    return from ? full.map((brand) => ({ ...brand, points: brand.points.filter((point) => point.period >= from) })) : full;
-  }, [data, reg.category, reg.brands, from]);
+  // The same window the trend analysis reads (lib/analysis/build.ts).
+  const { periods, history } = useMemo(() => brandWindow(data, reg.category, reg.brands, from), [data, reg.category, reg.brands, from]);
 
   // Window presets end at the latest month; one that reaches the first month is "all".
   const ranges = latest
@@ -52,16 +49,7 @@ export function Compare() {
   const range = !from ? "all" : ranges.find((option) => option.from === from)?.value ?? "custom";
   const setRange = (value: string) =>
     update((current) => ({ ...current, from: value === "all" ? undefined : ranges.find((option) => option.value === value)?.from }));
-  const trendInput = useCallback(
-    () => ({
-      category: reg.category,
-      periods,
-      history,
-      totals: registrationSeries(data, reg.category),
-      listSize: (period: string) => brandRanking(data, reg.category, period).length,
-    }),
-    [data, reg.category, periods, history],
-  );
+  const selection = useMemo(() => ({ category: reg.category, brands: reg.brands, from }), [reg.category, reg.brands, from]);
   const suggestions = useMemo(
     () => (latest ? brandRanking(data, reg.category, latest).slice(0, 3) : []),
     [data, reg.category, latest],
@@ -195,12 +183,10 @@ export function Compare() {
                 ]}
               />
             }
-            input={trendInput}
+            data={data}
+            selection={selection}
             selectionKey={`${reg.category}|${reg.brands.join(",")}|${periods[0]}|${periods[periods.length - 1]}`}
-            category={tc(reg.category)}
-            brands={history.map((brand) => titleCaseBrand(brand.name))}
-            period={`${fmtPeriodShort(periods[0], locale)} – ${fmtPeriodShort(periods[periods.length - 1], locale)}`}
-            generatedAt={data.generatedAt}
+            categoryLabel={tc(reg.category)}
             shareUrl={shareUrl}
           />
         </div>

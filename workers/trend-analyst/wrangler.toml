@@ -8,6 +8,8 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ALLOWED_ORIGINS = "https://autostatistika.ee,https://www.autostatistika.ee"
+# Where the Worker reads /data/<generation>/trend/<category>.json to rebuild the statements.
+SITE_ORIGIN = "https://autostatistika.ee"
 MODEL = "claude-haiku-5-5"
 # Model calls per UTC day across all visitors; cached answers do not count.
 # Enforced by the DailyBudget Durable Object below. Each call is at most 4 000

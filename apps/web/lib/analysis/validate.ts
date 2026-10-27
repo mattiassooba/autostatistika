@@ -26,7 +26,29 @@ export type AnalysisRequest = {
   limitations: string[];
 };
 
-export const LIMITS = { summary: 480, item: 360, comparison: 640, observation: 480, keyChanges: 6 } as const;
+/**
+ * What the page sends to the Worker: a selection only, never text. The Worker
+ * rebuilds the AnalysisRequest from the site's trend file and goes on only if its
+ * hash equals `hash`, the hash of the request the page computed.
+ */
+export type SelectionRequest = {
+  v: 2;
+  locale: "et" | "en";
+  generation: string; // generationId(bundle.generatedAt)
+  category: string;
+  brands: string[];
+  from: string | null;
+  hash: string;
+  fresh?: boolean;
+};
+
+/** SHA-256 of the request as JSON (hex). Both sides build the request with the same code, so key order matches. */
+export async function requestHash(request: AnalysisRequest): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(request)));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+export const LIMITS ={ summary: 480, item: 360, comparison: 640, observation: 480, keyChanges: 6 } as const;
 
 type Sign = "+" | "-" | "";
 type Found = { value: string; sign: Sign; index: number };

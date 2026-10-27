@@ -215,7 +215,7 @@ stock on the same sheet, and no fuel figures are published for months before 07/
 - Every statement lists its evidence rows (the figures and the months they cover); limitations and the source
   (Transpordiamet Infoleht, TOP sheets and general table, with the window) are always shown.
 - Optional wording by Claude Haiku through the trend-analyst Worker. The model receives only the computed sentences
-  and evidence. Its text is shown only when every number in it appears there with the same sign, a change that is
+  and evidence, rebuilt by the Worker from the site's own data (the page sends a selection, never text). Its text is shown only when every number in it appears there with the same sign, a change that is
   only ever a fall is not called a rise (or the reverse), every cited evidence id exists, there is one key change per
   computed change, and it uses no causal words or markup. Otherwise the computed text is shown with the reason.
 

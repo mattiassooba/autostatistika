@@ -13,6 +13,9 @@ import {
 } from "./slices";
 import type { PublishedBundle } from "./types";
 import { fleetDatesOf, registrationPeriodsOf } from "./views";
+import { trendFile, type TrendFile } from "../analysis/trend-file";
+import et from "../../messages/et.json";
+import en from "../../messages/en.json";
 
 type Indexed = {
   generatedAt: string;
@@ -204,4 +207,19 @@ export async function getSlice(key: string): Promise<SlicePayload | null> {
     };
   }
   return null;
+}
+
+/** Categories with brand top lists: one trend file each (see lib/analysis/trend-file.ts). */
+export async function trendCategories(): Promise<string[]> {
+  return Object.keys((await store()).core.catalog.brandPeriods);
+}
+
+export async function getTrendFile(category: string): Promise<TrendFile | null> {
+  const periods = (await store()).core.catalog.brandPeriods[category];
+  if (!periods) return null;
+  const messages = {
+    et: { trend: et.trend, categories: et.categories },
+    en: { trend: en.trend, categories: en.categories },
+  };
+  return trendFile(await loadBundle(), category, periods, messages);
 }

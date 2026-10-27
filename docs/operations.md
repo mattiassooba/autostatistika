@@ -73,14 +73,23 @@ the release does not have. Older assets can be deleted from the release once the
 
 The brand comparison's trend analysis computes everything in the browser (`apps/web/lib/analysis`). To have Claude
 word it, deploy `workers/trend-analyst` (Cloudflare Workers, free plan) and point the site at it. The site stays on
-GitHub Pages; the Worker only holds `ANTHROPIC_API_KEY`, rate-limits and caches.
+GitHub Pages; the Worker holds `ANTHROPIC_API_KEY`, rate-limits, caches and caps the day's calls.
+
+No text from a caller reaches the model. The page sends only a selection (type, up to four brand slugs, start month,
+language, data generation) and the SHA-256 of the request it computed. The Worker reads the site's own
+`/data/<generation>/trend/<category>.json` (rows and wording from the same build), rebuilds the statements with the
+same code (`lib/analysis/build.ts`) and goes on only if the hash matches; unknown brands, other fields and statement
+text are refused before any model call. `lib/analysis/build.test.ts` checks that page and Worker build the same
+request for real data. A change to `lib/analysis` or the trend messages therefore needs a Worker redeploy: until then
+hashes differ and visitors get the computed text.
 
 Order of setup (the key never goes into the repository, a chat or the site build):
 
 1. Anthropic Console: a workspace for this site with a monthly spend limit, and an API key created in it.
 2. Local test with real Claude: put the key in `workers/trend-analyst/.dev.vars` (git-ignored) as
-   `ANTHROPIC_API_KEY=…`, then `npx wrangler dev --var ALLOWED_ORIGINS:http://localhost:3000` and
-   `npx tsx scripts/live-check.ts`. It reports accepted/rejected answers, token use and cost, a hostile request and the
+   `ANTHROPIC_API_KEY=…`, then `npx wrangler dev --var ALLOWED_ORIGINS:http://localhost:3000` (it reads the trend files
+   from the live site; add `--var SITE_ORIGIN:http://localhost:3000` with `npm run preview` for a local build) and
+   `npx tsx scripts/live-check.ts`. It reports accepted/rejected answers, token use and cost, forged requests and the
    cache. `npx wrangler dev --var DAILY_LIMIT:2 …` with `live-check.ts --limit-test` checks the cap.
 3. Cloudflare: `npx wrangler login`, `npx wrangler kv namespace create CACHE` (id into `wrangler.toml`),
    `npx wrangler secret put ANTHROPIC_API_KEY` (typed at the prompt), `npx wrangler deploy`. Run `live-check.ts` against
@@ -92,21 +101,22 @@ Order of setup (the key never goes into the repository, a chat or the site build
 ```bash
 cd workers/trend-analyst
 npm install
-npm test                 # handler, validation, cache, limits, daily budget (fake model)
+npm test                 # selection checks, rebuild and hash, validation, cache, limits, daily budget (fake model)
 npx wrangler tail        # live log: one JSON line per model call with tokens and outcome
 ```
 
 - Model `claude-haiku-5-5` (`MODEL` in `wrangler.toml`), effort low, structured JSON output, at most 4 000 tokens
-- Limits: 8 requests a minute per IP (Workers rate-limit binding), 24 KB request body, requests only from
-  `ALLOWED_ORIGINS`, and `DAILY_LIMIT` model calls per UTC day (500) counted by the `DailyBudget` Durable Object:
-  atomic, so parallel requests cannot pass it. Without that binding the Worker makes no model call
-- Cost ceiling: each call is at most a 24 KB request (under 12 000 tokens with the system prompt) and 4 000 output
-  tokens including thinking, so at most about $0.0032 at Haiku 5.5 list prices ($0.10 / $0.50 per million tokens), and
-  500 calls stay under $2 a day; measured use is lower (`live-check.ts`). The Anthropic workspace spend limit is the
-  backstop for everything else
-- Cache: validated answers in KV for 30 days, keyed by prompt version, model and the full request (the request
-  carries the figures, so new data means a new key). Cached answers cost nothing and do not count against the cap.
-  "Koosta uuesti" skips the cache read
+- Limits: 8 requests a minute per IP (Workers rate-limit binding), 2 KB request body, requests only from
+  `ALLOWED_ORIGINS` (a browser rule only; the selection-only format is the real protection), and `DAILY_LIMIT` model
+  calls per UTC day (500) counted by the `DailyBudget` Durable Object: atomic, so parallel requests cannot pass it.
+  Without that binding the Worker makes no model call
+- Cost ceiling: the model input is the Worker's own statements for at most four brands (a few thousand tokens) and the
+  output at most 4 000 tokens including thinking, so a call costs at most about $0.003 at Haiku 5.5 list prices
+  ($0.10 / $0.50 per million tokens), and 500 calls stay under $2 a day; measured use is lower (`live-check.ts`). The
+  Anthropic workspace spend limit is the backstop for everything else
+- Cache: validated answers in KV for 30 days, keyed by prompt version, model and the request hash (the request carries
+  the figures, so new data means a new key). Selections are finite, so repeat visitors are served from the cache at
+  no cost and without counting against the cap. "Koosta uuesti" skips the cache read
 - Every answer is checked twice with `apps/web/lib/analysis/validate.ts`: in the Worker before caching, and in the page.
   A change to that file should be followed by `npm test` here as well
 

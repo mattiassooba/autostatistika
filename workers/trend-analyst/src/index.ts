@@ -1,15 +1,22 @@
-// POST / with an AnalysisRequest → { analysis, model, cached }.
+// POST / with a SelectionRequest → { analysis, model, cached }.
 //
-// Order of work: origin check, per-IP rate limit, body checks, cache, daily
-// budget, model call, validation. Only validated answers are cached and returned;
-// the page falls back to its computed text on any error status. Without the
-// budget binding no model call is made (fail closed).
+// The request carries a selection, never text. The Worker reads the site's own
+// trend file for that data generation, rebuilds the statements with the page's
+// code (apps/web/lib/analysis/build.ts) and goes on only if the hash matches
+// the page's. So the model only ever sees sentences this code wrote.
+//
+// Order of work: origin check, per-IP rate limit, selection checks, rebuild and
+// hash check, cache, daily budget, model call, validation. Only validated answers
+// are cached and returned; the page falls back to its computed text on any error
+// status. Without the budget binding no model call is made (fail closed).
 
 export { DailyBudget } from "./budget";
 
-import { validateAnalysis, type AnalysisRequest, type AnalysisText } from "../../../apps/web/lib/analysis/validate";
+import { validateAnalysis, requestHash, type AnalysisRequest, type AnalysisText } from "../../../apps/web/lib/analysis/validate";
+import { buildTrend } from "../../../apps/web/lib/analysis/build";
+import { messageTranslator, trendFileData, type TrendFile } from "../../../apps/web/lib/analysis/trend-file";
 import { callModel as defaultCallModel, PROMPT_VERSION, type ModelAnswer } from "./model";
-import { MAX_BODY_BYTES, parseRequest } from "./request";
+import { MAX_BODY_BYTES, parseSelection } from "./request";
 import { takeCall, type BudgetNamespace } from "./budget";
 
 /** The KV and rate-limit binding methods this Worker uses. */
@@ -22,6 +29,7 @@ export type RateLimit = { limit(options: { key: string }): Promise<{ success: bo
 export type Env = {
   ANTHROPIC_API_KEY?: string;
   ALLOWED_ORIGINS?: string;
+  SITE_ORIGIN?: string;
   MODEL?: string;
   DAILY_LIMIT?: string;
   CACHE?: KV;
@@ -29,16 +37,35 @@ export type Env = {
   BUDGET?: BudgetNamespace;
 };
 
-type Deps = { callModel: (request: AnalysisRequest, options: { apiKey: string; model: string }) => Promise<ModelAnswer> };
+type Deps = {
+  callModel: (request: AnalysisRequest, options: { apiKey: string; model: string }) => Promise<ModelAnswer>;
+  /** The site's trend file; null when it does not exist (another data generation). */
+  loadTrendFile: (url: string) => Promise<TrendFile | null>;
+};
 
 const CACHE_TTL = 30 * 24 * 3600;
 
-async function sha256(text: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+// Trend files per isolate: a few hundred KB each, immutable per generation.
+const files = new Map<string, Promise<TrendFile | null>>();
+async function fetchTrendFile(url: string): Promise<TrendFile | null> {
+  let file = files.get(url);
+  if (!file) {
+    file = fetch(url).then(async (response) => {
+      if (response.status === 404) return null;
+      if (!response.ok) throw new Error(`trend file ${response.status}`);
+      return (await response.json()) as TrendFile;
+    });
+    files.set(url, file);
+    file.catch(() => files.delete(url));
+    if (files.size > 8) files.delete(files.keys().next().value!);
+  }
+  return file;
 }
 
-export function createHandler(deps: Deps = { callModel: defaultCallModel }) {
+export function createHandler(deps: Partial<Deps> = {}) {
+  const callModel = deps.callModel ?? defaultCallModel;
+  const loadTrendFile = deps.loadTrendFile ?? fetchTrendFile;
+
   return async function handle(request: Request, env: Env): Promise<Response> {
     const origins = (env.ALLOWED_ORIGINS ?? "").split(",").map((origin) => origin.trim()).filter(Boolean);
     const origin = request.headers.get("origin") ?? "";
@@ -72,13 +99,37 @@ export function createHandler(deps: Deps = { callModel: defaultCallModel }) {
     } catch {
       return json(400, { error: "json" });
     }
-    const parsed = parseRequest(body);
-    if (!parsed) return json(400, { error: "request" });
-    const { request: analysisRequest, fresh } = parsed;
+    const selection = parseSelection(body);
+    if (!selection) return json(400, { error: "request" });
+
+    // Rebuild the statements from the site's data, exactly as the page did.
+    const site = (env.SITE_ORIGIN ?? "https://autostatistika.ee").replace(/\/$/, "");
+    let file: TrendFile | null;
+    try {
+      file = await loadTrendFile(`${site}/data/${selection.generation}/trend/${selection.category}.json`);
+    } catch {
+      return json(502, { error: "site_data" });
+    }
+    if (!file) return json(409, { error: "generation" });
+    const data = trendFileData(file);
+    const known = new Set(data.registrations.brands.map((row) => row.brand_slug));
+    if (!selection.brands.every((slug) => known.has(slug))) return json(400, { error: "brand" });
+    const categoryLabel = file.messages[selection.locale]?.categories?.[selection.category];
+    if (!categoryLabel) return json(400, { error: "category" });
+    const { facts, rendered } = buildTrend(
+      data,
+      { locale: selection.locale, category: selection.category, brands: selection.brands, from: selection.from },
+      categoryLabel,
+      messageTranslator(file.messages[selection.locale].trend),
+    );
+    if (facts.status !== "ok") return json(400, { error: "insufficient" });
+    const analysisRequest = rendered.request;
+    const hash = await requestHash(analysisRequest);
+    if (hash !== selection.hash) return json(409, { error: "mismatch" });
 
     const model = env.MODEL || "claude-haiku-5-5";
-    const key = `answer:v${PROMPT_VERSION}:${await sha256(JSON.stringify({ model, request: analysisRequest }))}`;
-    if (!fresh && env.CACHE) {
+    const key = `answer:v${PROMPT_VERSION}:${model}:${hash}`;
+    if (!selection.fresh && env.CACHE) {
       const hit = await env.CACHE.get(key);
       if (hit) {
         const checked = validateAnalysis(JSON.parse(hit), analysisRequest);
@@ -95,7 +146,7 @@ export function createHandler(deps: Deps = { callModel: defaultCallModel }) {
     if (!budget.ok) return json(503, { error: "daily_limit" });
 
     const started = Date.now();
-    const answer = await deps.callModel(analysisRequest, { apiKey: env.ANTHROPIC_API_KEY, model });
+    const answer = await callModel(analysisRequest, { apiKey: env.ANTHROPIC_API_KEY, model });
     const log = (outcome: string, extra: Record<string, unknown> = {}) =>
       console.log(JSON.stringify({ event: "model_call", outcome, model, ms: Date.now() - started, calls_today: budget.used, ...extra }));
     if (!answer.ok) {

@@ -207,8 +207,10 @@ export function brandHistory(data: ExplorerData, category: string, slugs: string
   const periods = brandPeriodsOf(data, category);
   const rankings = new Map(periods.map((period) => [period, brandRanking(data, category, period)]));
   return slugs.map((slug) => {
+    // The name as the source writes it for this category (the same slug can be listed under trucks too).
     const name =
-      data.registrations.brands.find((row) => row.brand_slug === slug)?.brand_source ?? slug.toUpperCase();
+      data.registrations.brands.find((row) => row.brand_slug === slug && row.category_code === category)?.brand_source ??
+      slug.toUpperCase();
     return {
       slug,
       name,
@@ -223,6 +225,15 @@ export function brandHistory(data: ExplorerData, category: string, slugs: string
       }),
     };
   });
+}
+
+/** The brand comparison window: months from `from` (null = every month) and the brands' points in them. */
+export function brandWindow(data: ExplorerData, category: string, brands: string[], from: string | null) {
+  const all = brandPeriodsOf(data, category);
+  const periods = from ? all.filter((period) => period >= from) : all;
+  const full = brandHistory(data, category, brands);
+  const history = from ? full.map((brand) => ({ ...brand, points: brand.points.filter((point) => point.period >= from) })) : full;
+  return { periods, history };
 }
 
 /** Every brand that appears in any month for a category, by its best showing. */
