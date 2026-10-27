@@ -100,9 +100,20 @@ export function CompareChart({
           showSymbol: !dense,
           showAllSymbol: !dense,
           lineStyle: { width: dense ? 1.75 : 2, color: s.color, opacity: dim ? 0.18 : 1, cap: "round", join: "round" },
-          endLabel: dense
-            ? { show: true, color: color.ink, fontSize: 12.5, fontWeight: 600, distance: 8, formatter: () => s.name }
-            : undefined,
+          // Dense axis: the name sits on the brand's last listed month. Not `endLabel`: while the
+          // line draws in, ECharts places that label at the first data point, which is NaN for
+          // a brand not listed in the window's first month (Tesla, KIA over every month).
+          markPoint:
+            dense && lastIndex >= 0
+              ? {
+                  silent: true,
+                  symbol: "circle",
+                  symbolSize: 1,
+                  itemStyle: { color: "transparent" },
+                  label: { show: true, position: "right", distance: 8, color: color.ink, fontSize: 12.5, fontWeight: 600, opacity: dim ? 0.35 : 1, formatter: () => s.name },
+                  data: [{ coord: [lastIndex, s.values[lastIndex] as number] }],
+                }
+              : undefined,
           itemStyle: { color: s.color, borderColor: color.paper, borderWidth: 2, opacity: dim ? 0.25 : 1 },
           emphasis: { focus: "series", scale: 1.3, lineStyle: { width: 2.5 } },
           blur: { lineStyle: { opacity: 0.15 }, itemStyle: { opacity: 0.2 } },

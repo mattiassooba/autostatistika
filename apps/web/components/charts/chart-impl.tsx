@@ -7,6 +7,7 @@ import {
   GridComponent,
   MarkAreaComponent,
   MarkLineComponent,
+  MarkPointComponent,
   TooltipComponent,
   DatasetComponent,
 } from "echarts/components";
@@ -22,6 +23,7 @@ echarts.use([
   TooltipComponent,
   MarkAreaComponent,
   MarkLineComponent,
+  MarkPointComponent,
   DatasetComponent,
   SVGRenderer,
 ]);
