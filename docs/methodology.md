@@ -181,6 +181,10 @@ stock on the same sheet, and no fuel figures are published for months before 07/
 - Searches across all makes use a light index (make, model, year, power, fuel, gearbox, body, status, county).
   Colour, owner type, dimensions, masses and emissions need the makes' own files: choose makes, or load all of them.
 - The files carry the source licence (CC BY-SA 4.0, Transpordiamet).
+- Up to four variants can be compared side by side; their figures follow the page's filters, like the list. A link
+  keeps the comparison only for the snapshot it was made in (variant ids belong to one snapshot's files).
+- The CSV download lists every variant that matches the filters with its number of vehicles (no single vehicles),
+  semicolon-separated UTF-8 for Estonian Excel; missing values are empty cells.
 
 ## Brand and month pages
 

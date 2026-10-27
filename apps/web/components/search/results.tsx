@@ -3,16 +3,16 @@
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { motion as tokens } from "@/lib/design/tokens";
-import { CaretDown, CircleNotch } from "@phosphor-icons/react";
+import { CaretDown, CircleNotch, DownloadSimple, Scales, X } from "@phosphor-icons/react";
 import { AnimatedNumber } from "../ui/animated-number";
 import { BrandLogo } from "../ui/brand-logo";
 import { VehicleBlueprint } from "../hero/vehicle-blueprint";
 import { BarRow, Empty } from "../explorer/parts";
-import { fmtBytes, UNITS, type ResultMessage } from "./search-app";
+import { fmtBytes, UNITS, type CompareItems, type ResultMessage } from "./search-app";
 import type { Facet, Range, SortKey, TextFilter, Variant, VariantDetail } from "@/lib/search/engine";
 import type { Manifest } from "@/lib/search/load";
 import { valueLabel } from "@/lib/search/labels";
-import type { SearchState } from "@/lib/search/url";
+import { MAX_COMPARE, type CompareRef, type SearchState } from "@/lib/search/url";
 import { BREAKDOWN_LABELS, UNKNOWN_LABEL } from "@/lib/data/labels";
 import { fmtNumber, fmtPercent } from "@/lib/format";
 
@@ -44,6 +44,12 @@ export function SearchResults({
   onSort,
   onPick,
   onYears,
+  compare,
+  compareItems,
+  onToggleCompare,
+  onClearCompare,
+  onExport,
+  exporting,
 }: {
   state: SearchState;
   manifest: Manifest | null;
@@ -54,6 +60,12 @@ export function SearchResults({
   onSort: (sort: SortKey, dir: 1 | -1) => void;
   onPick: (dimension: TextFilter | "make" | "model", value: string) => void;
   onYears: (range: Range | undefined) => void;
+  compare: CompareRef[];
+  compareItems: CompareItems;
+  onToggleCompare: (variant: Variant) => void;
+  onClearCompare: () => void;
+  onExport: () => void;
+  exporting: boolean;
 }) {
   const t = useTranslations("search");
   const locale = useLocale();
@@ -122,6 +134,17 @@ export function SearchResults({
                 <h3 className="t-title text-[19px]">{t("variantsTitle")}</h3>
                 <p className="mt-1 text-[13px] text-muted">{t("variantsNote")}</p>
               </div>
+              <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={onExport}
+                disabled={exporting}
+                title={t("csvNote")}
+                className="press inline-flex h-10 cursor-pointer items-center gap-2 rounded-full px-4 text-[14px] font-medium text-ink ring-1 ring-rule-strong hover:ring-ink/50 disabled:cursor-wait disabled:opacity-60"
+              >
+                {exporting ? <CircleNotch size={15} className="animate-spin motion-reduce:animate-none" /> : <DownloadSimple size={15} />}
+                {t("csv")}
+              </button>
               <label className="flex items-center gap-2 text-[13px] text-muted">
                 {t("sort")}
                 <select
@@ -139,7 +162,10 @@ export function SearchResults({
                   ))}
                 </select>
               </label>
+              </div>
             </div>
+            <p className="mt-2 text-[12px] text-muted">{t("csvNote")}</p>
+            {compare.length > 0 && <CompareTable items={compareItems} pending={compare.length} makeNames={makeNames} onRemove={onToggleCompare} onClear={onClearCompare} />}
             <ol className="mt-4 divide-y divide-rule border-y border-rule">
               {r.variants.map((variant, index) => (
                 <VariantRow
@@ -150,6 +176,9 @@ export function SearchResults({
                   open={search.detail?.id === variant.id}
                   detail={search.detail?.id === variant.id ? search.detail.data : null}
                   onToggle={() => search.requestDetail(state, search.detail?.id === variant.id ? null : variant)}
+                  compared={compare.some((ref) => ref.id === variant.id)}
+                  compareFull={compare.length >= MAX_COMPARE}
+                  onCompare={() => onToggleCompare(variant)}
                 />
               ))}
             </ol>
@@ -280,6 +309,9 @@ function VariantRow({
   open,
   detail,
   onToggle,
+  compared,
+  compareFull,
+  onCompare,
 }: {
   index: number;
   variant: Variant;
@@ -287,6 +319,9 @@ function VariantRow({
   open: boolean;
   detail: VariantDetail | null;
   onToggle: () => void;
+  compared: boolean;
+  compareFull: boolean;
+  onCompare: () => void;
 }) {
   const t = useTranslations("search");
   const locale = useLocale();
@@ -307,12 +342,13 @@ function VariantRow({
       // Rows added by "show more" or a new search arrive in a short, capped wave.
       transition={{ duration: tokens.ui, ease: tokens.easeOut, delay: reduce ? 0 : Math.min(index % 25, 12) * 0.018 }}
     >
+      <div className={`flex items-center transition-colors ${open ? "bg-paper-2" : ""}`}>
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
         aria-controls={id}
-        className={`group grid w-full cursor-pointer grid-cols-[2.5rem_minmax(0,1fr)_auto_1.25rem] items-center gap-x-3 px-1 py-3.5 text-left transition-colors hover:bg-paper-2 ${open ? "bg-paper-2" : ""}`}
+        className={`group grid min-w-0 flex-1 cursor-pointer grid-cols-[2.5rem_minmax(0,1fr)_auto_1.25rem] items-center gap-x-3 px-1 py-3.5 text-left transition-colors hover:bg-paper-2 ${open ? "bg-paper-2" : ""}`}
       >
         <BrandLogo slug={variant.make} name={name} tone="light" className="h-9 w-9 text-[10px] text-ink" />
         <span className="min-w-0">
@@ -327,6 +363,21 @@ function VariantRow({
         </span>
         <CaretDown size={14} weight="bold" className={`text-muted transition-transform group-hover:text-ink ${open ? "rotate-180" : ""}`} aria-hidden />
       </button>
+      <button
+        type="button"
+        onClick={onCompare}
+        aria-pressed={compared}
+        disabled={!compared && compareFull}
+        title={!compared && compareFull ? t("compareMax", { max: MAX_COMPARE }) : undefined}
+        aria-label={`${compared ? t("comparing") : t("compare")}: ${name} ${variant.model}`}
+        className={`press ml-1 mr-1 inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[12.5px] font-medium ring-1 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+          compared ? "bg-ink text-paper ring-ink" : "bg-paper text-graphite ring-rule-strong hover:text-ink hover:ring-ink/50"
+        }`}
+      >
+        <Scales size={14} />
+        <span className="hidden sm:inline">{compared ? t("comparing") : t("compare")}</span>
+      </button>
+      </div>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
@@ -357,18 +408,145 @@ const GROUPS: Array<{ title: string; numbers: string[]; texts: string[] }> = [
 // Text values in the detail that share another dimension's labels.
 const DETAIL_LABELS: Record<string, string> = { fuel_main: "engine", fuel_extra: "engine" };
 
+function rangeText(entry: { min: number; max: number }, unit: string, locale: string): string {
+  const decimals = new Intl.NumberFormat(locale === "en" ? "en-GB" : "et-EE", { maximumFractionDigits: 1 });
+  const value = entry.min === entry.max ? decimals.format(entry.min) : `${decimals.format(entry.min)}–${decimals.format(entry.max)}`;
+  return unit ? `${value} ${unit}` : value;
+}
+
+const COMPARE_NUMBERS = ["power", "engine_cc", "top_speed", "length", "width", "height", "mass_empty", "mass_max", "tow_braked", "co2_wltp", "co2_nedc", "cons_wltp", "cons_nedc", "ev_range", "seats", "doors"];
+const COMPARE_TEXTS = ["euro", "fuel_combination", "hybrid"];
+
+function CompareTable({
+  items,
+  pending,
+  makeNames,
+  onRemove,
+  onClear,
+}: {
+  items: CompareItems;
+  pending: number;
+  makeNames: Map<string, string>;
+  onRemove: (variant: Variant) => void;
+  onClear: () => void;
+}) {
+  const t = useTranslations("search");
+  const tl = useTranslations("search.detail");
+  const locale = useLocale();
+  const label = (dimension: string, value: string) => valueLabel(dimension, value, locale, t("notStated"));
+  const shown = items.filter((item): item is NonNullable<CompareItems[number]> => item != null);
+  const rows = [
+    ...COMPARE_NUMBERS.filter((key) => shown.some((item) => item.detail.numbers[key])).map((key) => ({
+      key,
+      label: tl(key),
+      cell: (item: (typeof shown)[number]) => {
+        const entry = item.detail.numbers[key];
+        if (!entry) return { text: "—", known: 0 };
+        return { text: rangeText(entry, UNITS[key] ? t(`unit.${UNITS[key]}`) : "", locale), known: entry.known };
+      },
+    })),
+    ...COMPARE_TEXTS.filter((key) => shown.some((item) => item.detail.texts[key]?.some((row) => row.value))).map((key) => ({
+      key,
+      label: tl(key),
+      cell: (item: (typeof shown)[number]) => {
+        const values = item.detail.texts[key]?.filter((row) => row.value) ?? [];
+        return { text: values.length ? values.slice(0, 2).map((row) => label(key, row.value)).join(", ") : "—", known: values.reduce((sum, row) => sum + row.vehicles, 0) };
+      },
+    })),
+  ];
+  return (
+    <section id="compare" aria-labelledby="compare-title" className="mt-6 rounded-[16px] bg-paper-2 p-4 ring-1 ring-rule">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 id="compare-title" className="t-title text-[17px]">
+          {t("compareTitle")}
+        </h3>
+        <button type="button" onClick={onClear} className="press inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-graphite ring-1 ring-rule-strong hover:text-ink">
+          <X size={12} weight="bold" />
+          {t("compareClear")}
+        </button>
+      </div>
+      {shown.length < 2 ? (
+        <p className="mt-2 text-[13.5px] text-graphite">{shown.length < pending ? t("loadingData") : t("compareHint")}</p>
+      ) : (
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[520px] border-collapse text-[13.5px]">
+            <thead>
+              <tr className="border-b border-ink text-left align-bottom">
+                <th scope="col" className="sticky left-0 bg-paper-2 py-2 pr-4 font-normal text-muted">
+                  <span className="sr-only">{t("compareTitle")}</span>
+                </th>
+                {shown.map(({ variant }) => {
+                  const name = makeNames.get(variant.make) ?? variant.make;
+                  return (
+                    <th key={variant.id} scope="col" className="min-w-[9.5rem] py-2 pr-4 font-normal">
+                      <span className="flex items-start gap-2">
+                        <BrandLogo slug={variant.make} name={name} tone="light" className="h-7 w-7 shrink-0 text-[9px] text-ink" />
+                        <span className="min-w-0">
+                          <span className="block font-semibold text-ink">
+                            {name} {variant.model}
+                          </span>
+                          <span className="block text-[12px] text-muted">
+                            {[variant.year, label("engine", variant.engine), variant.gearbox ? label("gearbox", variant.gearbox) : null].filter(Boolean).join(" · ")}
+                          </span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => onRemove(variant)}
+                          aria-label={t("remove", { label: `${name} ${variant.model}` })}
+                          className="ml-auto cursor-pointer rounded-full p-1 text-muted hover:bg-paper hover:text-ink"
+                        >
+                          <X size={12} weight="bold" />
+                        </button>
+                      </span>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-rule">
+                <th scope="row" className="sticky left-0 bg-paper-2 py-1.5 pr-4 text-left font-normal text-graphite">
+                  {t("csvVehicles")}
+                </th>
+                {shown.map(({ variant }) => (
+                  <td key={variant.id} className="tabular py-1.5 pr-4 font-semibold text-ink">
+                    {fmtNumber(variant.vehicles, locale)}
+                  </td>
+                ))}
+              </tr>
+              {rows.map((row) => (
+                <tr key={row.key} className="border-b border-rule">
+                  <th scope="row" className="sticky left-0 bg-paper-2 py-1.5 pr-4 text-left font-normal text-graphite">
+                    {row.label}
+                  </th>
+                  {shown.map((item) => {
+                    const cell = row.cell(item);
+                    return (
+                      <td key={item.variant.id} className="py-1.5 pr-4">
+                        <span className="tabular text-ink">{cell.text}</span>
+                        {cell.known > 0 && cell.known < item.variant.vehicles && (
+                          <span className="block text-[11px] text-muted">{t("known", { known: fmtNumber(cell.known, locale), total: fmtNumber(item.variant.vehicles, locale) })}</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="mt-3 text-[12px] text-muted">{t("compareNote")}</p>
+    </section>
+  );
+}
+
 function DetailPanel({ detail }: { detail: VariantDetail }) {
   const t = useTranslations("search");
   const locale = useLocale();
   const tl = useTranslations("search.detail");
-  const decimals = new Intl.NumberFormat(locale === "en" ? "en-GB" : "et-EE", { maximumFractionDigits: 1 });
-  const fmt = (value: number) => decimals.format(value);
   const label = (dimension: string, value: string) => valueLabel(dimension, value, locale, t("notStated"));
-  const span = (key: string) => {
-    const entry = detail.numbers[key];
-    if (!entry) return undefined;
-    return `${entry.min === entry.max ? fmt(entry.min) : `${fmt(entry.min)}–${fmt(entry.max)}`} ${t("unit.mm")}`;
-  };
+  const span = (key: string) => (detail.numbers[key] ? rangeText(detail.numbers[key], t("unit.mm"), locale) : undefined);
   // The drawing is a generic passenger car: only M1/M1G variants get it.
   const categories = detail.texts.category?.filter((row) => row.value) ?? [];
   const car = categories.length > 0 && categories.every((row) => row.value.startsWith("M1"));
@@ -390,9 +568,7 @@ function DetailPanel({ detail }: { detail: VariantDetail }) {
             ...group.numbers.flatMap((key) => {
               const entry = detail.numbers[key];
               if (!entry) return [];
-              const unit = UNITS[key] ? ` ${t(`unit.${UNITS[key]}`)}` : "";
-              const value = entry.min === entry.max ? fmt(entry.min) : `${fmt(entry.min)}–${fmt(entry.max)}`;
-              return [{ key, label: tl(key), value: `${value}${unit}`, known: entry.known }];
+              return [{ key, label: tl(key), value: rangeText(entry, UNITS[key] ? t(`unit.${UNITS[key]}`) : "", locale), known: entry.known }];
             }),
             ...group.texts.flatMap((key) => {
               const values = detail.texts[key]?.filter((row) => row.value);

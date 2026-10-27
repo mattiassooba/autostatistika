@@ -715,6 +715,17 @@
       "noise": "Drive-by noise",
       "euro": "Emission standard"
     },
-    "notToScale": "Generic drawing, not to scale; the figures are this variant's vehicles."
+    "notToScale": "Generic drawing, not to scale; the figures are this variant's vehicles.",
+    "compare": "Compare",
+    "comparing": "Comparing",
+    "compareMax": "Up to {max} variants can be compared at once",
+    "compareTitle": "Variants side by side",
+    "compareHint": "Choose at least one more variant to see them side by side.",
+    "compareClear": "Clear comparison",
+    "compareNote": "Ranges over the variant's vehicles that match the page's filters; “known” shows how many have a value.",
+    "csv": "Download CSV",
+    "csvNote": "CSV: every variant that matches the filters, with its number of vehicles. Licence CC BY-SA 4.0, source Transpordiamet.",
+    "csvVehicles": "Vehicles",
+    "csvFile": "search"
   }
 }

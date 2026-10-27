@@ -3,7 +3,7 @@
 // keeps the decoded files and answers each search with totals, facets and the
 // visible page of variants.
 
-import { needsFullFiles, runSearch, sortVariants, variantDetail, type SearchResult, type Variant, type VariantDetail } from "./engine";
+import { describeVariant, needsFullFiles, runSearch, sortVariants, variantDetail, type SearchResult, type Variant, type VariantDetail } from "./engine";
 import { loadTable, type Manifest } from "./load";
 import type { SearchState } from "./url";
 import type { Table } from "./format";
@@ -11,7 +11,11 @@ import type { Table } from "./format";
 export type WorkerRequest =
   | { type: "init"; base: string; manifest: Manifest }
   | { type: "search"; seq: number; state: SearchState; limit: number; allMakes: boolean }
-  | { type: "detail"; seq: number; state: SearchState; variant: Variant };
+  | { type: "detail"; seq: number; state: SearchState; variant: Variant }
+  /** Every variant that matches, sorted as the list is (CSV download). */
+  | { type: "export"; seq: number; state: SearchState; allMakes: boolean }
+  /** Spec details of several variants side by side, by make and variant id. */
+  | { type: "compare"; seq: number; state: SearchState; refs: Array<{ make: string; id: number }> };
 
 export type SearchSource = "lite" | "makes" | "all";
 
@@ -28,6 +32,8 @@ export type WorkerResponse =
   /** A filter needs the makes' own files and no make is chosen. */
   | { type: "needs-makes"; seq: number; bytes: number }
   | { type: "detail"; seq: number; detail: VariantDetail }
+  | { type: "export"; seq: number; variants: Variant[] }
+  | { type: "compare"; seq: number; items: Array<{ variant: Variant; detail: VariantDetail } | null> }
   | { type: "error"; seq: number; message: string };
 
 const scope = self as unknown as DedicatedWorkerGlobalScope;
@@ -63,27 +69,31 @@ async function load(files: string[], seq?: number): Promise<Table[]> {
   return Promise.all(files.map((file) => loadTable(base, file)));
 }
 
-async function search(seq: number, state: SearchState, limit: number, allMakes: boolean) {
+type Selection = { tables: Table[]; source: SearchSource } | { needsMakes: number } | null;
+
+/** The files a search reads: the light index, the chosen makes' files, or every make of the type. */
+async function select(state: SearchState, allMakes: boolean, seq?: number): Promise<Selection> {
   const family = manifest!.families[state.family];
-  if (!family) {
+  if (!family) return null;
+  const lite = await loadTable(base, family.lite);
+  if (state.makes.length) return { tables: await load(makeFiles(state.makes, state.family), seq), source: "makes" };
+  if (!needsFullFiles(state, lite)) return { tables: [lite], source: "lite" };
+  const files = familyFiles(state.family);
+  if (!allMakes) return { needsMakes: files.reduce((sum, file) => sum + (manifest!.files[file] ?? 0), 0) };
+  return { tables: await load(files, seq), source: "all" };
+}
+
+async function search(seq: number, state: SearchState, limit: number, allMakes: boolean) {
+  const selection = await select(state, allMakes, seq);
+  if (!selection) {
     post({ type: "result", seq, source: "lite", options: {}, result: { vehicles: 0, missingForRange: 0, facets: {}, years: [], powerBands: [], variantsTotal: 0, variants: [] } });
     return;
   }
-  const lite = await loadTable(base, family.lite);
-  let tables: Table[] = [lite];
-  let source: SearchSource = "lite";
-  if (state.makes.length) {
-    tables = await load(makeFiles(state.makes, state.family), seq);
-    source = "makes";
-  } else if (needsFullFiles(state, lite)) {
-    const files = familyFiles(state.family);
-    if (!allMakes) {
-      post({ type: "needs-makes", seq, bytes: files.reduce((sum, file) => sum + (manifest!.files[file] ?? 0), 0) });
-      return;
-    }
-    tables = await load(files, seq);
-    source = "all";
+  if ("needsMakes" in selection) {
+    post({ type: "needs-makes", seq, bytes: selection.needsMakes });
+    return;
   }
+  const { tables, source } = selection;
   const optionKey = `${state.family}|${source}|${[...state.makes].sort().join(",")}`;
   const choices = options(optionKey, tables, state);
   const { variants, ...rest } = runSearch(tables, state);
@@ -103,6 +113,28 @@ async function detail(seq: number, state: SearchState, variant: Variant) {
   post({ type: "detail", seq, detail: variantDetail(tables, { ...state, makes: [variant.make] }, variant.id) });
 }
 
+async function exportVariants(seq: number, state: SearchState, allMakes: boolean) {
+  const selection = await select(state, allMakes);
+  const variants = selection && "tables" in selection ? sortVariants(runSearch(selection.tables, state).variants, state.sort, state.dir) : [];
+  post({ type: "export", seq, variants });
+}
+
+async function compare(seq: number, state: SearchState, refs: Array<{ make: string; id: number }>) {
+  // Each variant is read from its make's own file with the page's filters, so
+  // the side-by-side figures are the same vehicles the list counted. A link
+  // from another snapshot whose id is gone comes back as null.
+  const items = await Promise.all(
+    refs.map(async ({ make, id }) => {
+      const tables = await load(makeFiles([make], state.family));
+      const variant = describeVariant(tables, id);
+      if (!variant || variant.make !== make) return null;
+      const detail = variantDetail(tables, { ...state, makes: [make], models: [] }, id);
+      return { variant: { ...variant, vehicles: detail.vehicles }, detail };
+    }),
+  );
+  post({ type: "compare", seq, items });
+}
+
 scope.onmessage = (event: MessageEvent<WorkerRequest>) => {
   const message = event.data;
   if (message.type === "init") {
@@ -110,6 +142,13 @@ scope.onmessage = (event: MessageEvent<WorkerRequest>) => {
     manifest = message.manifest;
     return;
   }
-  const run = message.type === "search" ? search(message.seq, message.state, message.limit, message.allMakes) : detail(message.seq, message.state, message.variant);
+  const run =
+    message.type === "search"
+      ? search(message.seq, message.state, message.limit, message.allMakes)
+      : message.type === "detail"
+        ? detail(message.seq, message.state, message.variant)
+        : message.type === "export"
+          ? exportVariants(message.seq, message.state, message.allMakes)
+          : compare(message.seq, message.state, message.refs);
   run.catch((error: unknown) => post({ type: "error", seq: message.seq, message: String(error) }));
 };

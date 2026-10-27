@@ -271,6 +271,27 @@ export function runSearch(tables: Table[], filters: SearchFilters): SearchResult
   };
 }
 
+/** A variant's make, model, year … from its first row (counts not included: vehicles is 0). */
+export function describeVariant(tables: Table[], id: number): Variant | null {
+  for (const table of tables) {
+    const row = variantRow(table, id);
+    if (row == null) continue;
+    const power = numberAt(column(table, "power"), row);
+    return {
+      id,
+      make: textAt(table.columns.make, row),
+      model: textAt(table.columns.model, row),
+      year: numberAt(table.columns.year, row),
+      engine: textAt(table.columns.engine, row),
+      power: power == null ? null : Math.round(power),
+      gearbox: textAt(table.columns.gearbox, row),
+      body: textAt(table.columns.body, row),
+      vehicles: 0,
+    };
+  }
+  return null;
+}
+
 export type SortKey = "vehicles" | "year" | "power" | "name";
 
 export function sortVariants(variants: Variant[], key: SortKey, dir: 1 | -1): Variant[] {

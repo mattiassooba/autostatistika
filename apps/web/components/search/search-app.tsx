@@ -11,7 +11,8 @@ import { SearchResults } from "./results";
 import { NUMBER_FILTERS, TEXT_FILTERS, type NumberFilter, type Range, type TextFilter, type Variant } from "@/lib/search/engine";
 import { loadManifest, registerBase, type Manifest } from "@/lib/search/load";
 import { valueLabel } from "@/lib/search/labels";
-import { activeCount, emptySearch, parseSearch, searchParams, type SearchState } from "@/lib/search/url";
+import { activeCount, compareParam, emptySearch, MAX_COMPARE, parseCompare, parseSearch, searchParams, type CompareRef, type SearchState } from "@/lib/search/url";
+import { variantsCsv } from "@/lib/search/csv";
 import type { WorkerRequest, WorkerResponse } from "@/lib/search/worker";
 import { fmtNumber, fmtPercent, titleCaseBrand } from "@/lib/format";
 import { motion as tokens } from "@/lib/design/tokens";
@@ -45,6 +46,7 @@ export const UNITS: Partial<Record<string, string>> = {
 };
 
 export type ResultMessage = Extract<WorkerResponse, { type: "result" }>;
+export type CompareItems = Extract<WorkerResponse, { type: "compare" }>["items"];
 
 export function fmtBytes(bytes: number, locale: string): string {
   return `${new Intl.NumberFormat(locale === "en" ? "en-GB" : "et-EE", { maximumFractionDigits: 1 }).format(bytes / 1e6)} MB`;
@@ -63,6 +65,9 @@ function useSearchWorker(snapshot: string) {
   const [unsupported, setUnsupported] = useState(false);
   const [detail, setDetail] = useState<{ id: number; data: Extract<WorkerResponse, { type: "detail" }>["detail"] | null } | null>(null);
   const detailSeq = useRef(0);
+  // Export and compare requests: their own sequence numbers, never mixed with searches.
+  const requestSeq = useRef(1_000_000_000);
+  const pending = useRef(new Map<number, (message: WorkerResponse) => void>());
 
   useEffect(() => {
     if (typeof DecompressionStream === "undefined" || typeof Worker === "undefined") {
@@ -73,6 +78,12 @@ function useSearchWorker(snapshot: string) {
     worker.current = w;
     w.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const message = event.data;
+      const waiting = pending.current.get(message.seq);
+      if (waiting && (message.type === "export" || message.type === "compare" || message.type === "error")) {
+        pending.current.delete(message.seq);
+        waiting(message);
+        return;
+      }
       if (message.type === "detail") {
         if (message.seq === detailSeq.current) setDetail((current) => (current ? { ...current, data: message.detail } : current));
         return;
@@ -121,7 +132,32 @@ function useSearchWorker(snapshot: string) {
     worker.current?.postMessage({ type: "detail", seq: detailSeq.current, state, variant } satisfies WorkerRequest);
   }, []);
 
-  return { manifest, result, loading, busy, needsMakes, failed, unsupported, run, detail, requestDetail };
+  const ask = useCallback((message: WorkerRequest & { seq: number }) => {
+    return new Promise<WorkerResponse>((resolve) => {
+      pending.current.set(message.seq, resolve);
+      worker.current?.postMessage(message);
+    });
+  }, []);
+
+  const exportAll = useCallback(
+    async (state: SearchState, allMakes: boolean): Promise<Variant[]> => {
+      requestSeq.current += 1;
+      const reply = await ask({ type: "export", seq: requestSeq.current, state, allMakes });
+      return reply.type === "export" ? reply.variants : [];
+    },
+    [ask],
+  );
+
+  const compareRefs = useCallback(
+    async (state: SearchState, refs: CompareRef[]): Promise<CompareItems> => {
+      requestSeq.current += 1;
+      const reply = await ask({ type: "compare", seq: requestSeq.current, state, refs });
+      return reply.type === "compare" ? reply.items : [];
+    },
+    [ask],
+  );
+
+  return { manifest, result, loading, busy, needsMakes, failed, unsupported, run, detail, requestDetail, exportAll, compareRefs };
 }
 
 export function SearchApp({ snapshot }: { snapshot: string }) {
@@ -137,20 +173,42 @@ export function SearchApp({ snapshot }: { snapshot: string }) {
   const [allMakes, setAllMakes] = useState(false);
   const [more, setMore] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [compare, setCompare] = useState<CompareRef[]>([]);
+  const [compareItems, setCompareItems] = useState<CompareItems>([]);
+  const [exporting, setExporting] = useState(false);
 
   // A shared link's query is applied in the browser (the page is static).
   useEffect(() => {
-    const parsed = parseSearch(new URLSearchParams(window.location.search));
+    const params = new URLSearchParams(window.location.search);
+    const parsed = parseSearch(params);
     setState(parsed);
+    setCompare(parseCompare(params.get("compare"), snapshot));
     if (MORE_TEXT.some((key) => parsed.text[key]?.length) || MORE_RANGES.some((key) => parsed.ranges[key])) setMore(true);
     setReady(true);
-  }, []);
+  }, [snapshot]);
 
   useEffect(() => {
     if (!ready) return;
-    const query = searchParams(state).toString();
+    const params = searchParams(state);
+    const compared = compareParam(compare, snapshot);
+    if (compared) params.set("compare", compared);
+    const query = params.toString();
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
-  }, [state, ready]);
+  }, [state, compare, snapshot, ready]);
+
+  // Compared variants follow the page's filters, like the list.
+  const { compareRefs, exportAll } = search;
+  useEffect(() => {
+    if (!ready || !manifest || !compare.length) {
+      setCompareItems([]);
+      return;
+    }
+    let current = true;
+    compareRefs(state, compare).then((items) => current && setCompareItems(items));
+    return () => {
+      current = false;
+    };
+  }, [compare, state, ready, manifest, compareRefs]);
 
   useEffect(() => {
     if (!ready || !manifest) return;
@@ -207,6 +265,41 @@ export function SearchApp({ snapshot }: { snapshot: string }) {
   const statusValue = state.text.status?.length === 1 ? state.text.status[0] : "all";
   const active = activeCount(state);
   const moreActive = MORE_TEXT.reduce((sum, key) => sum + (state.text[key]?.length ? 1 : 0), 0) + MORE_RANGES.reduce((sum, key) => sum + (state.ranges[key] ? 1 : 0), 0);
+
+  function toggleCompare(variant: Variant) {
+    setCompare((current) =>
+      current.some((ref) => ref.id === variant.id)
+        ? current.filter((ref) => ref.id !== variant.id)
+        : current.length >= MAX_COMPARE
+          ? current
+          : [...current, { make: variant.make, id: variant.id }],
+    );
+  }
+
+  async function downloadCsv() {
+    setExporting(true);
+    try {
+      const variants = await exportAll(state, allMakes);
+      const csv = variantsCsv(variants, [
+        { header: t("make"), value: (v) => makeNames.get(v.make) ?? v.make },
+        { header: t("model"), value: (v) => v.model },
+        { header: t("year"), value: (v) => v.year },
+        { header: t("engine"), value: (v) => (v.engine ? label("engine", v.engine) : null) },
+        { header: `${t("power")} (${t("unit.kw")})`, value: (v) => v.power },
+        { header: t("gearbox"), value: (v) => (v.gearbox ? label("gearbox", v.gearbox) : null) },
+        { header: t("body"), value: (v) => (v.body ? label("body", v.body) : null) },
+        { header: t("csvVehicles"), value: (v) => v.vehicles },
+      ]);
+      const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `autostatistika-${t("csvFile")}-${snapshot}.csv`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   async function share() {
     const url = window.location.href;
@@ -432,6 +525,12 @@ export function SearchApp({ snapshot }: { snapshot: string }) {
               : setText(dimension, (state.text[dimension] ?? []).includes(value) ? (state.text[dimension] ?? []) : [...(state.text[dimension] ?? []), value])
         }
         onYears={(range) => setRange("year", range)}
+        compare={compare}
+        compareItems={compareItems}
+        onToggleCompare={toggleCompare}
+        onClearCompare={() => setCompare([])}
+        onExport={downloadCsv}
+        exporting={exporting}
       />
     </div>
   );

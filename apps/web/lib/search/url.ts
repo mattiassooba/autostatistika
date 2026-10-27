@@ -80,6 +80,25 @@ export function emptySearch(family = DEFAULT_FAMILY): SearchState {
   return { family, makes: [], models: [], text: {}, ranges: {}, sort: "vehicles", dir: -1 };
 }
 
+export type CompareRef = { make: string; id: number };
+export const MAX_COMPARE = 4;
+
+/** "2026-10-01:toyota~1234,bmw~5678". Variant ids belong to one snapshot's files:
+ * a link from another snapshot is ignored, never mapped to a different variant. */
+export function parseCompare(value: string | null, snapshot: string): CompareRef[] {
+  const match = value ? /^(\d{4}-\d{2}-\d{2}):(.+)$/.exec(value) : null;
+  if (!match || match[1] !== snapshot) return [];
+  const refs = match[2].split(",").flatMap((part) => {
+    const ref = /^([a-z0-9-]{1,60})~(\d{1,9})$/.exec(part.trim());
+    return ref ? [{ make: ref[1], id: Number(ref[2]) }] : [];
+  });
+  return refs.filter((ref, i) => refs.findIndex((r) => r.id === ref.id) === i).slice(0, MAX_COMPARE);
+}
+
+export function compareParam(refs: CompareRef[], snapshot: string): string | null {
+  return refs.length ? `${snapshot}:${refs.map((ref) => `${ref.make}~${ref.id}`).join(",")}` : null;
+}
+
 /** Number of active filters (for the "reset" control and the chips row). */
 export function activeCount(state: SearchFilters): number {
   return (

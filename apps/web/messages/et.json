@@ -715,6 +715,17 @@
       "noise": "Sõidumüra",
       "euro": "Heitmenorm"
     },
-    "notToScale": "Joonis on üldine, mitte mõõtkavas; numbrid on selle variandi sõidukitelt."
+    "notToScale": "Joonis on üldine, mitte mõõtkavas; numbrid on selle variandi sõidukitelt.",
+    "compare": "Võrdle",
+    "comparing": "Võrdluses",
+    "compareMax": "Korraga saab võrrelda kuni {max} varianti",
+    "compareTitle": "Variantide võrdlus",
+    "compareHint": "Vali veel vähemalt üks variant, et neid kõrvuti näha.",
+    "compareClear": "Tühjenda võrdlus",
+    "compareNote": "Vahemikud nende variandi sõidukite üle, kes vastavad lehe filtritele; „teada“ näitab, mitmel sõidukil väärtus on.",
+    "csv": "Laadi CSV",
+    "csvNote": "CSV: kõik filtritele vastavad variandid koos sõidukite arvuga. Litsents CC BY-SA 4.0, allikas Transpordiamet.",
+    "csvVehicles": "Sõidukeid",
+    "csvFile": "otsing"
   }
 }
