@@ -52,7 +52,7 @@ def build() -> int:
     for old in REGISTER_INDEX_DIR.iterdir():
         if old.is_dir() and old.name != result["snapshot"]:
             shutil.rmtree(old)
-    print(f"search index {result['snapshot']}: {result['files']} files, {result['bytes'] / 1e6:.1f} MB", flush=True)
+    print(f"search index {result['snapshot']}: {result['files']} files, {result['bytes'] / 1e6:.1f} MB uncompressed", flush=True)
     return 0
 
 

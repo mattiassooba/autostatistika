@@ -169,11 +169,18 @@ def build_index(paths: list[Path], dest: Path) -> dict:
     frame["variant"] = frame.groupby(VARIANT, dropna=False, sort=True).ngroup().astype("Int64")
     full_columns = ["variant", "make", "family", *TEXT.keys(), *NUMBER.keys()]
     files: dict[str, int] = {}
+    # Checksums of the uncompressed files: gzip output differs between zlib
+    # builds (Windows vs the Linux runner), the data must not.
+    contents: dict[str, bytes] = {}
 
     def write(name: str, payload: bytes) -> None:
         packed = gzip.compress(payload, compresslevel=9, mtime=0)
         (out / f"{name}.gz").write_bytes(packed)
         files[f"{name}.gz"] = len(packed)
+        contents[f"{name}.gz"] = hashlib.sha256(payload).digest()
+        raw_bytes[0] += len(payload)
+
+    raw_bytes = [0]
 
     # Identical vehicles once, with a count.
     grouped = frame[full_columns].groupby(full_columns, dropna=False, sort=False).size().reset_index(name="count")
@@ -241,15 +248,17 @@ def build_index(paths: list[Path], dest: Path) -> dict:
     }
     (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     digest = hashlib.sha256()
-    for name in sorted(files):
-        digest.update((out / name).read_bytes())
-    digest.update((out / "manifest.json").read_bytes())
+    for name in sorted(contents):
+        digest.update(name.encode() + contents[name])
+    # The manifest without the compressed file sizes, which vary by zlib build.
+    digest.update(json.dumps({**manifest, "files": sorted(files)}, ensure_ascii=False, sort_keys=True).encode())
     sha = digest.hexdigest()
     return {
         "snapshot": snapshot,
         "vehicles": int(len(frame)),
         "files": len(files) + 1,
-        "bytes": sum(files.values()),
+        # Uncompressed size of the data files (the compressed size depends on the zlib build).
+        "bytes": raw_bytes[0],
         "sha256": sha,
         "asset": f"register-index-{snapshot}-{sha[:12]}.tar",
     }
