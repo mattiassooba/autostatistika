@@ -142,6 +142,15 @@ Each rule has a test in `ingestion/tests/test_parsers.py` that reproduces the so
 - Fuel and new cars to private owners are not taken from this list: the fuel sheet and the general table already
   publish them.
 
+## Quadricycles (27 Oct 2026)
+
+The Infoleht general table counts light quadricycles (L6e) as mopeds and heavy quadricycles (L7e) as motorcycles:
+per-code fuel rows grouped this way match its Mopeedid and Mootorrattad columns in 169 of 177 months, any other grouping
+in at most one. They were a separate "other L-category" family before; now they follow the source everywhere (fuel,
+fleet, new-vehicle splits, search). Motorcycle and moped fuel rows now add up to the stated monthly totals in 143 of
+144 months each, and the moped and motorcycle new-vehicle splits reconcile and are published. Fleet totals per date do
+not change; on 1 Oct 2026 2 703 L6e and 4 814 L7e vehicles moved from "other L-category" to mopeds and motorcycles.
+
 ## Vehicle search (/otsing, added 27 Oct 2026)
 
 - Built from the latest register snapshot only. Every vehicle in the register is searchable; identical vehicles are

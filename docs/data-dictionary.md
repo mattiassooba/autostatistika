@@ -25,9 +25,9 @@ Canonical codes are stable. Original source strings are stored beside them.
 | `truck` | Veoautod | Trucks | Veoautod, N1, N2, N3, N1G, N2G, N3G |
 | `bus` | Bussid | Buses | Bussid, Autobussid, M2, M3 |
 | `trailer` | Haagised | Trailers | Haagised, O1-O4 |
-| `motorcycle` | Mootorrattad | Motorcycles | Mootorrattad, L3e, L4e, L5e |
-| `moped` | Mopeedid | Mopeds | Mopeedid, L1e, L2e |
-| `l_other` | Muud L-kategooria | Other L-category | L6e, L7e |
+| `motorcycle` | Mootorrattad | Motorcycles | Mootorrattad, L3e, L4e, L5e, L7e (heavy quadricycles) |
+| `moped` | Mopeedid | Mopeds | Mopeedid, L1e, L2e, L6e (light quadricycles) |
+| `l_other` | Muud L-kategooria | Other L-category | no longer used (L6e/L7e follow the source's grouping since 27 Oct 2026) |
 | `offroad` | Maastikusõidukid | Off-road vehicles | Maastikusõidukid, MS1, MS2 |
 | `tractor` | Traktorid | Tractors | Traktorid, T1-T5 (incl. a/b speed classes), C1-C5 |
 | `self_propelled` | Liikurmasinad | Self-propelled machines | LM, Liikurmasinad |

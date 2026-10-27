@@ -106,6 +106,9 @@ def test_register_codes_normalise() -> None:
     assert canonical_category("MS1")[0] == "offroad"
     assert canonical_category("C4.2")[0] == "tractor"
     assert canonical_category("R4B")[0] == "tractor_trailer"
+    # Quadricycles: light (L6e) with mopeds, heavy (L7e) with motorcycles, as the source groups them.
+    assert canonical_category("L6e")[0] == "moped"
+    assert canonical_category("L7e")[0] == "motorcycle"
     assert canonical_category("TH")[0] is None
     # Speed-class suffixes (a: up to 40 km/h, b: over 40 km/h) keep the category.
     assert canonical_category("T1b") == ("tractor", "T1B")

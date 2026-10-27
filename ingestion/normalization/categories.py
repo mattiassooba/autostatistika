@@ -24,8 +24,11 @@ EU_TO_FAMILY = {
     "L3E": "motorcycle",
     "L4E": "motorcycle",
     "L5E": "motorcycle",
-    "L6E": "l_other",
-    "L7E": "l_other",
+    # The Infoleht general table counts light quadricycles (L6e) as mopeds and
+    # heavy quadricycles (L7e) as motorcycles: per-code fuel rows grouped this
+    # way match its Mopeedid / Mootorrattad columns in 169 of 177 months.
+    "L6E": "moped",
+    "L7E": "motorcycle",
     "T1": "tractor",
     "T2": "tractor",
     "T3": "tractor",
