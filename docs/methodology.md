@@ -150,6 +150,10 @@ in at most one. They were a separate "other L-category" family before; now they 
 fleet, new-vehicle splits, search). Motorcycle and moped fuel rows now add up to the stated monthly totals in 143 of
 144 months each, and the moped and motorcycle new-vehicle splits reconcile and are published. Fleet totals per date do
 not change; on 1 Oct 2026 2 703 L6e and 4 814 L7e vehicles moved from "other L-category" to mopeds and motorcycles.
+The one exception is 05/2017: the fuel sheet has 356 motorcycles and 198 mopeds, the general table 364 and 190. The
+sums agree (554); 8 vehicles sit on different sides of the line in the leaflet itself. Both are published as stated.
+(The other 8 of 177 months in the first check were not differences: 10/2012-03/2013 and one 11/2015 file carry register
+stock on the same sheet, and no fuel figures are published for months before 07/2014.)
 
 ## Vehicle search (/otsing, added 27 Oct 2026)
 
