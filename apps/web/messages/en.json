@@ -281,7 +281,7 @@
     "reason": {
       "unavailable": "the service did not respond",
       "rateLimited": "too many requests, try again in a minute",
-      "invalid": "the text failed the number check"
+      "invalid": "the text failed the checks"
     },
     "source": "Transport Administration, Infoleht: monthly top brands and general table, {period}. Processed by Autostatistika {date}.",
     "sourceLink": "Open the original source",
@@ -306,6 +306,8 @@
         "order": "{range}: {list}.",
         "ratio": "{first} had {ratio} times as many first registrations as {second}.",
         "none": "{range}: none of the selected brands is ranked in all 12 months, so totals are not compared.",
+        "single": "Only one brand ({brand}) is selected, so brands are not compared.",
+        "onlyOne": "{range}: only {brand} is ranked in all 12 months, so brand totals are not compared.",
         "ranks": "Ranks in {range}: {list}."
       },
       "observation": {

@@ -90,7 +90,7 @@ Order of setup (the key never goes into the repository, a chat or the site build
    `ANTHROPIC_API_KEY=…`, then `npx wrangler dev --var ALLOWED_ORIGINS:http://localhost:3000` (it reads the trend files
    from the live site; add `--var SITE_ORIGIN:http://localhost:3000` with `npm run preview` for a local build) and
    `npx tsx scripts/live-check.ts`. It reports accepted/rejected answers, token use and cost, forged requests and the
-   cache. `npx wrangler dev --var DAILY_LIMIT:2 …` with `live-check.ts --limit-test` checks the cap.
+   cache. `npx wrangler dev --var DAILY_LIMIT:2 --persist-to .wrangler/limit-test …` (a fresh day count) with `live-check.ts --limit-test` checks the cap.
 3. Cloudflare: `npx wrangler login`, `npx wrangler kv namespace create CACHE` (id into `wrangler.toml`),
    `npx wrangler secret put ANTHROPIC_API_KEY` (typed at the prompt), `npx wrangler deploy`. Run `live-check.ts` against
    the printed URL with `--origin https://autostatistika.ee`.

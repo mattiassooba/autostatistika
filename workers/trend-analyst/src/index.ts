@@ -154,7 +154,11 @@ export function createHandler(deps: Partial<Deps> = {}) {
       return json(answer.status, { error: answer.error });
     }
     const checked = validateAnalysis(answer.candidate, analysisRequest);
-    log(checked.ok ? "accepted" : "rejected", { ...answer.usage, ...(checked.ok ? {} : { reason: checked.reason }) });
+    // A rejected answer is logged with an excerpt, to tell a real problem from an over-strict check.
+    log(checked.ok ? "accepted" : "rejected", {
+      ...answer.usage,
+      ...(checked.ok ? {} : { reason: checked.reason, excerpt: JSON.stringify(answer.candidate).slice(0, 800) }),
+    });
     if (!checked.ok) return json(422, { error: "invalid", reason: checked.reason });
     const analysis: AnalysisText = checked.value;
     if (env.CACHE) await env.CACHE.put(key, JSON.stringify(analysis), { expirationTtl: CACHE_TTL });

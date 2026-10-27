@@ -281,7 +281,7 @@
     "reason": {
       "unavailable": "teenus ei vastanud",
       "rateLimited": "liiga palju päringuid, proovi minuti pärast uuesti",
-      "invalid": "tekst ei läbinud numbrite kontrolli"
+      "invalid": "tekst ei läbinud kontrolli"
     },
     "source": "Transpordiamet, Infoleht: kuu TOP-margid ja üldtabel, {period}. Autostatistika töötlus {date}.",
     "sourceLink": "Ava algallikas",
@@ -306,6 +306,8 @@
         "order": "{range}: {list}.",
         "ratio": "{first} ja {second} esmaregistreerimiste suhe oli {ratio} : 1.",
         "none": "{range}: ühelgi valitud margil pole edetabelis kõiki 12 kuud, seega kogusummasid ei võrrelda.",
+        "single": "Valitud on üks mark ({brand}), seega marke omavahel ei võrrelda.",
+        "onlyOne": "{range}: kõigil 12 kuul oli edetabelis ainult {brand}, seega markide kogusummasid ei võrrelda.",
         "ranks": "Edetabelikohad perioodis {range}: {list}."
       },
       "observation": {

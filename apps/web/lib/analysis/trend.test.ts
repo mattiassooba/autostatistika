@@ -109,6 +109,22 @@ describe("trendFacts", () => {
     assert.equal(change?.key, "partial");
   });
 
+  it("says why brands are not compared: one brand, only one with totals, or none", () => {
+    const comparisonKey = (brands: Brand[]) => {
+      // An unselected brand keeps every month's TOP list present, as in the real data.
+      const explorer = data(months36, [...brands, { slug: "audi", name: "AUDI", value: () => 500 }]);
+      const { statements } = trendStatements(trendFacts(input(explorer, brands.map((b) => b.slug))));
+      return statements.filter((s) => s.section === "comparison").map((s) => s.key);
+    };
+    const full = (slug: string, name: string): Brand => ({ slug, name, value: () => 100 });
+    const gappy = (slug: string, name: string): Brand => ({ slug, name, value: (period) => (period === "2026-02" ? null : 90) });
+    // A single brand listed in every month is not "none of the selected brands is ranked".
+    assert.deepEqual(comparisonKey([full("volkswagen", "VOLKSWAGEN")]), ["single", "ranks"]);
+    assert.deepEqual(comparisonKey([full("bmw", "BMW"), gappy("skoda", "SKODA")]), ["onlyOne", "ranks"]);
+    assert.deepEqual(comparisonKey([gappy("bmw", "BMW"), gappy("skoda", "SKODA")]), ["none", "ranks"]);
+    assert.deepEqual(comparisonKey([full("bmw", "BMW"), full("toyota", "TOYOTA")]), ["order", "ratio", "ranks"]);
+  });
+
   it("is insufficient without two separate complete blocks", () => {
     const months = monthsFrom("2025-04", "2026-09"); // 18 months
     const facts = trendFacts(input(data(months, [{ slug: "bmw", name: "BMW", value: () => 100 }]), ["bmw"]));

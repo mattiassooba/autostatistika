@@ -345,6 +345,10 @@ export function trendStatements(facts: TrendFacts): TrendStatements {
           [totals(first), totals(second)],
         );
       }
+    } else if (brands.length === 1) {
+      say("comparison", "single", { brand: brandName(brands[0].name) });
+    } else if (withTotals.length === 1) {
+      say("comparison", "onlyOne", { range: range(blocks.end), brand: brandName(withTotals[0].name) });
     } else {
       say("comparison", "none", { range: range(blocks.end) });
     }
