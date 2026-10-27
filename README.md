@@ -35,7 +35,7 @@ URL segments are Estonian in both languages (`/en/margid/bmw`).
 
 ## What is verified
 
-- Every published month is rebuilt from all 370 source files and compared row by row before publishing
+- Every published month is rebuilt from all 384 source files and compared row by row before publishing
   (`scripts/compare_bundle.py`; the weekly job refuses to publish if any table loses rows)
 - September 2026, passenger cars, from `Esm(üldtabel)`: 3639 first registrations, 1670 new, 1969 used
 - Monthly first registrations 2006-2014 match Transpordiamet's consolidated table except where that table itself is
@@ -78,6 +78,8 @@ Archivo (width axis) for type, IBM Plex Mono for ranks. Tokens live in `apps/web
 
 - Fleet 2016-2019 has five snapshots from the register general tables; motorcycles and mopeds are missing there (the
   tables count them together)
+- Older register codes TR, RO and TH (pre-2008 tractors and tractor trailers) are classified by evidence, not by an
+  official definition; confirmation from Transpordiamet is pending (methodology)
 - Brand rankings combine new and used registrations (the source's TOP sheets), so there is no new/used split per brand
 - Alfa Romeo has no free official mark: a monogram on the site, no mark on its share image
 - Core Web Vitals: lab only so far (Lighthouse mobile, 27 Oct 2026: /et 70, brand page 89, /otsing 81; CLS 0). Field data comes

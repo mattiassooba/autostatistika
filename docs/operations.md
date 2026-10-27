@@ -48,8 +48,8 @@ python scripts/run_backfill.py            # import everything in data/downloads/
 Register snapshots (about 300 MB per date, 1.4 GB for 2020-2026) download to `data/downloads/register_snapshot/`.
 `fetch_backfill.py --kinds …` rewrites the manifest with only those kinds; run it without `--kinds` before a full rebuild.
 
-25 Oct 2026 result: 370 files, 369 imported, 1 skipped (`infoleht-0109-27092014.xls` covers 01.09-27.09.2014 only;
-the complete September 2014 leaflet supersedes it). Runtime about 2 minutes after download.
+27 Oct 2026 result: 384 files (with the register snapshots and general tables), 383 imported, 1 skipped (`infoleht-0109-27092014.xls` covers 01.09-27.09.2014 only;
+the complete September 2014 leaflet supersedes it). Runtime about 4 minutes after download.
 
 Re-importing a file replaces everything that file produced before, so parser fixes never leave stale rows.
 When a month has several files (stock leaflet + first-registration leaflet, re-uploads), publishing takes every
@@ -62,7 +62,12 @@ fact key from one file only: the newest upload folder in the official URL.
 bundle as `registerIndex` (snapshot, checksum, asset name). The weekly job uploads them as one tar to the
 `register-index` release (`… upload`, skipped when present); the deploy downloads exactly the asset the bundle names
 into `apps/web/public/register/` and fails if it is missing. For a local build run `… build` and `… install`.
-The files are not committed (`.gitignore`).
+The files are not committed (`.gitignore`). A build replaces the snapshot's folder, so files a new build no longer
+writes (e.g. a family that became empty) are not packed into the asset.
+
+A change to category, brand or region mapping also changes the search files and so the checksum and asset name.
+Rebuild with `… build`, republish the bundle, run `… upload` and only then push: the deploy fails on an asset name
+the release does not have. Older assets can be deleted from the release once the live site uses the new one.
 
 ## Data delivery (web)
 
@@ -147,6 +152,13 @@ The fleet tab and brand pages plot every register date on a time axis; the searc
 - The dev server runs React Strict Mode. Motion state on list rows that React re-orders can reset there; hero row
   opacity, dimming and entrance therefore live in CSS classes (`.race-enter`, `.race-in`). Check animations in the
   production build before concluding anything.
+
+## Open questions with the source
+
+- Older register category codes TR, TR1, TR2, RO, TH, TH1: mapped by evidence on 27 Oct 2026 (methodology), an
+  email to andmed@transpordiamet.ee asks for their meaning. If the answer differs, change `EU_TO_FAMILY` in
+  `ingestion/normalization/categories.py`, the methodology note (`docs/methodology.md`, `method.p.legacyCodes` in
+  both message files) and the test, then rebuild the bundle and the search index.
 
 ## Unverified until credentials exist
 

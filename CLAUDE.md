@@ -37,6 +37,10 @@ npm run logos                                            # regenerate public/log
 
 - Data or parser changes: rebuild into a temporary DB/publish dir and diff against the committed bundle per table and
   month (see `docs/operations.md`). Only the intended months may change.
+- Category, brand or region mapping changes also change the /otsing search files: rebuild the index and upload the
+  new release asset before pushing (`docs/operations.md`, "Vehicle search files").
+- A source code without an official definition stays unclassified unless the evidence is documented in
+  `docs/methodology.md` and on the site's methodology note.
 - UI changes: check the production build in a real browser at 1440×900, 1920×1080 and 390px, with hover, keyboard,
   touch and reduced motion. The dev server (React Strict Mode) can show motion glitches the build does not have.
 - Stop servers serving `apps/web/out/` before building on Windows (locked files make the build hang).

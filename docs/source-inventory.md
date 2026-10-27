@@ -75,6 +75,7 @@ Flow sheets: `esm-06`/`esm-10` (same üldtabel idea), `uued`, `TOP 10`, `uus-sõ
 | Caveat | The zip's README: the 2020-2023 files were queried from the register in 2025 and may differ from the state on those dates. The site marks those dates "päritud tagantjärgi" |
 | No identifiers | No registration plate, VIN or owner. Owner data is limited to county (`VKOM_MAAKOND`) and private/legal type (`VKOM_TYYP`) |
 | Update | Monthly; the catalogue replaces the monthly file, so every file is also kept in the repository release `register-archive` |
+| Category codes | `KATEGOORIA` holds EU codes plus older codes the category page does not define: TR, TR1, TR2, RO, TH, TH1 (about 7,200 rows on 1.10.2026, all first registered by 2008). They are mapped to tractor / tractor trailer by evidence (see methodology); Transpordiamet was asked on 27 Oct 2026 to confirm |
 | Importer | `ingestion/discovery/opendata.py`, `ingestion/parsers/register.py` |
 
 1 October 2026 check: 788 081 passenger-car rows, 680 843 registered (`YLDINE_STAATUS`) and 107 238 suspended;
