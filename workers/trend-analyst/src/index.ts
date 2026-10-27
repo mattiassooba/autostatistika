@@ -1,12 +1,16 @@
 // POST / with an AnalysisRequest → { analysis, model, cached }.
 //
-// Order of work: origin check, per-IP rate limit, body checks, cache, daily cap,
-// model call, validation. Only validated answers are cached and returned; the
-// page falls back to its computed text on any error status.
+// Order of work: origin check, per-IP rate limit, body checks, cache, daily
+// budget, model call, validation. Only validated answers are cached and returned;
+// the page falls back to its computed text on any error status. Without the
+// budget binding no model call is made (fail closed).
+
+export { DailyBudget } from "./budget";
 
 import { validateAnalysis, type AnalysisRequest, type AnalysisText } from "../../../apps/web/lib/analysis/validate";
 import { callModel as defaultCallModel, PROMPT_VERSION, type ModelAnswer } from "./model";
 import { MAX_BODY_BYTES, parseRequest } from "./request";
+import { takeCall, type BudgetNamespace } from "./budget";
 
 /** The KV and rate-limit binding methods this Worker uses. */
 export type KV = {
@@ -22,6 +26,7 @@ export type Env = {
   DAILY_LIMIT?: string;
   CACHE?: KV;
   RATE_LIMITER?: RateLimit;
+  BUDGET?: BudgetNamespace;
 };
 
 type Deps = { callModel: (request: AnalysisRequest, options: { apiKey: string; model: string }) => Promise<ModelAnswer> };
@@ -83,28 +88,26 @@ export function createHandler(deps: Deps = { callModel: defaultCallModel }) {
 
     if (!env.ANTHROPIC_API_KEY) return json(503, { error: "not_configured" });
 
-    // A rough daily cap across all visitors (KV is eventually consistent, so it can overshoot slightly).
-    const day = `calls:${new Date().toISOString().slice(0, 10)}`;
+    // Hard daily cap on model calls across all visitors (atomic Durable Object counter).
+    if (!env.BUDGET) return json(503, { error: "no_budget" });
     const limit = Number(env.DAILY_LIMIT ?? "500");
-    if (env.CACHE) {
-      const used = Number((await env.CACHE.get(day)) ?? "0");
-      if (used >= limit) return json(503, { error: "daily_limit" });
-      await env.CACHE.put(day, String(used + 1), { expirationTtl: 2 * 24 * 3600 });
-    }
+    const budget = await takeCall(env.BUDGET, Number.isFinite(limit) ? limit : 0);
+    if (!budget.ok) return json(503, { error: "daily_limit" });
 
+    const started = Date.now();
     const answer = await deps.callModel(analysisRequest, { apiKey: env.ANTHROPIC_API_KEY, model });
+    const log = (outcome: string, extra: Record<string, unknown> = {}) =>
+      console.log(JSON.stringify({ event: "model_call", outcome, model, ms: Date.now() - started, calls_today: budget.used, ...extra }));
     if (!answer.ok) {
-      console.warn("model call failed", answer.error);
+      log("error", { error: answer.error });
       return json(answer.status, { error: answer.error });
     }
     const checked = validateAnalysis(answer.candidate, analysisRequest);
-    if (!checked.ok) {
-      console.warn("model text rejected", checked.reason);
-      return json(422, { error: "invalid", reason: checked.reason });
-    }
+    log(checked.ok ? "accepted" : "rejected", { ...answer.usage, ...(checked.ok ? {} : { reason: checked.reason }) });
+    if (!checked.ok) return json(422, { error: "invalid", reason: checked.reason });
     const analysis: AnalysisText = checked.value;
     if (env.CACHE) await env.CACHE.put(key, JSON.stringify(analysis), { expirationTtl: CACHE_TTL });
-    return json(200, { analysis, model, cached: false });
+    return json(200, { analysis, model, cached: false, usage: answer.usage });
   };
 }
 

@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { AnalysisRequest, AnalysisText } from "../../../apps/web/lib/analysis/validate";
-import { createHandler, type Env, type KV } from "../src/index";
+import { createHandler, DailyBudget, type Env, type KV } from "../src/index";
+import type { BudgetNamespace } from "../src/budget";
 import type { ModelAnswer } from "../src/model";
 
 const ORIGIN = "https://autostatistika.ee";
@@ -37,6 +38,26 @@ function kv(): KV & { store: Map<string, string> } {
   return { store, get: async (key) => store.get(key) ?? null, put: async (key, value) => void store.set(key, value) };
 }
 
+/** The real DailyBudget class on in-memory storage, behind a namespace-shaped stub. */
+function budget(): BudgetNamespace & { store: Map<string, unknown> } {
+  const store = new Map<string, unknown>();
+  const storage = {
+    get: async <T,>(key: string) => store.get(key) as T | undefined,
+    put: async (key: string, value: unknown) => void store.set(key, value),
+    delete: async (key: string) => store.delete(key),
+    list: async <T,>({ prefix = "" } = {}) => new Map([...store].filter(([key]) => key.startsWith(prefix))) as Map<string, T>,
+  };
+  const object = new DailyBudget({ storage });
+  // A Durable Object handles one request at a time; queue them as Cloudflare does.
+  let queue: Promise<unknown> = Promise.resolve();
+  const fetch = (input: string, init?: RequestInit) => {
+    const next = queue.then(() => object.fetch(new Request(input, init)));
+    queue = next.catch(() => undefined);
+    return next;
+  };
+  return { store, idFromName: (name: string) => name, get: () => ({ fetch }) };
+}
+
 function setup(model: (calls: number) => ModelAnswer = () => ({ ok: true, candidate: answer }), env: Partial<Env> = {}) {
   let calls = 0;
   const handle = createHandler({
@@ -46,7 +67,7 @@ function setup(model: (calls: number) => ModelAnswer = () => ({ ok: true, candid
     },
   });
   const cache = kv();
-  const fullEnv: Env = { ANTHROPIC_API_KEY: "test", ALLOWED_ORIGINS: ORIGIN, CACHE: cache, ...env };
+  const fullEnv: Env = { ANTHROPIC_API_KEY: "test", ALLOWED_ORIGINS: ORIGIN, CACHE: cache, BUDGET: budget(), ...env };
   const post = (payload: unknown, origin = ORIGIN) =>
     handle(new Request("https://worker.test/", { method: "POST", headers: { origin, "content-type": "application/json" }, body: JSON.stringify(payload) }), fullEnv);
   return { post, handle, env: fullEnv, cache, calls: () => calls };
@@ -96,7 +117,29 @@ describe("trend analyst worker", () => {
 
     const capped = setup(undefined, { DAILY_LIMIT: "1" });
     assert.equal((await capped.post(body)).status, 200);
-    assert.equal((await capped.post({ ...body, locale: "en", context: { ...body.context, period: "Oct 2021 – Sep 2026" } })).status, 503);
+    const second = await capped.post({ ...body, context: { ...body.context, period: "Oct 2021 – Sep 2026" } });
+    assert.equal(second.status, 503);
+    assert.deepEqual(await second.json(), { error: "daily_limit" });
+    assert.equal(capped.calls(), 1);
+    // A cached answer costs nothing and is still served after the cap.
+    assert.equal((await capped.post(body)).status, 200);
+  });
+
+  it("holds the daily cap under parallel requests", async () => {
+    const { post, calls } = setup(undefined, { DAILY_LIMIT: "5" });
+    const requests = Array.from({ length: 40 }, (_, i) => post({ ...body, context: { ...body.context, category: `Type ${i}` } }));
+    const statuses = (await Promise.all(requests)).map((response) => response.status);
+    assert.equal(statuses.filter((status) => status === 200).length, 5);
+    assert.equal(statuses.filter((status) => status === 503).length, 35);
+    assert.equal(calls(), 5);
+  });
+
+  it("makes no model call without the budget binding, or with a zero limit", async () => {
+    const unbound = setup(undefined, { BUDGET: undefined });
+    assert.deepEqual(await (await unbound.post(body)).json(), { error: "no_budget" });
+    const zero = setup(undefined, { DAILY_LIMIT: "0" });
+    assert.equal((await zero.post(body)).status, 503);
+    assert.equal(unbound.calls() + zero.calls(), 0);
   });
 
   it("rejects malformed and oversized requests before the model", async () => {

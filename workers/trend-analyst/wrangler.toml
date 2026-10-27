@@ -10,7 +10,17 @@ compatibility_flags = ["nodejs_compat"]
 ALLOWED_ORIGINS = "https://autostatistika.ee,https://www.autostatistika.ee"
 MODEL = "claude-haiku-5-5"
 # Model calls per UTC day across all visitors; cached answers do not count.
+# Enforced by the DailyBudget Durable Object below. Each call is at most 4 000
+# output tokens and a 24 KB request, so the day's spend has a fixed ceiling.
 DAILY_LIMIT = "500"
+
+[[durable_objects.bindings]]
+name = "BUDGET"
+class_name = "DailyBudget"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DailyBudget"]
 
 # Cache of validated answers (30 days). Create with
 # `npx wrangler kv namespace create CACHE` and put its id here.

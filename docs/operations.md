@@ -75,29 +75,40 @@ The brand comparison's trend analysis computes everything in the browser (`apps/
 word it, deploy `workers/trend-analyst` (Cloudflare Workers, free plan) and point the site at it. The site stays on
 GitHub Pages; the Worker only holds `ANTHROPIC_API_KEY`, rate-limits and caches.
 
+Order of setup (the key never goes into the repository, a chat or the site build):
+
+1. Anthropic Console: a workspace for this site with a monthly spend limit, and an API key created in it.
+2. Local test with real Claude: put the key in `workers/trend-analyst/.dev.vars` (git-ignored) as
+   `ANTHROPIC_API_KEY=…`, then `npx wrangler dev --var ALLOWED_ORIGINS:http://localhost:3000` and
+   `npx tsx scripts/live-check.ts`. It reports accepted/rejected answers, token use and cost, a hostile request and the
+   cache. `npx wrangler dev --var DAILY_LIMIT:2 …` with `live-check.ts --limit-test` checks the cap.
+3. Cloudflare: `npx wrangler login`, `npx wrangler kv namespace create CACHE` (id into `wrangler.toml`),
+   `npx wrangler secret put ANTHROPIC_API_KEY` (typed at the prompt), `npx wrangler deploy`. Run `live-check.ts` against
+   the printed URL with `--origin https://autostatistika.ee`.
+4. Visitors: set the repository variable `TREND_API_URL` (Settings → Secrets and variables → Actions → Variables) to
+   that URL and redeploy the site; `deploy.yml` passes it to the build as `NEXT_PUBLIC_TREND_API_URL`. Unset, the page
+   makes no request and shows the computed text. To switch AI off again, delete the variable and redeploy.
+
 ```bash
 cd workers/trend-analyst
 npm install
-npm test                                     # handler, validation, cache, limits (fake model)
-npx wrangler login
-npx wrangler kv namespace create CACHE       # put the printed id in wrangler.toml
-npx wrangler secret put ANTHROPIC_API_KEY
-npx wrangler deploy                          # prints https://autostatistika-trend.<account>.workers.dev
+npm test                 # handler, validation, cache, limits, daily budget (fake model)
+npx wrangler tail        # live log: one JSON line per model call with tokens and outcome
 ```
 
-Then set the repository variable `TREND_API_URL` (Settings → Secrets and variables → Actions → Variables) to that
-URL and redeploy the site; `deploy.yml` passes it to the build as `NEXT_PUBLIC_TREND_API_URL`. Unset, the page makes
-no request and shows the computed text.
-
 - Model `claude-haiku-5-5` (`MODEL` in `wrangler.toml`), effort low, structured JSON output, at most 4 000 tokens
-- Limits: 8 requests a minute per IP (Workers rate-limit binding), `DAILY_LIMIT` model calls a day (500; a KV
-  counter, approximate), 24 KB request body; requests only from `ALLOWED_ORIGINS`
+- Limits: 8 requests a minute per IP (Workers rate-limit binding), 24 KB request body, requests only from
+  `ALLOWED_ORIGINS`, and `DAILY_LIMIT` model calls per UTC day (500) counted by the `DailyBudget` Durable Object:
+  atomic, so parallel requests cannot pass it. Without that binding the Worker makes no model call
+- Cost ceiling: each call is at most a 24 KB request (under 12 000 tokens with the system prompt) and 4 000 output
+  tokens including thinking, so at most about $0.0032 at Haiku 5.5 list prices ($0.10 / $0.50 per million tokens), and
+  500 calls stay under $2 a day; measured use is lower (`live-check.ts`). The Anthropic workspace spend limit is the
+  backstop for everything else
 - Cache: validated answers in KV for 30 days, keyed by prompt version, model and the full request (the request
-  carries the figures, so new data means a new key). "Koosta uuesti" skips the cache read
+  carries the figures, so new data means a new key). Cached answers cost nothing and do not count against the cap.
+  "Koosta uuesti" skips the cache read
 - Every answer is checked twice with `apps/web/lib/analysis/validate.ts`: in the Worker before caching, and in the page.
   A change to that file should be followed by `npm test` here as well
-- Local run: `npx wrangler dev` with `.dev.vars` (`ANTHROPIC_API_KEY=…`, `ALLOWED_ORIGINS=http://localhost:3000`),
-  then build the site with `NEXT_PUBLIC_TREND_API_URL=http://localhost:8787/`
 
 ## Data delivery (web)
 

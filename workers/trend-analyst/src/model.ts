@@ -42,7 +42,8 @@ const SCHEMA = {
   additionalProperties: false,
 } as const;
 
-export type ModelAnswer = { ok: true; candidate: unknown } | { ok: false; status: number; error: string };
+export type Usage = { input_tokens: number; output_tokens: number };
+export type ModelAnswer = { ok: true; candidate: unknown; usage?: Usage } | { ok: false; status: number; error: string };
 
 export async function callModel(request: AnalysisRequest, options: { apiKey: string; model: string }): Promise<ModelAnswer> {
   const client = new Anthropic({ apiKey: options.apiKey, maxRetries: 1, timeout: 20_000 });
@@ -58,8 +59,9 @@ export async function callModel(request: AnalysisRequest, options: { apiKey: str
     if (response.stop_reason === "max_tokens") return { ok: false, status: 502, error: "max_tokens" };
     const text = response.content.find((block) => block.type === "text")?.text;
     if (!text) return { ok: false, status: 502, error: "empty" };
+    const usage = { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens };
     try {
-      return { ok: true, candidate: JSON.parse(text) };
+      return { ok: true, candidate: JSON.parse(text), usage };
     } catch {
       return { ok: false, status: 502, error: "json" };
     }
