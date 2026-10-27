@@ -33,7 +33,7 @@ Canonical codes are stable. Original source strings are stored beside them.
 | `self_propelled` | Liikurmasinad | Self-propelled machines | LM, Liikurmasinad |
 | `watercraft` | Veesõidukid | Watercraft | Esm-vees6iduk |
 | `tractor_trailer` | Traktorihaagised | Tractor trailers | R1a-R4b, Traktorihaagised |
-| `unclassified` | Liigitamata | Unclassified | register codes without an official definition (TR, TH, RO, …) |
+| `unclassified` | Liigitamata | Unclassified | register codes without a definition or evidence for one (the older TR, TH, RO codes are mapped, see methodology) |
 
 EU category codes (`M1`, `L3e`) are stored on facts when the sheet has them. Family is the dashboard filter.
 

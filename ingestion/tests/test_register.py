@@ -69,7 +69,16 @@ def test_register_age_bands(tmp_path: Path) -> None:
 def test_register_categories(tmp_path: Path) -> None:
     facts = parse_register(write_csv(tmp_path / "ar_2026-10-01_muu.csv", OTHER))
     families = {f.category_code for f in by_grain(facts, "brand")}
-    assert families == {"offroad", "trailer", "tractor_trailer", "unclassified"}
+    assert families == {"offroad", "trailer", "tractor_trailer"}
+    assert sum(f.value for f in by_grain(facts, "brand") if f.category_code == "tractor_trailer") == 2
+
+
+def test_legacy_register_codes() -> None:
+    # Pre-2008 codes mapped by evidence (docs/methodology.md); anything else stays unclassified.
+    assert [canonical_category(code)[0] for code in ["TR", "TR1", "TR2", "RO", "TH", "TH1"]] == [
+        "tractor", "tractor", "tractor", "tractor", "tractor_trailer", "tractor_trailer",
+    ]
+    assert canonical_category("TX")[0] is None
 
 
 def test_register_zip_is_retroactive(tmp_path: Path) -> None:
@@ -109,7 +118,7 @@ def test_register_codes_normalise() -> None:
     # Quadricycles: light (L6e) with mopeds, heavy (L7e) with motorcycles, as the source groups them.
     assert canonical_category("L6e")[0] == "moped"
     assert canonical_category("L7e")[0] == "motorcycle"
-    assert canonical_category("TH")[0] is None
+    assert canonical_category("TH")[0] == "tractor_trailer"
     # Speed-class suffixes (a: up to 40 km/h, b: over 40 km/h) keep the category.
     assert canonical_category("T1b") == ("tractor", "T1B")
     assert canonical_category("T4.3a")[0] == "tractor"

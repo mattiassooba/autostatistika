@@ -389,6 +389,10 @@
         "title": "Registri seis on sõidukite loendus",
         "body": "Alates 2020. aastast loetakse sõidukipark avaandmete registrifailist, kus iga rida on üks registris olev sõiduk. Arvud on nende ridade loendus; üksikuid sõidukeid ei avaldata. Staatus on allika üldstaatus: registreeritud või peatatud. 2020–2023 failid päriti registrist tagantjärgi 2025. aastal ja on nii märgitud."
       },
+      "legacyCodes": {
+        "title": "Vanad registrikoodid on liigitatud tõendite põhjal",
+        "body": "Registris on vanu kategooriakoode (TR, TR1, TR2, RO, TH, TH1), mida Transpordiameti kategooriate leht ei kirjelda. Kõik need sõidukid on esmaregistreeritud hiljemalt 2008. aastal ja nende arv väheneb igal aastal. TR-koodiga on peamiselt MTZ, Valtra ja John Deere traktorid, RO-koodiga roomiktraktorid ja TH-koodiga traktorihaagised (2PTS, Pöttinger). Nendega koos jätkub 1.1.2020 traktorite arv (31 923) 1.1.2019 üldtabeli rida (30 522); ilma nendeta langeks see aastaga umbes viiendiku. Seetõttu loetakse TR ja RO traktoriteks ning TH traktorihaagisteks. Ootame Transpordiametilt kinnitust; kui see erineb, muudame liigitust. Muud kirjelduseta koodid jäävad liigitamata."
+      },
       "missing": {
         "title": "Puuduv ei ole null",
         "body": "Tühjad lahtrid jäävad tühjaks. Kui mark kuu edetabelis puudub, näidatakse „pole edetabelis“, mitte nulli. Kuud, mida pole imporditud, on viirutatud."

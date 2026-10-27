@@ -114,8 +114,17 @@ Each rule has a test in `ingestion/tests/test_parsers.py` that reproduces the so
   headline stock is their sum and is labelled as including suspended records, with the split beside it.
 - Families follow the EU category (transpordiamet.ee/soidukite-ja-masinate-kategooriad): MS1/MS2 are off-road
   vehicles, C1-C5 and T4.x tractors, speed classes (T1a/T1b) keep their category, R1-R4 are tractor trailers (a
-  separate family from road trailers O1-O4). Codes the page does not define (TR, TH, TR1, TR2, TH1, RO) stay
-  "unclassified" and are never guessed.
+  separate family from road trailers O1-O4).
+- Older codes the category page does not define are mapped by evidence (27 Oct 2026, a question to Transpordiamet
+  is pending; if their answer differs, the mapping changes and the series is rebuilt). Any other code without a
+  definition stays "unclassified".
+  - TR, TR1, TR2 → tractor (1.10.2026: 4,852 + 316 + 1; mostly MTZ, Valtra, John Deere, JUMZ). RO → tractor
+    (17; DT and TDT crawler tractors, matching the Infoleht "Traktor (sh roomik)").
+  - TH, TH1 → tractor trailer (1,874 + 125; mostly 2PTS, home-built, MMZ, Pöttinger).
+  - Every vehicle with these codes was first registered by 2008 and the counts fall each year, so they are codes
+    no longer issued, not a separate population.
+  - Series check: 1.1.2020 tractors 25,817 + 6,106 = 31,923 against 30,522 in the 1.1.2019 general table; tractor
+    trailers 6,670 + 2,376 = 9,046 against 8,824. Without them both series drop by about a fifth in one year.
 - County is the responsible user's (or owner's) address county; records without one are "Maakond määramata".
 - Age is full years from `ESMANE_REG` (first registration in any country) to the snapshot date, in the same bands as
   the Infoleht age sheet (0-2, 3-5, 6-10, over 10). The Infoleht sheet does not state its basis, so the two parts of

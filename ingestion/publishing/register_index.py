@@ -26,6 +26,7 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+import shutil
 import struct
 from pathlib import Path
 
@@ -165,7 +166,9 @@ def build_index(paths: list[Path], dest: Path) -> dict:
     snapshot, raw = load_snapshot(paths)
     frame = normalise(raw)
     out = dest / snapshot
-    out.mkdir(parents=True, exist_ok=True)
+    # A rebuild of the same snapshot must not keep files the new build no longer writes.
+    shutil.rmtree(out, ignore_errors=True)
+    out.mkdir(parents=True)
     frame["variant"] = frame.groupby(VARIANT, dropna=False, sort=True).ngroup().astype("Int64")
     full_columns = ["variant", "make", "family", *TEXT.keys(), *NUMBER.keys()]
     files: dict[str, int] = {}

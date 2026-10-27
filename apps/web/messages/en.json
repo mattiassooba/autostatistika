@@ -389,6 +389,10 @@
         "title": "A register snapshot is a count of vehicles",
         "body": "From 2020 the fleet comes from the open register file, in which every row is one vehicle in the register. The figures count those rows; individual vehicles are not published. Status is the source's general status: registered or suspended. The 2020–2023 files were queried from the register retroactively in 2025 and are marked as such."
       },
+      "legacyCodes": {
+        "title": "Older register codes are classified by evidence",
+        "body": "The register has older category codes (TR, TR1, TR2, RO, TH, TH1) that Transpordiamet's category page does not describe. Every vehicle with them was first registered in 2008 or earlier and their number falls each year. TR is mostly MTZ, Valtra and John Deere tractors, RO crawler tractors and TH tractor trailers (2PTS, Pöttinger). Counted with them, tractors on 1.1.2020 (31,923) continue the 1.1.2019 general table (30,522); without them the series would drop by about a fifth in a year. TR and RO are therefore counted as tractors and TH as tractor trailers. We have asked Transpordiamet to confirm; if their answer differs, the classification changes. Other codes without a description stay unclassified."
+      },
       "missing": {
         "title": "Missing is not zero",
         "body": "Empty cells stay empty. When a brand is missing from a month's ranking, it reads “not ranked”, never zero. Months that were not imported are hatched."
