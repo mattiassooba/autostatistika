@@ -108,7 +108,8 @@ Preview the export locally: `npm run build && npm run preview` (http://localhost
 
 ## Alerts and the weekly update
 
-`.github/workflows/ingest.yml` runs Tuesday 04:17 UTC (and on demand). It restores `data/downloads/` from the Actions
+`.github/workflows/ingest.yml` runs Tuesday and Friday 04:17 UTC (and on demand; GitHub can drop a scheduled run, and a run
+with nothing new commits nothing). It restores `data/downloads/` from the Actions
 cache and any missing register snapshots from the `register-archive` release (`scripts/register_archive.py restore`),
 downloads new files, uploads new register snapshots to that release (`… upload`), runs the parser tests, rebuilds the
 warehouse from every file, and compares the new bundle with the committed one (`scripts/compare_bundle.py`). The

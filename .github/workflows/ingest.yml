@@ -8,8 +8,11 @@ name: Ingest official sources
 # exactly, in about four minutes. Register snapshots are also kept in the
 # "register-archive" release, because the catalogue replaces its monthly file.
 on:
+  # GitHub drops scheduled runs under load (27 Oct 2026: Tuesday never ran).
+  # Friday is a backup; a run with nothing new commits and deploys nothing.
   schedule:
     - cron: "17 4 * * 2"
+    - cron: "17 4 * * 5"
   workflow_dispatch:
 
 permissions:
