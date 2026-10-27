@@ -44,7 +44,8 @@ export function Block({
           </div>
           {description && <p className="mt-1.5 text-[14px] leading-relaxed text-muted">{description}</p>}
         </div>
-        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+        {/* max-w-full, not shrink-0: wider than a phone screen, the controls wrap instead of pushing the page sideways */}
+        {actions && <div className="flex max-w-full flex-wrap items-center gap-2">{actions}</div>}
       </header>
       <div className="mt-5">{children}</div>
       {footer && <div className="mt-4">{footer}</div>}

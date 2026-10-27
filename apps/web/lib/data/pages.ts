@@ -12,7 +12,7 @@
 //   new-vehicle total; there a brand without rows really had zero new cars.
 
 import type { BrandRow, ModelRow, PublishedBundle } from "./types";
-import { titleCaseBrand } from "../format";
+import { shiftPeriod, titleCaseBrand } from "../format";
 
 /** Model-sheet months count only if their sum is within this share of the stated total. */
 const RECONCILE_TOLERANCE = 0.01;
@@ -119,11 +119,7 @@ function canonical(row: { brand_slug: string }): string {
   return ALIASES[row.brand_slug] ?? row.brand_slug;
 }
 
-export function shiftPeriod(period: string, delta: number): string {
-  const [y, m] = period.split("-").map(Number);
-  const index = y * 12 + (m - 1) + delta;
-  return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, "0")}`;
-}
+export { shiftPeriod };
 
 function build(bundle: PublishedBundle): Model {
   const reg = bundle.registrations;

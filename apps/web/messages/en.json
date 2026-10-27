@@ -231,6 +231,117 @@
     "sourceNote": "Brands come from each month's TOP sheet. Brands outside the ranking are not counted as zero.",
     "axisNoteDense": "One point per month. A break in a line means the brand was not in that month's ranking."
   },
+  "trend": {
+    "analyse": "Analyse trend",
+    "title": "Trend analysis",
+    "titleAi": "AI trend analysis",
+    "rangeLabel": "Comparison period",
+    "range": {
+      "2": "2 y",
+      "5": "5 y",
+      "10": "10 y",
+      "all": "All",
+      "custom": "From {from}"
+    },
+    "rangeAria": {
+      "2": "Last 2 years",
+      "5": "Last 5 years",
+      "10": "Last 10 years",
+      "all": "All imported months",
+      "custom": "From {from}"
+    },
+    "meta": {
+      "period": "Selected period",
+      "brands": "Brands compared",
+      "category": "Type"
+    },
+    "sections": {
+      "summary": "Main observation",
+      "changes": "Key changes",
+      "comparison": "Comparison",
+      "observation": "Notable pattern",
+      "evidence": "Evidence",
+      "limitations": "Limitations",
+      "source": "Data source"
+    },
+    "regenerate": "Regenerate",
+    "copy": "Copy",
+    "copyLabel": "Copy analysis",
+    "copied": "Copied",
+    "close": "Close analysis",
+    "loading": "Preparing the analysis…",
+    "stale": "The selection has changed. This analysis is for {brands}, {period}.",
+    "refresh": "Analyse the new selection",
+    "evidenceRef": "Evidence {n}",
+    "mode": {
+      "ai": "Wording: {model}. Figures are computed from the data, and every number in the text is checked against them.",
+      "computed": "Text and figures are computed from the data; no language model was used.",
+      "fallback": "The AI wording could not be used ({reason}). Showing the computed text."
+    },
+    "reason": {
+      "unavailable": "the service did not respond",
+      "rateLimited": "too many requests, try again in a minute",
+      "invalid": "the text failed the number check"
+    },
+    "source": "Transport Administration, Infoleht: monthly top brands and general table, {period}. Processed by Autostatistika {date}.",
+    "sourceLink": "Open the original source",
+    "unit": {
+      "pp": "pp"
+    },
+    "s": {
+      "summary": {
+        "leader": "{brand} is the largest of the selected brands: {value} first registrations in {range}, {share} of all first registrations of the type.",
+        "mover": "The largest change was {brand}: {from} → {to} first registrations ({pct}), comparing the 12 months {start} and {end}.",
+        "single": "{brand}: {from} → {to} first registrations ({pct}), comparing the 12 months {start} and {end}.",
+        "noTotals": "None of the selected brands is ranked in every month of both {start} and {end}, so no change is calculated.",
+        "insufficient": "The selected period ({months} calendar months) does not hold two separate complete 12-month blocks, so no change is calculated. Choose a longer period."
+      },
+      "changes": {
+        "brand": "{brand}: {from} → {to} first registrations ({pct}); share of the type {shareFrom} → {shareTo} ({pp}).",
+        "partial": "{brand}: ranked in {startListed} of 12 months ({start}) and {endListed} of 12 months ({end}). Months outside the ranking are unknown, so the 12-month totals are not compared.",
+        "market": "Type total: {from} → {to} first registrations ({pct}); share of new vehicles {newFrom} → {newTo} ({pp}).",
+        "marketNoNew": "Type total: {from} → {to} first registrations ({pct}). The number of new vehicles is not known for every month."
+      },
+      "comparison": {
+        "order": "{range}: {list}.",
+        "ratio": "{first} had {ratio} times as many first registrations as {second}.",
+        "none": "{range}: none of the selected brands is ranked in all 12 months, so totals are not compared.",
+        "ranks": "Ranks in {range}: {list}."
+      },
+      "observation": {
+        "peak": "{brand} peaked in {period}: {value} first registrations, {ratio} times its median month ({median}).",
+        "dip": "{brand} had its lowest month in {period}: {value} first registrations, {ratio} times its median month ({median}).",
+        "steady": "{brand} was ranked in all {months} months, between {best} and {worst}.",
+        "steadyRank": "{brand} was ranked in all {months} months, every time at {best}.",
+        "none": "No month of any selected brand differed from the brand's median month by a factor of {threshold} or more."
+      }
+    },
+    "item": {
+      "brandValue": "{brand} {value}",
+      "brandRank": "{brand} #{best} ({listed} of {months} months)",
+      "brandRankRange": "{brand} #{best}–{worst} ({listed} of {months} months)",
+      "rank": "#{best}",
+      "rankRange": "#{best}–{worst}",
+      "gapRange": "{range}"
+    },
+    "ev": {
+      "brandTotals": "{brand}, first registrations",
+      "brandShares": "{brand}, share of the type",
+      "marketTotals": "Type total, first registrations",
+      "marketNewShares": "Type total, share of new",
+      "brandRanks": "{brand}, ranks",
+      "brandMonth": "{brand}, month's first registrations",
+      "brandMedian": "{brand}, median month"
+    },
+    "lim": {
+      "topList": "Brands come from each month's TOP sheet, which lists the {min}–{max} largest brands. A month in which a brand is not ranked is unknown, not zero.",
+      "topListOne": "Brands come from each month's TOP sheet, which lists the {min} largest brands. A month in which a brand is not ranked is unknown, not zero.",
+      "newUsed": "Brand rows count new and used vehicles together; the share of new is known only for the type as a whole.",
+      "gaps": "No ranking in {count} months: {ranges}.",
+      "blocks": "Changes compare two complete 12-month blocks, so seasonality does not distort the result.",
+      "noCause": "The analysis describes the figures, not their causes."
+    }
+  },
   "models": {
     "title": "New passenger cars by model",
     "description": "First registrations of new passenger cars by model, {period}.",
@@ -400,6 +511,10 @@
       "shares": {
         "title": "Every share names its denominator",
         "body": "New-vehicle share = new / first registrations. Brand share = brand first registrations / type first registrations in the same month. Repeat share = repeats / all inspections in the same group and month."
+      },
+      "trend": {
+        "title": "Trend analysis computes; a language model only words it",
+        "body": "The brand comparison's trend analysis computes every figure from the same TOP-sheet rows the chart draws. A change compares the first and the last complete 12-month block of the period; a brand has a 12-month total only when it was ranked in all 12 months. Share is the brand's first registrations divided by the type's first registrations over the same months; pp means percentage points. When AI wording is switched on, a language model (Claude Haiku) receives only those computed sentences and their evidence. Its text is shown only if every number in it appears in the evidence with the same sign and it names no causes; otherwise the computed text is shown."
       }
     },
     "sourcesTitle": "Official sources",

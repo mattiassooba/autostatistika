@@ -25,11 +25,11 @@ the weekly update.
 
 | Path | What it shows |
 | --- | --- |
-| `/et`, `/en` | Hero (blueprint drawing, selected-month figures, animated brand ranking with logos, timeline, brand duel) and the explorer: registrations, fleet, inspections, insights, methodology |
+| `/et`, `/en` | Hero (blueprint drawing, selected-month figures, animated brand ranking with logos, timeline, brand duel) and the explorer: registrations, fleet, inspections, insights, methodology. The brand comparison has a period control (2, 5, 10 years or all) and a trend analysis card ("Analüüsi trendi") |
 | `/et/margid`, `/et/margid/<brand>` | 57 brand pages: new cars by year, month and model, first-registration ranking, trucks |
 | `/et/kuu`, `/et/kuu/<YYYY-MM>` | 249 month pages: vehicle types, brand rankings, new cars by brand and model, fuels, new cars by county, power, gearbox and colour |
 | `/et/otsing` | Vehicle search over the latest register snapshot: make, model, year, power, fuel, gearbox, body, county, status and technical filters; results as variants with counts and spec ranges, side-by-side comparison of up to 4 variants, CSV download |
-| `/og/...png` | A share image per page; `sitemap.xml` lists all 618 pages |
+| `/og/...png` | A share image per page; `sitemap.xml` lists all 620 pages |
 
 URL segments are Estonian in both languages (`/en/margid/bmw`).
 
@@ -86,4 +86,6 @@ Archivo (width axis) for type, IBM Plex Mono for ranks. Tokens live in `apps/web
   from Search Console once Google has enough visits
 - Supabase Postgres/Storage and Sentry need account credentials; Teabevärav vehicle-level CSVs are not imported
   (the slug API returned HTTP 500); Tableau dashboards are not a source
-- Optional AI phrasing needs `OPENAI_API_KEY`; the site uses deterministic, evidence-backed sentences without it
+- Optional AI phrasing of the insights needs `OPENAI_API_KEY`; the site uses deterministic, evidence-backed sentences without it
+- The trend analysis words its computed statements with Claude only when the trend-analyst Worker is deployed and
+  `TREND_API_URL` is set (`docs/operations.md`); until then it shows the computed text

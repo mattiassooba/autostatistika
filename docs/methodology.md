@@ -195,6 +195,30 @@ stock on the same sheet, and no fuel figures are published for months before 07/
 - The CSV download lists every variant that matches the filters with its number of vehicles (no single vehicles),
   semicolon-separated UTF-8 for Estonian Excel; missing values are empty cells.
 
+## Trend analysis (brand comparison, added 27 Oct 2026)
+
+- Reads exactly the rows the comparison chart draws: the selected brands' TOP-list first registrations (new and used
+  together) in the chosen window (last 2, 5 or 10 years, or every month; URL `from`), and the type's monthly totals.
+- A change compares two complete 12-month blocks: the first and the last run of 12 consecutive months in the window
+  where every month has a TOP list and a stated type total. Twelve months cover each calendar month once, so
+  seasonality does not decide the direction. Without two separate blocks the card says so and computes no change.
+- A brand's 12-month total exists only when it is on the TOP list in all 12 months; otherwise the card states in how
+  many months it was listed and compares nothing. A month off the list is unknown, never zero.
+- Share = brand first registrations / type first registrations over the same 12 months. Percentage points (pp) are
+  taken between the shares as shown (one decimal). New-vehicle share = new / first registrations of the type over the
+  same months (only when every month states new vehicles); brand rows have no new/used split.
+- The ratio between the two largest selected brands uses their totals in the last block. Ranks are each brand's best
+  and worst TOP-list position over the window.
+- Notable month: the listed month furthest from the brand's median listed month (at least 12 listed months), named
+  only when it is at least 1.8 times the median or at most 1/1.8 of it. Otherwise a brand listed in every month is
+  described by its rank range, or the card says no month stood out.
+- Every statement lists its evidence rows (the figures and the months they cover); limitations and the source
+  (Transpordiamet Infoleht, TOP sheets and general table, with the window) are always shown.
+- Optional wording by Claude Haiku through the trend-analyst Worker. The model receives only the computed sentences
+  and evidence. Its text is shown only when every number in it appears there with the same sign, a change that is
+  only ever a fall is not called a rise (or the reverse), every cited evidence id exists, there is one key change per
+  computed change, and it uses no causal words or markup. Otherwise the computed text is shown with the reason.
+
 ## Brand and month pages
 
 - A brand gets a page with at least 12 ranked TOP-list months or at least 100 new cars in the model lists (57 brands).

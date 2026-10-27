@@ -11,29 +11,57 @@ import { Segmented } from "../ui/segmented";
 import { Sheet } from "../ui/sheet";
 import { Block, Empty, SourceTag, SOURCES, ViewToggle } from "./parts";
 import { CompareAdd } from "./controls";
-import { brandHistory, brandPeriodsOf, brandRanking, brandUniverse } from "@/lib/data/views";
-import { fmtGap, fmtNumber, fmtPercent, fmtPeriodList, fmtPeriodShort, titleCaseBrand } from "@/lib/format";
+import { TrendAnalysis } from "./trend-analysis";
+import { brandHistory, brandPeriodsOf, brandRanking, brandUniverse, registrationSeries } from "@/lib/data/views";
+import { fmtGap, fmtNumber, fmtPercent, fmtPeriodList, fmtPeriodShort, shiftPeriod, titleCaseBrand } from "@/lib/format";
 import { MAX_COMPARE, motion as tokens, seriesColor } from "@/lib/design/tokens";
+
+const RANGES = [2, 5, 10] as const;
 
 /**
  * Signature interaction 2: brand comparison. Pick up to four brands, read them
- * across every imported month as counts or as a share of the category, and
- * share the exact view through the URL.
+ * across the imported months (all, or the last 2, 5 or 10 years) as counts or as
+ * a share of the category, and share the exact view through the URL. The trend
+ * analysis reads the same window.
  */
 export function Compare() {
   const t = useTranslations("compare");
+  const tt = useTranslations("trend");
   const tc = useTranslations("categories");
   const locale = useLocale();
-  const { data, view, update } = useDashboard();
+  const { data, view, update, shareUrl } = useDashboard();
   const reg = view.registrations;
   const [metric, setMetric] = useState<"value" | "share">("value");
   const [table, setTable] = useState(false);
   const [focus, setFocus] = useState<string | null>(null);
   const [sheet, setSheet] = useState(false);
 
-  const periods = useMemo(() => brandPeriodsOf(data, reg.category), [data, reg.category]);
-  const history = useMemo(() => brandHistory(data, reg.category, reg.brands), [data, reg.category, reg.brands]);
-  const latest = periods[periods.length - 1];
+  const allPeriods = useMemo(() => brandPeriodsOf(data, reg.category), [data, reg.category]);
+  const latest = allPeriods[allPeriods.length - 1];
+  const from = reg.brandFrom;
+  const periods = useMemo(() => (from ? allPeriods.filter((period) => period >= from) : allPeriods), [allPeriods, from]);
+  const history = useMemo(() => {
+    const full = brandHistory(data, reg.category, reg.brands);
+    return from ? full.map((brand) => ({ ...brand, points: brand.points.filter((point) => point.period >= from) })) : full;
+  }, [data, reg.category, reg.brands, from]);
+
+  // Window presets end at the latest month; one that reaches the first month is "all".
+  const ranges = latest
+    ? RANGES.map((years) => ({ value: String(years), from: shiftPeriod(latest, -(years * 12 - 1)) })).filter((range) => range.from > allPeriods[0])
+    : [];
+  const range = !from ? "all" : ranges.find((option) => option.from === from)?.value ?? "custom";
+  const setRange = (value: string) =>
+    update((current) => ({ ...current, from: value === "all" ? undefined : ranges.find((option) => option.value === value)?.from }));
+  const trendInput = useCallback(
+    () => ({
+      category: reg.category,
+      periods,
+      history,
+      totals: registrationSeries(data, reg.category),
+      listSize: (period: string) => brandRanking(data, reg.category, period).length,
+    }),
+    [data, reg.category, periods, history],
+  );
   const suggestions = useMemo(
     () => (latest ? brandRanking(data, reg.category, latest).slice(0, 3) : []),
     [data, reg.category, latest],
@@ -148,6 +176,35 @@ export function Compare() {
           </>
         )}
       </div>
+
+      {reg.brands.length > 0 && periods.length > 0 && (
+        <div className="mt-5">
+          <TrendAnalysis
+            toolbar={
+              <Segmented
+                size="sm"
+                label={tt("rangeLabel")}
+                value={range}
+                onChange={setRange}
+                options={[
+                  ...ranges.map((option) => ({ value: option.value, label: tt(`range.${option.value}`), ariaLabel: tt(`rangeAria.${option.value}`) })),
+                  ...(range === "custom" && from
+                    ? [{ value: "custom", label: tt("range.custom", { from: fmtPeriodShort(from, locale) }), ariaLabel: tt("rangeAria.custom", { from: fmtPeriodShort(from, locale) }) }]
+                    : []),
+                  { value: "all", label: tt("range.all"), ariaLabel: tt("rangeAria.all") },
+                ]}
+              />
+            }
+            input={trendInput}
+            selectionKey={`${reg.category}|${reg.brands.join(",")}|${periods[0]}|${periods[periods.length - 1]}`}
+            category={tc(reg.category)}
+            brands={history.map((brand) => titleCaseBrand(brand.name))}
+            period={`${fmtPeriodShort(periods[0], locale)} – ${fmtPeriodShort(periods[periods.length - 1], locale)}`}
+            generatedAt={data.generatedAt}
+            shareUrl={shareUrl}
+          />
+        </div>
+      )}
 
       <div className="mt-6">
         {reg.brands.length === 0 ? (

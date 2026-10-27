@@ -1,0 +1,25 @@
+# Trend analyst: words the computed brand-trend statements with Claude for
+# autostatistika.ee. The site stays a static export on GitHub Pages; this Worker
+# only holds the API key, rate-limits and caches. See docs/operations.md.
+name = "autostatistika-trend"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ALLOWED_ORIGINS = "https://autostatistika.ee,https://www.autostatistika.ee"
+MODEL = "claude-haiku-5-5"
+# Model calls per UTC day across all visitors; cached answers do not count.
+DAILY_LIMIT = "500"
+
+# Cache of validated answers (30 days). Create with
+# `npx wrangler kv namespace create CACHE` and put its id here.
+[[kv_namespaces]]
+binding = "CACHE"
+id = "00000000000000000000000000000000"
+
+# Per-visitor limit: 8 requests a minute per IP address.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 8, period = 60 }

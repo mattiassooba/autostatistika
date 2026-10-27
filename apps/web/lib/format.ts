@@ -94,6 +94,13 @@ export function toYearFraction(value: string): number {
   return Number(y) + (Number(m) - 1) / 12 + (Number(d) - 1) / 365;
 }
 
+/** "2026-09" shifted by −11 months → "2025-10". */
+export function shiftPeriod(period: string, delta: number): string {
+  const [y, m] = period.split("-").map(Number);
+  const index = y * 12 + (m - 1) + delta;
+  return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, "0")}`;
+}
+
 /** Whole months between two YYYY-MM periods. */
 export function monthsBetween(a: string, b: string): number {
   const [ay, am] = a.split("-").map(Number);

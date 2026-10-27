@@ -40,7 +40,7 @@ export async function Methodology({ data, sources }: { data: ExplorerData; sourc
     { tab: "ulevaatused", stops: inspectionPeriodsOf(data), label: (s: string) => fmtPeriodShort(s, locale), shape: "dot" },
   ];
   const years = [2006, 2010, 2014, 2018, 2022, 2026];
-  const principles = ["flows", "newUsed", "yearColumns", "repeat", "register", "legacyCodes", "missing", "shares"] as const;
+  const principles = ["flows", "newUsed", "yearColumns", "repeat", "register", "legacyCodes", "missing", "shares", "trend"] as const;
 
   return (
     <section id="methodology" aria-labelledby="method-title" className="mx-auto max-w-[1600px] px-4 py-20 sm:px-8 md:py-28 lg:px-12">

@@ -69,6 +69,36 @@ A change to category, brand or region mapping also changes the search files and 
 Rebuild with `… build`, republish the bundle, run `… upload` and only then push: the deploy fails on an asset name
 the release does not have. Older assets can be deleted from the release once the live site uses the new one.
 
+## Trend analyst Worker (optional AI wording)
+
+The brand comparison's trend analysis computes everything in the browser (`apps/web/lib/analysis`). To have Claude
+word it, deploy `workers/trend-analyst` (Cloudflare Workers, free plan) and point the site at it. The site stays on
+GitHub Pages; the Worker only holds `ANTHROPIC_API_KEY`, rate-limits and caches.
+
+```bash
+cd workers/trend-analyst
+npm install
+npm test                                     # handler, validation, cache, limits (fake model)
+npx wrangler login
+npx wrangler kv namespace create CACHE       # put the printed id in wrangler.toml
+npx wrangler secret put ANTHROPIC_API_KEY
+npx wrangler deploy                          # prints https://autostatistika-trend.<account>.workers.dev
+```
+
+Then set the repository variable `TREND_API_URL` (Settings → Secrets and variables → Actions → Variables) to that
+URL and redeploy the site; `deploy.yml` passes it to the build as `NEXT_PUBLIC_TREND_API_URL`. Unset, the page makes
+no request and shows the computed text.
+
+- Model `claude-haiku-5-5` (`MODEL` in `wrangler.toml`), effort low, structured JSON output, at most 4 000 tokens
+- Limits: 8 requests a minute per IP (Workers rate-limit binding), `DAILY_LIMIT` model calls a day (500; a KV
+  counter, approximate), 24 KB request body; requests only from `ALLOWED_ORIGINS`
+- Cache: validated answers in KV for 30 days, keyed by prompt version, model and the full request (the request
+  carries the figures, so new data means a new key). "Koosta uuesti" skips the cache read
+- Every answer is checked twice with `apps/web/lib/analysis/validate.ts`: in the Worker before caching, and in the page.
+  A change to that file should be followed by `npm test` here as well
+- Local run: `npx wrangler dev` with `.dev.vars` (`ANTHROPIC_API_KEY=…`, `ALLOWED_ORIGINS=http://localhost:3000`),
+  then build the site with `NEXT_PUBLIC_TREND_API_URL=http://localhost:8787/`
+
 ## Data delivery (web)
 
 The site is a static export (`next build` → `apps/web/out/`). `bundle.json` (~25 MB) is never sent to the browser;

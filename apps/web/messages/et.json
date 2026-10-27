@@ -231,6 +231,117 @@
     "sourceNote": "Margid pärinevad iga kuu TOP-lehelt. Edetabelist väljapoole jäänud marke ei loeta nulliks.",
     "axisNoteDense": "Üks punkt kuus. Katkestus joones tähendab, et mark ei olnud selle kuu edetabelis."
   },
+  "trend": {
+    "analyse": "Analüüsi trendi",
+    "title": "Trendianalüüs",
+    "titleAi": "AI trendianalüüs",
+    "rangeLabel": "Võrdluse periood",
+    "range": {
+      "2": "2 a",
+      "5": "5 a",
+      "10": "10 a",
+      "all": "Kõik",
+      "custom": "Alates {from}"
+    },
+    "rangeAria": {
+      "2": "Viimased 2 aastat",
+      "5": "Viimased 5 aastat",
+      "10": "Viimased 10 aastat",
+      "all": "Kõik imporditud kuud",
+      "custom": "Alates {from}"
+    },
+    "meta": {
+      "period": "Valitud periood",
+      "brands": "Võrreldavad margid",
+      "category": "Liik"
+    },
+    "sections": {
+      "summary": "Peamine tähelepanek",
+      "changes": "Olulisemad muutused",
+      "comparison": "Võrdlus",
+      "observation": "Huvitav tähelepanek",
+      "evidence": "Tõendid",
+      "limitations": "Piirangud",
+      "source": "Andmeallikas"
+    },
+    "regenerate": "Koosta uuesti",
+    "copy": "Kopeeri",
+    "copyLabel": "Kopeeri analüüs",
+    "copied": "Kopeeritud",
+    "close": "Sulge analüüs",
+    "loading": "Koostan analüüsi…",
+    "stale": "Valik on muutunud. See analüüs kehtib valikule {brands}, {period}.",
+    "refresh": "Analüüsi uus valik",
+    "evidenceRef": "Tõend {n}",
+    "mode": {
+      "ai": "Sõnastus: {model}. Arvud on arvutatud otse andmetest ja iga number tekstis on nende vastu kontrollitud.",
+      "computed": "Tekst ja arvud on arvutatud otse andmetest, keelemudelit pole kasutatud.",
+      "fallback": "AI-sõnastust ei saanud kasutada ({reason}). Näidatakse arvutatud teksti."
+    },
+    "reason": {
+      "unavailable": "teenus ei vastanud",
+      "rateLimited": "liiga palju päringuid, proovi minuti pärast uuesti",
+      "invalid": "tekst ei läbinud numbrite kontrolli"
+    },
+    "source": "Transpordiamet, Infoleht: kuu TOP-margid ja üldtabel, {period}. Autostatistika töötlus {date}.",
+    "sourceLink": "Ava algallikas",
+    "unit": {
+      "pp": "pp"
+    },
+    "s": {
+      "summary": {
+        "leader": "{brand} on valitud markidest suurim: {range} {value} esmaregistreerimist ehk {share} liigi kõigist esmaregistreerimistest.",
+        "mover": "Suurim muutus oli margil {brand}: {from} → {to} esmaregistreerimist ({pct}), kui võrrelda 12 kuud {start} ja {end}.",
+        "single": "{brand}: {from} → {to} esmaregistreerimist ({pct}), kui võrrelda 12 kuud {start} ja {end}.",
+        "noTotals": "Ühelgi valitud margil pole edetabelis kõiki kuid nii lõigus {start} kui ka lõigus {end}, seega muutust ei arvutata.",
+        "insufficient": "Valitud perioodis ({months} kalendrikuud) pole kahte eraldi täielikku 12 kuu lõiku, seega muutust ei arvutata. Vali pikem periood."
+      },
+      "changes": {
+        "brand": "{brand}: {from} → {to} esmaregistreerimist ({pct}); osakaal liigis {shareFrom} → {shareTo} ({pp}).",
+        "partial": "{brand}: edetabelis {startListed} kuul 12-st ({start}) ja {endListed} kuul 12-st ({end}). Edetabelist välja jäänud kuude arvud pole teada, seega 12 kuu summasid ei võrrelda.",
+        "market": "Liik kokku: {from} → {to} esmaregistreerimist ({pct}); uute sõidukite osakaal {newFrom} → {newTo} ({pp}).",
+        "marketNoNew": "Liik kokku: {from} → {to} esmaregistreerimist ({pct}). Uute sõidukite arv pole kõigil kuudel teada."
+      },
+      "comparison": {
+        "order": "{range}: {list}.",
+        "ratio": "{first} ja {second} esmaregistreerimiste suhe oli {ratio} : 1.",
+        "none": "{range}: ühelgi valitud margil pole edetabelis kõiki 12 kuud, seega kogusummasid ei võrrelda.",
+        "ranks": "Edetabelikohad perioodis {range}: {list}."
+      },
+      "observation": {
+        "peak": "{period} oli margi {brand} tippkuu: {value} esmaregistreerimist, {ratio}-kordne margi mediaankuu ({median}).",
+        "dip": "{period} oli margi {brand} madalaim kuu: {value} esmaregistreerimist, {ratio}-kordne margi mediaankuu ({median}).",
+        "steady": "{brand} oli edetabelis kõigil {months} kuul, kohtadel {best}–{worst}.",
+        "steadyRank": "{brand} oli edetabelis kõigil {months} kuul, iga kord kohal {best}.",
+        "none": "Ühegi valitud margi ükski kuu ei erinenud margi mediaankuust {threshold} korda või rohkem."
+      }
+    },
+    "item": {
+      "brandValue": "{brand} {value}",
+      "brandRank": "{brand} koht {best} ({listed} kuul {months}-st)",
+      "brandRankRange": "{brand} {best}–{worst} ({listed} kuul {months}-st)",
+      "rank": "koht {best}",
+      "rankRange": "kohad {best}–{worst}",
+      "gapRange": "{range}"
+    },
+    "ev": {
+      "brandTotals": "{brand}, esmaregistreerimised",
+      "brandShares": "{brand}, osakaal liigis",
+      "marketTotals": "Liik kokku, esmaregistreerimised",
+      "marketNewShares": "Liik kokku, uute osakaal",
+      "brandRanks": "{brand}, edetabelikohad",
+      "brandMonth": "{brand}, kuu esmaregistreerimised",
+      "brandMedian": "{brand}, mediaankuu"
+    },
+    "lim": {
+      "topList": "Margid on kuu TOP-lehelt, kus on {min}–{max} suurimat marki. Kuu, kus mark edetabelis pole, on teadmata, mitte null.",
+      "topListOne": "Margid on kuu TOP-lehelt, kus on {min} suurimat marki. Kuu, kus mark edetabelis pole, on teadmata, mitte null.",
+      "newUsed": "Margiridades on uued ja kasutatud sõidukid koos; uute osakaal on teada ainult liigi kohta.",
+      "gaps": "Edetabel puudub {count} kuul: {ranges}.",
+      "blocks": "Muutused võrdlevad kahte täielikku 12 kuu lõiku, et hooajalisus tulemust ei moonutaks.",
+      "noCause": "Analüüs kirjeldab arve, mitte nende põhjusi."
+    }
+  },
   "models": {
     "title": "Uued sõiduautod mudeli järgi",
     "description": "Uute sõiduautode esmaregistreerimised mudeli järgi, {period}.",
@@ -400,6 +511,10 @@
       "shares": {
         "title": "Igal osakaalul on nimetatud jagaja",
         "body": "Uute osakaal = uued / esmaregistreerimised. Margi osakaal = margi esmaregistreerimised / liigi esmaregistreerimised samal kuul. Kordusülevaatuse osakaal = kordused / kõik ülevaatused samas rühmas ja kuus."
+      },
+      "trend": {
+        "title": "Trendianalüüs arvutab, keelemudel ainult sõnastab",
+        "body": "Markide võrdluse trendianalüüs arvutab kõik arvud samadest TOP-lehe ridadest, mida joonis näitab. Muutus võrdleb perioodi esimest ja viimast täielikku 12 kuu lõiku; margi 12 kuu summa on olemas ainult siis, kui mark oli edetabelis kõigil 12 kuul. Osakaal on margi esmaregistreerimised jagatud liigi esmaregistreerimistega samade kuude jooksul; pp tähendab protsendipunkti. Kui AI-sõnastus on sisse lülitatud, saab keelemudel (Claude Haiku) ainult need arvutatud laused ja tõendid. Tema teksti näidatakse ainult siis, kui iga number selles leidub tõendites sama märgiga ja tekst ei nimeta põhjuseid; muidu näidatakse arvutatud teksti."
       }
     },
     "sourcesTitle": "Ametlikud allikad",

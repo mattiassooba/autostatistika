@@ -7,6 +7,10 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 
+# cloudflare worker
+workers/*/.wrangler/
+workers/*/dist/
+
 # next
 apps/web/.next/
 apps/web/out/
@@ -15,6 +19,7 @@ apps/web/.turbo/
 
 # env and secrets
 .env
+.dev.vars
 .env.local
 .env.*.local
 !.env.example

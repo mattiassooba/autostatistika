@@ -62,13 +62,18 @@ Every fact stores `source_file_id`, `metric_code`, `unit`, `publication_status`.
 | Hero | `components/hero/*` | `HeroProvider` holds one selected month, vehicle type and picked brands for the figures, ranking, timeline and duel |
 | Brand and month pages | `app/[locale]/margid`, `app/[locale]/kuu`, `lib/data/pages.ts` | Read models over the bundle, tested in `lib/data/pages.test.ts` |
 | Share images | `app/og/[locale]/[kind]/[file]/route.tsx` | 1200×630 PNG per page, rendered with `next/og` at build |
+| Trend analysis | `components/explorer/trend-analysis.tsx`, `lib/analysis/*`, `workers/trend-analyst` | Card in the brand comparison. `trend.ts` computes every figure from the chart's rows, `render.ts` writes the sentences, `validate.ts` checks model text (shared with the Worker). The engine loads on the first click. Optional AI wording through a Cloudflare Worker; the site itself stays static. Tested in `lib/analysis/*.test.ts` and `workers/trend-analyst/test` |
 | Vehicle search | `app/[locale]/otsing`, `components/search/*`, `lib/search/*` | Static page; a Web Worker loads gzip-compressed column files from `/register/<date>/` (built by `ingestion/publishing/register_index.py`, shipped as the `register-index` release asset), filters and groups into variants in the browser. Tested in `lib/search/*.test.ts` |
 | SEO | `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts` | Canonical + hreflang, Open Graph, `Dataset` and `BreadcrumbList` JSON-LD |
 | Brand marks | `public/logos`, `components/ui/brand-logo.tsx` | CSS-mask SVGs; monogram fallback |
 
 The explorer's URL query (`lib/url-state.ts`) is validated with zod: `tab` (`registreerimised` \| `soidukipark` \|
-`ulevaatused`), `category`, `brands` (up to 8), `from`/`to` (`YYYY-MM`), `fuel`, `snapshot` (`YYYY-MM-DD`),
-`population`. Invalid values are dropped, never guessed; `lib/data/resolve.ts` falls back to what the data can show.
+`ulevaatused`), `category`, `brands` (up to 8), `from`/`to` (`YYYY-MM`; `to` is the selected month, `from` the start of the brand
+comparison window), `fuel`, `snapshot` (`YYYY-MM-DD`), `population`. Invalid values are dropped, never guessed; `lib/data/resolve.ts` falls back to what the data can show.
+
+One optional per-request service sits beside the site: the trend analysis can call a Cloudflare Worker
+(`workers/trend-analyst`) that holds the Anthropic key. It is not part of the build or the hosting; without it the
+card shows its computed text.
 
 ## Cost
 
@@ -76,5 +81,6 @@ The explorer's URL query (`lib/url-state.ts`) is validated with zod: `tab` (`reg
 - Supabase free/pro for warehouse and private source-file storage
 - GitHub Actions for scheduled discovery
 - Optional OpenAI/Anthropic key for insight phrasing only
+- Optional Cloudflare Worker (free plan) and Anthropic API usage (Claude Haiku) for the trend analysis wording
 
 The site stays useful with zero AI spend.

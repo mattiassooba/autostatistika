@@ -24,6 +24,8 @@ export type ResolvedView = {
     categories: string[];
     hasBrands: boolean;
     brands: string[];
+    /** Start of the brand comparison window (URL `from`); null = every month. */
+    brandFrom: string | null;
   };
   fleet: { date: string; dates: string[]; category: string; categories: string[] };
   inspections: { period: string; periods: string[]; population: string; populations: string[] };
@@ -51,6 +53,11 @@ export function resolveView(data: ExplorerData, query: DashboardQuery): Resolved
   const brands = hasBrands
     ? query.brands.filter((slug) => !knownBrands.size || knownBrands.has(slug)).slice(0, MAX_COMPARE)
     : [];
+  const brandPeriods = hasBrands ? brandPeriodsOf(data, regCategory) : [];
+  const brandFrom =
+    query.from && brandPeriods.length && query.from > brandPeriods[0] && query.from <= brandPeriods[brandPeriods.length - 1]
+      ? query.from
+      : null;
 
   // Fleet: default to the newest snapshot that carries the preferred category,
   // otherwise the newest snapshot overall.
@@ -85,6 +92,7 @@ export function resolveView(data: ExplorerData, query: DashboardQuery): Resolved
       categories: regCategories,
       hasBrands,
       brands,
+      brandFrom,
     },
     fleet: { date, dates, category: fleetCategory, categories: fleetCategories },
     inspections: { period: inspPeriod, periods: inspPeriods, population, populations },

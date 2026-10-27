@@ -48,6 +48,9 @@ jobs:
           fi
       - run: npm test
       - run: npm run build
+        env:
+          # Trend-analyst Worker (workers/trend-analyst). Unset: the analysis shows computed text only.
+          NEXT_PUBLIC_TREND_API_URL: ${{ vars.TREND_API_URL }}
       - uses: actions/upload-pages-artifact@v5
         with:
           path: apps/web/out
