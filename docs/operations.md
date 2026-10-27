@@ -118,6 +118,17 @@ catalogue no longer lists in the manifest, so a rebuild never loses a snapshot. 
 The run fails, and nothing is published, if any table would lose rows. Optional `ALERT_WEBHOOK_URL` (repository secret)
 receives a POST on failure; GitHub also emails the repository owner.
 
+### Monthly register history
+
+The catalogue lists only the current month's register file, so monthly fleet snapshots exist from 1 October 2026
+onwards (before that: 1 January 2020-2026). Each new month is downloaded once, archived to `register-archive`, and kept
+in the manifest after the catalogue drops it (`kept_register_files`, tested in `ingestion/tests/test_register_history.py`).
+The fleet tab and brand pages plot every register date on a time axis; the search uses the latest one.
+
+- Growth: about 300 MB of CSV per month on the runner and about 55 MB per month in the release (gzip).
+- A correction re-uploaded under the same file name is not picked up automatically (the cached copy wins). Delete the
+  file from `data/downloads/register_snapshot/` and the release asset, then run the job, to take a corrected file.
+
 ## Verifying a data or parser change
 
 1. Run the parser tests: `python -m pytest ingestion/tests -q`.
