@@ -19,7 +19,7 @@ apps/web/.turbo/
 
 # env and secrets
 .env
-.dev.vars
+.dev.vars*
 .env.local
 .env.*.local
 !.env.example
