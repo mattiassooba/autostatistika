@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from ingestion.discovery.transpordiamet import DiscoveredResource
-from ingestion.parsers.fleet import parse_fleet, parse_infoleht_stock
+from ingestion.parsers.fleet import parse_fleet, parse_infoleht_stock, parse_register_tables
 from ingestion.parsers.inspections import parse_inspections
 from ingestion.parsers.records import ParsedFact
 from ingestion.parsers.register import parse_register
@@ -16,6 +16,8 @@ def parse_workbook(path: Path, resource: DiscoveredResource) -> list[ParsedFact]
         return parse_inspections(path, resource.reporting_period)
     if kind == "fleet_snapshot":
         return parse_fleet(path, resource.snapshot_date)
+    if kind == "register_tables":
+        return parse_register_tables(path, resource.snapshot_date)
     if kind == "register_snapshot":
         return parse_register(path, retroactive=resource.layout_hint == "register_zip_retroactive")
     if kind == "registration_infoleht":

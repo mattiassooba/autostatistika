@@ -150,5 +150,7 @@ These files do **not** contain brand or model. They count inspection events at s
 - Mopeds appear in modern üldtabel; 2006 üldtabel has tractors instead.
 - Watercraft sheets exist and are stored only if explicitly in scope. Default dashboards are land vehicles.
 - Inspection repeat share is events directed to repeat inspection, not a brand reliability score.
-- Fleet stock 2016-2019: no register snapshots in the open data (it starts 2020-01-01). Irregular extracts on the
-  Infoleht page (e.g. `arvel-m1-310717.csv`, `arvel-m1_311217.xlsx`) are not imported yet.
+- Fleet stock 2016-2019: the open data starts 2020-01-01. The register general tables (üldtabelid) on the Infoleht
+  page are imported for 31.12.2016, 31.07.2017, 31.12.2017, 31.05.2018 and 31.12.2018 (stock by type, age bands, makes,
+  counties in 07/2017). About 130 single-type extracts of 2016-2019 (e.g. `arvel-m1-310717.csv`, `arvel_veo_310317.csv`,
+  bus and tractor files) are not imported: each adds one vehicle type on one date, in varying layouts.

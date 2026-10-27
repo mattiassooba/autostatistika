@@ -142,6 +142,18 @@ Each rule has a test in `ingestion/tests/test_parsers.py` that reproduces the so
 - Fuel and new cars to private owners are not taken from this list: the fuel sheet and the general table already
   publish them.
 
+## Register general tables 2016-2018 (27 Oct 2026)
+
+- Five "Arvel olevad sõidukid … (üldtabelid)" workbooks fill the 2016-2019 fleet gap: 31.12.2016, 31.07.2017,
+  31.12.2017, 31.05.2018 and 31.12.2018, published as 1.1.2017, 1.8.2017, 1.1.2018, 1.6.2018 and 1.1.2019 (month-end
+  stock is the next month's first day, as everywhere). Their notes say suspended records are included.
+- Each type's stock and age bands come from the age sheet; make sheets give complete splits (they add up to the stock
+  exactly); the 07/2017 workbook adds counties.
+- The tables count motorcycles and mopeds as one "Moto" row (with mopeds as a subset in two of the years) and do not say
+  where quadricycles fall, so neither motorcycles nor mopeds are published for these dates.
+- The new labels ("Auto haagis", "Traktori haagised") also recover tractor-trailer rows that the 2010-2015 leaflets had
+  but the parser dropped; their county and age splits match the stock on every date.
+
 ## Quadricycles (27 Oct 2026)
 
 The Infoleht general table counts light quadricycles (L6e) as mopeds and heavy quadricycles (L7e) as motorcycles:

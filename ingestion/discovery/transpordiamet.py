@@ -101,6 +101,9 @@ def _classify(href: str, title: str) -> tuple[str, str, str | None] | None:
     name = f"{href} {title}".lower()
     if "kuuaruanne" in name:
         return "ta-inspections-xls", "inspection_monthly", "inspection_xls"
+    # Register general tables (üldtabelid): stock by type, age, county and make for every vehicle type.
+    if "arvel" in name and "ldtabel" in name:
+        return "ta-fleet-archive", "register_tables", "register_tables"
     if any(token in name for token in ("arvel", "bussid-", "soiduautod", "veoautod", "traktorid", "liikur")) and (
         "seisuga" in name or re.search(r"\d{6}", name)
     ):
@@ -129,7 +132,7 @@ def discover_page(url: str) -> list[DiscoveredResource]:
             continue
         source_id, kind, hint = classified
         period = _period_from_text(f"{title} {href}")
-        snapshot = _snapshot_from_text(f"{title} {href}") if kind == "fleet_snapshot" else None
+        snapshot = _snapshot_from_text(f"{title} {href}") if kind in {"fleet_snapshot", "register_tables"} else None
         found[absolute] = DiscoveredResource(
             source_id=source_id,
             source_url=absolute,

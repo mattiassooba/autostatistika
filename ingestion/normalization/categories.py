@@ -91,6 +91,10 @@ LABEL_TO_FAMILY = {
     "maastikusoiduk": "offroad",
     "liikurmasin": "self_propelled",
     "veesoidukid": "watercraft",
+    # Register general tables (2016-2018): "Auto haagis", "Traktori haagis(ed)".
+    "autohaagis": "trailer",
+    "traktorihaagis": "tractor_trailer",
+    "traktorihaagised": "tractor_trailer",
 }
 
 

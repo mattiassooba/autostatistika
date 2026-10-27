@@ -13,8 +13,9 @@ Autostatistika is not an official service of Transpordiamet or the Estonian gove
 
 - Registrations: every month 2006-01 to 2026-09 (249), brand rankings for 236 months, fuel 144, new-car models 231
   (every model month adds up to the stated new-car total)
-- Vehicle fleet: monthly 2006-2015 from Infoleht, bus registers 2010 and 2020, and the open register snapshots
-  (1 January 2020-2026 and 1 October 2026) with complete splits by make, county and age
+- Vehicle fleet: monthly 2006-2015 from Infoleht; register general tables for 1.1.2017, 1.8.2017, 1.1.2018, 1.6.2018 and
+  1.1.2019; bus registers 2010 and 2020; the open register snapshots (1 January 2020-2026, monthly from 1 October 2026)
+  with complete splits by make, county and age
 - Inspections: 109 monthly reports 2010-01 to 2019-04 (three months are not published by the source)
 
 See `docs/methodology.md` for the parsing rules and cross-checks, and `docs/operations.md` for commands, hosting and
@@ -75,7 +76,8 @@ Archivo (width axis) for type, IBM Plex Mono for ranks. Tokens live in `apps/web
 
 ## Known limits
 
-- Fleet 2016-2019 has no snapshots (the open register files start in 2020)
+- Fleet 2016-2019 has five snapshots from the register general tables; motorcycles and mopeds are missing there (the
+  tables count them together)
 - Brand rankings combine new and used registrations (the source's TOP sheets), so there is no new/used split per brand
 - Alfa Romeo has no free official mark: a monogram on the site, no mark on its share image
 - Core Web Vitals: lab only so far (Lighthouse mobile, 27 Oct 2026: /et 70, brand page 89, /otsing 81; CLS 0). Field data comes

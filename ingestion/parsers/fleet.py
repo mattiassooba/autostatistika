@@ -381,3 +381,141 @@ def parse_infoleht_stock(path: Path, snapshot_date: str | None) -> list[ParsedFa
             if category:
                 facts.extend(_parse_brand_top_stock(df, snap, category))
     return facts
+
+
+def _low(text: str) -> str:
+    return _fold(str(text).lower())
+
+
+AGE_HEADERS = [("ule 10", "over-10"), ("6 kuni 10", "6-10"), ("3 kuni 5", "3-5"), ("kuni 2", "0-2")]
+
+
+def parse_register_tables(path: Path, snapshot_date: str | None) -> list[ParsedFact]:
+    """Register general tables ("Arvel olevad sõidukid … (üldtabelid)", 2016-2018).
+
+    * The age sheet gives the stock of every vehicle type with its age bands; its
+      note says suspended records are included. Two layouts: KOKKU first
+      (12/2016, 05/2018) or last (2017-2018 year ends).
+    * Make sheets (Sõiduautod, Veoautod, Bussid, Haagised) list every make with a
+      KOKKU column: a complete split by make.
+    * The county sheet (07/2017) has a Kokku / sh. era column pair per type.
+    Motorcycles and mopeds appear only as one combined "Moto" row (with mopeds as
+    a subset in some years); they are not split here and stay unpublished."""
+    xl = open_workbook(path)
+    facts: list[ParsedFact] = []
+    for sheet in xl.sheet_names:
+        df = read_sheet(path, sheet)
+        if df.empty:
+            continue
+        head = _low(" ".join(str(v) for v in df.iloc[:5, 0].fillna("")))
+        snap = _align_stock_date(_date_in_title(head) or snapshot_date)
+        if not snap:
+            continue
+        blob = _low(" ".join(str(v) for v in df.head(8).fillna("").to_numpy().ravel()))
+        if "kuni 2" in blob:
+            facts.extend(_parse_age_table(df, snap, includes_suspended="peatatud" in head))
+        elif "maakond" in blob and "sh. era" in blob:
+            facts.extend(_parse_county_pairs(df, snap))
+        else:
+            family, _eu = canonical_category(sheet)
+            if family and "mark" in blob and "kokku" in blob:
+                facts.extend(_parse_make_totals(df, snap, family, sheet))
+    return facts
+
+
+def _parse_age_table(df, snapshot: str, includes_suspended: bool) -> list[ParsedFact]:
+    header_idx, columns = None, {}
+    for idx, row in df.head(12).iterrows():
+        cells = [_low(str(v)) if v is not None else "" for v in row.tolist()]
+        if any("kuni 2" in c for c in cells) and "kokku" in cells:
+            header_idx = idx
+            columns["total"] = cells.index("kokku")
+            for col, cell in enumerate(cells):
+                band = next((code for text, code in AGE_HEADERS if text in cell), None)
+                if band and band not in columns:
+                    columns[band] = col
+            break
+    if header_idx is None:
+        return []
+    facts = []
+    for _, row in df.iloc[header_idx + 1 :].iterrows():
+        family, _eu = canonical_category(row.iloc[0])
+        total = to_number(row.iloc[columns["total"]])
+        if not family or total is None:
+            continue
+        scope = "includes_suspended" if includes_suspended else "unspecified"
+        facts.append(_stock_fact(snapshot, family, total, {"grain": "stock_total", "source_sheet": "register_tables", "status_scope": scope}))
+        for band in ("0-2", "3-5", "6-10", "over-10"):
+            value = to_number(row.iloc[columns[band]]) if band in columns else None
+            if value is not None:
+                facts.append(_stock_fact(snapshot, family, value, {"grain": "age"}, age_band=band))
+    return facts
+
+
+def _parse_make_totals(df, snapshot: str, family: str, sheet: str) -> list[ParsedFact]:
+    header_idx, total_col = None, None
+    for idx, row in df.head(10).iterrows():
+        cells = [_low(str(v)) if v is not None else "" for v in row.tolist()]
+        if "mark" in cells and "kokku" in cells:
+            header_idx, total_col = idx, cells.index("kokku")
+            break
+    if header_idx is None:
+        return []
+    facts = []
+    for _, row in df.iloc[header_idx + 1 :].iterrows():
+        source = clean_text(row.iloc[0])
+        value = to_number(row.iloc[total_col])
+        if not source:
+            continue
+        if is_total_label(source):
+            break
+        if value is None:
+            continue
+        slug, canonical, _status = canonical_brand(source)
+        facts.append(_stock_fact(snapshot, family, value, {"grain": "brand", "source_sheet": sheet}, brand_slug=slug, brand_source=canonical))
+    return facts
+
+
+def _parse_county_pairs(df, snapshot: str) -> list[ParsedFact]:
+    """Two header rows: the vehicle type over a "Kokku" / "sh. era" pair."""
+    types_idx = None
+    for idx in range(min(10, len(df) - 1)):
+        below = [_low(str(v)) for v in df.iloc[idx + 1].tolist()]
+        if "kokku" in below and "sh. era" in below:
+            types_idx = idx
+            break
+    if types_idx is None:
+        return []
+    columns = {}
+    for col, (label, kind) in enumerate(zip(df.iloc[types_idx].tolist(), df.iloc[types_idx + 1].tolist())):
+        family, _eu = canonical_category(label)
+        # The motorcycle column counts motorcycles and mopeds together (its total
+        # is the age sheet's combined "Moto" row), so it is not published.
+        if family and family not in {"motorcycle", "moped"} and _low(str(kind)) == "kokku":
+            columns[col] = family
+    facts = []
+    for _, row in df.iloc[types_idx + 2 :].iterrows():
+        if is_total_label(clean_text(row.iloc[0])):
+            break
+        region_code, region_source, status = canonical_region(row.iloc[0])
+        if status == "subtotal" or not region_code:
+            continue
+        for col, family in columns.items():
+            value = to_number(row.iloc[col])
+            if value is not None:
+                facts.append(_stock_fact(snapshot, family, value, {"grain": "region"}, region_code=region_code, region_source=region_source))
+    return facts
+
+
+def _stock_fact(snapshot: str, family: str, value: float, extra: dict, **dims) -> ParsedFact:
+    return ParsedFact(
+        table="vehicle_fleet_facts",
+        metric_code="fleet_count",
+        value=value,
+        unit="vehicles",
+        snapshot_date=snapshot,
+        category_code=family,
+        extra=extra,
+        **dims,
+    )
+

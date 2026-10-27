@@ -3,7 +3,7 @@ Transpordiamet pages, and the register snapshots listed in the open-data
 catalogue, into data/downloads/<kind>/, skipping files already on disk.
 Polite: one request per REQUEST_GAP_SECONDS, trusted hosts only.
 
-    python scripts/fetch_backfill.py [--kinds registration_infoleht inspection_monthly register_snapshot]
+    python scripts/fetch_backfill.py [--kinds registration_infoleht inspection_monthly register_snapshot register_tables]
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from ingestion.parsers.register import register_members  # noqa: E402
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--kinds", nargs="+", default=["registration_infoleht", "inspection_monthly", "register_snapshot"])
+    parser.add_argument("--kinds", nargs="+", default=["registration_infoleht", "inspection_monthly", "register_snapshot", "register_tables"])
     args = parser.parse_args()
     discovered = discover_transpordiamet()
     if "register_snapshot" in args.kinds:
