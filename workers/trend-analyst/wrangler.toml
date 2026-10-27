@@ -28,7 +28,7 @@ new_sqlite_classes = ["DailyBudget"]
 # `npx wrangler kv namespace create CACHE` and put its id here.
 [[kv_namespaces]]
 binding = "CACHE"
-id = "00000000000000000000000000000000"
+id = "765bfff8095b462084c7e0d97e80f47e"
 
 # Per-visitor limit: 8 requests a minute per IP address.
 [[ratelimits]]
