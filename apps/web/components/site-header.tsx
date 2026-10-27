@@ -1,8 +1,10 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { LanguageSwitch } from "./language-switch";
+import { PlateMark } from "./brand/plate-mark";
 
-export function SiteHeader() {
+/** `intro` plays the mark's entrance: the home page only, beside the hero's. */
+export function SiteHeader({ intro = false }: { intro?: boolean }) {
   const t = useTranslations("nav");
   return (
     <header className="sticky top-0 z-40 h-[var(--header-h)] border-b border-rule/80 bg-paper/85 backdrop-blur-md supports-[backdrop-filter]:bg-paper/75">
@@ -13,18 +15,10 @@ export function SiteHeader() {
         {t("skip")}
       </a>
       <div className="mx-auto flex h-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-8 lg:px-12">
-        <Link href="/" className="group flex items-center gap-2.5" aria-label="Autostatistika">
-          <span className="flex h-7 items-stretch overflow-hidden rounded-[5px] ring-1 ring-ink">
-            <span className="flex items-center bg-lime px-1.5 text-[9px] font-bold text-ink" style={{ fontVariationSettings: '"wdth" 112' }}>
-              EE
-            </span>
-            <span className="flex items-center bg-ink px-1.5">
-              <span className="block h-2 w-2 rounded-full bg-lime transition-transform duration-300 group-hover:scale-125" />
-            </span>
-          </span>
-          <span className="text-[17px] font-semibold tracking-[-0.02em] text-ink" style={{ fontVariationSettings: '"wdth" 115' }}>
-            Autostatistika
-          </span>
+        {/* Phones: 30 px tall, or less when the screen leaves less room beside
+            the language switch (136 px of gutters, gap and switch). */}
+        <Link href="/" className="pm-hover shrink-0 rounded-[6px]" aria-label="Autostatistika.ee">
+          <PlateMark size="sm" intro={intro} className="h-[min(30px,calc((100vw_-_136px)/6.69))] sm:h-[34px]" />
         </Link>
         <nav aria-label={t("label")} className="flex items-center gap-1 sm:gap-2">
           {[

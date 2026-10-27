@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { loadBundle } from "@/lib/data/load";
 import { brandSummaries, monthPeriods } from "@/lib/data/pages";
 import { fmtDate, fmtPeriod } from "@/lib/format";
+import { PlateMark } from "./brand/plate-mark";
 
 const linkClass = "text-paper/80 underline decoration-white/0 underline-offset-4 transition-colors hover:text-paper hover:decoration-lime";
 
@@ -24,7 +25,7 @@ export async function SiteFooter({ generatedAt, disclaimer }: { generatedAt: str
     <footer className="on-dark bg-ink text-paper">
       <div className="mx-auto grid max-w-[1600px] gap-10 px-4 py-14 sm:px-8 md:grid-cols-12 lg:px-12">
         <div className="md:col-span-12 lg:col-span-4">
-          <p className="t-display text-[clamp(2.6rem,6vw,4.8rem)] text-paper">Autostatistika</p>
+          <PlateMark tone="dark" label="Autostatistika.ee" className="h-11 md:h-[52px]" />
           <p className="mt-4 max-w-[48ch] text-[14.5px] leading-relaxed text-paper/60">{disclaimer[locale === "en" ? "en" : "et"]}</p>
         </div>
         <nav aria-label={tn("label")} className="md:col-span-3 lg:col-span-2">

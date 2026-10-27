@@ -66,6 +66,7 @@ Every fact stores `source_file_id`, `metric_code`, `unit`, `publication_status`.
 | Vehicle search | `app/[locale]/otsing`, `components/search/*`, `lib/search/*` | Static page; a Web Worker loads gzip-compressed column files from `/register/<date>/` (built by `ingestion/publishing/register_index.py`, shipped as the `register-index` release asset), filters and groups into variants in the browser. Tested in `lib/search/*.test.ts` |
 | SEO | `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts` | Canonical + hreflang, Open Graph, `Dataset` and `BreadcrumbList` JSON-LD |
 | Brand marks | `public/logos`, `components/ui/brand-logo.tsx` | CSS-mask SVGs; monogram fallback |
+| Site mark | `lib/brand/plate-mark.ts`, `components/brand/plate-mark.tsx`, `app/icon.svg`, `app/apple-icon.png` | AUTOSTATISTIKA.EE on a registration-plate shape, one builder for header, footer and share images. Lettering is outlined from Archivo into `lib/brand/plate-mark-paths.ts` by `scripts/build_plate_mark.py`; blue (`plate-blue`) is reserved for its country strip |
 
 The explorer's URL query (`lib/url-state.ts`) is validated with zod: `tab` (`registreerimised` \| `soidukipark` \|
 `ulevaatused`), `category`, `brands` (up to 8), `from`/`to` (`YYYY-MM`; `to` is the selected month, `from` the start of the brand

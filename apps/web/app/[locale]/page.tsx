@@ -58,7 +58,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
       />
-      <SiteHeader />
+      <SiteHeader intro />
       <main id="main">
         <Hero
           span={[periods[0]?.slice(0, 4) ?? "", periods.at(-1)?.slice(0, 4) ?? ""]}

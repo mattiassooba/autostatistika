@@ -22,6 +22,8 @@
   --color-rule: #dde1db;
   --color-rule-strong: #c5ccc6;
   --color-rule-dark: #333d3d;
+  /* Identity only: the plate mark's country strip. */
+  --color-plate-blue: #0066cc;
 
   --color-s1: #008a7b;
   --color-s2: #d06a2c;
@@ -256,6 +258,74 @@ body {
 
 .live-dot {
   animation: pulse-dot 2.4s var(--ease-in-out) infinite;
+}
+
+/* Plate mark (components/brand/plate-mark.tsx). Hover: a faint halo and the
+   lime seam widens. Intro (home page only): plate, blue strip, lettering, then
+   the seam. Fill mode "backwards" hands the seam back to the hover transition. */
+.pm {
+  overflow: visible;
+}
+
+.pm-halo {
+  transition: opacity var(--dur-ui) var(--ease-standard);
+}
+
+.pm-seam {
+  transform-box: fill-box;
+  transform-origin: left center;
+  transition: transform 300ms var(--ease-out);
+}
+
+.pm-hover:hover .pm-halo,
+.pm-hover:focus-visible .pm-halo {
+  opacity: 0.12;
+}
+
+.pm-hover:hover .pm-seam,
+.pm-hover:focus-visible .pm-seam {
+  transform: scaleX(2.2);
+}
+
+.pm-intro .pm-fade {
+  animation: fade 280ms var(--ease-out) backwards;
+}
+
+.pm-intro .pm-strip {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: pm-strip 380ms var(--ease-out) 80ms backwards;
+}
+
+.pm-intro .pm-word {
+  animation: pm-word 440ms var(--ease-out) 200ms backwards;
+}
+
+.pm-intro .pm-strip-text {
+  animation: fade 320ms var(--ease-out) 300ms backwards;
+}
+
+.pm-intro .pm-seam {
+  animation: pm-seam 320ms var(--ease-out) 560ms backwards;
+}
+
+@keyframes pm-strip {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes pm-word {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+@keyframes pm-seam {
+  from {
+    transform: scaleY(0);
+  }
 }
 
 /* Hero blueprint intro (components/hero/vehicle-blueprint.tsx). Paths use

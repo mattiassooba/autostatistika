@@ -17,6 +17,8 @@ export const color = {
   rule: "#DDE1DB",
   ruleStrong: "#C5CCC6",
   ruleDark: "#333D3D",
+  // Identity only: the country strip of the plate mark (lib/brand/plate-mark.ts).
+  plateBlue: "#0066CC",
 } as const;
 
 // Categorical slots for compared entities (brands). Validated with the dataviz

@@ -7,6 +7,7 @@ import { loadBundle } from "@/lib/data/load";
 import { brandDetail, brandSlugs, carSeries, latestPeriod, monthDetail, monthPeriods, shiftPeriod } from "@/lib/data/pages";
 import { color } from "@/lib/design/tokens";
 import { BRAND_LOGOS } from "@/lib/brand-logos";
+import { RATIO as PLATE_RATIO, plateMarkSvg } from "@/lib/brand/plate-mark";
 import { fmtDate, fmtNumber, fmtPeriod } from "@/lib/format";
 
 // Share images (Open Graph / Twitter cards), 1200×630 PNG, written at build
@@ -30,6 +31,9 @@ type Card = {
 };
 
 const SITE_FILES = ["home", "margid", "kuu", "otsing"];
+
+// The site mark, reversed for the dark card.
+const SITE_MARK = `data:image/svg+xml;base64,${Buffer.from(plateMarkSvg({ tone: "dark" })).toString("base64")}`;
 
 export async function generateStaticParams(): Promise<Params[]> {
   const bundle = await loadBundle();
@@ -201,17 +205,8 @@ export async function GET(_request: Request, { params }: { params: Promise<Param
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ display: "flex", height: 40, borderRadius: 7, overflow: "hidden", border: `2px solid ${color.lime}` }}>
-              <div style={{ display: "flex", alignItems: "center", background: color.lime, color: color.ink, padding: "0 9px", fontSize: 15, fontWeight: 700 }}>
-                EE
-              </div>
-              <div style={{ display: "flex", alignItems: "center", padding: "0 11px" }}>
-                <div style={{ width: 12, height: 12, borderRadius: 6, background: color.lime }} />
-              </div>
-            </div>
-            <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: -0.5 }}>Autostatistika</div>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element -- rendered to PNG by next/og */}
+          <img src={SITE_MARK} width={Math.round(PLATE_RATIO * 48)} height={48} alt="" />
           <div style={{ display: "flex", fontSize: 22, fontWeight: 500, color: color.mist }}>{content.eyebrow}</div>
         </div>
 
