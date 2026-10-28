@@ -6,7 +6,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { AnalysisRequest } from "../../../apps/web/lib/analysis/validate";
 
 /** Changing the prompt or schema changes the cache key. */
-export const PROMPT_VERSION = 2;
+export const PROMPT_VERSION = 3;
 
 const SYSTEM = `You write the text of a short statistical note on autostatistika.ee, a site that republishes official Estonian vehicle statistics from the Transport Administration (Transpordiamet).
 
@@ -17,7 +17,7 @@ Return four parts:
 - keyChanges: exactly one item per "changes" statement, in the same order.
 - comparison: the differences between the brands, from the "comparison" statements.
 - observation: the unusual month or steady pattern, from the "observation" statement.
-For every part, list the evidence ids of the statements it uses.
+For every part, list the evidence ids it rests on: the ids from the statements' "evidence" lists, which start with "e" (for example "e3"). Never list statement ids ("s1").
 
 Rules:
 - Use only numbers that appear in the statements or evidence, copied exactly as written: same digits, sign, decimal separator and unit. Never calculate, round, average or combine numbers, and never add a number of your own (no "twice", "a third", "doubled").
@@ -26,6 +26,7 @@ Rules:
   - "brands": first registrations of brands on each month's TOP list. A month in which a brand is not on the list is unknown, not zero. Brand rows count new and used vehicles together; do not describe them as new-car sales. Do not claim a brand became more or less popular in general; say what the figures show for the stated months.
   - "registrations": one vehicle type's monthly totals from the general table: first registrations in Estonia, of which new and used (imported second-hand), and new vehicles to private owners. These are not sales or ownership changes.
 - Keep every caveat a statement makes, for example that totals were not compared.
+- Never dispute, correct or negate a statement; if one seems unclear, keep its wording.
 - Plain sentences only: no markdown, lists inside text, emoji, quotation of ids or URLs.
 - In Estonian keep brand names in the nominative where possible ("margil BMW", "BMW esmaregistreerimised").`;
 

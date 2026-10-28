@@ -64,6 +64,16 @@ describe("validateAnalysis", () => {
     assert.equal(result.value.summary.text, "Toyota: 11,9 % liigist.");
   });
 
+  it("reads a cited statement id as that statement's evidence", () => {
+    const text = withItem({ summary: { text: good.summary.text, evidence: ["s1"] }, observation: { text: good.observation!.text, evidence: ["s5", "e6"] } });
+    const result = validateAnalysis(text, request);
+    assert.ok(result.ok, JSON.stringify(result));
+    assert.deepEqual(result.value.summary.evidence, ["e1", "e2"]);
+    assert.deepEqual(result.value.observation?.evidence, ["e6"]);
+    // An id that is neither a statement nor an evidence row is still refused.
+    assert.deepEqual(validateAnalysis(withItem({ summary: { text: good.summary.text, evidence: ["x9"] } }), request), { ok: false, reason: "evidence" });
+  });
+
   it("joins digit groups and units with no-break spaces, so a figure never wraps", () => {
     const text = withItem({ summary: { text: "Toyota 4 210 ehk 11,9 % ja okt 2025 – sept 2026.", evidence: ["e1"] } });
     const result = validateAnalysis(text, request);

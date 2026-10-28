@@ -331,8 +331,8 @@
         "none": "No month of any selected brand differed from the brand's median month by a factor of {threshold} or more.",
         "regSeasonTop": "{period} ({value}) is the highest for this calendar month in all {years} years since {firstYear}.",
         "regSeasonBottom": "{period} ({value}) is the lowest for this calendar month in all {years} years since {firstYear}.",
-        "regSeasonHigh": "{period} ({value}) is the highest for this calendar month since {since}, which had {sinceValue}.",
-        "regSeasonLow": "{period} ({value}) is the lowest for this calendar month since {since}, which had {sinceValue}.",
+        "regSeasonHigh": "{period} ({value}) is the highest for this calendar month since {since} ({sinceValue}); every year in between was lower.",
+        "regSeasonLow": "{period} ({value}) is the lowest for this calendar month since {since} ({sinceValue}); every year in between was higher.",
         "regSeasonRange": "{period} ({value}) is within the range of the same month in the previous {years} years, {min}–{max}.",
         "regSeasonShort": "Only {years} earlier years have this calendar month, so no seasonal comparison is made."
       }

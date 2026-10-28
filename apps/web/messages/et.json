@@ -331,8 +331,8 @@
         "none": "Ühegi valitud margi ükski kuu ei erinenud margi mediaankuust {threshold} korda või rohkem.",
         "regSeasonTop": "{period} ({value}) on selle kalendrikuu suurim arv kõigi {years} aasta seas alates {firstYear}.",
         "regSeasonBottom": "{period} ({value}) on selle kalendrikuu väikseim arv kõigi {years} aasta seas alates {firstYear}.",
-        "regSeasonHigh": "{period} ({value}) on sama kalendrikuu suurim arv alates {since}, mil neid oli {sinceValue}.",
-        "regSeasonLow": "{period} ({value}) on sama kalendrikuu väikseim arv alates {since}, mil neid oli {sinceValue}.",
+        "regSeasonHigh": "{period} ({value}): sama kalendrikuu arv oli viimati sellest suurem {since} ({sinceValue}), kõigil vahepealsetel aastatel väiksem.",
+        "regSeasonLow": "{period} ({value}): sama kalendrikuu arv oli viimati sellest väiksem {since} ({sinceValue}), kõigil vahepealsetel aastatel suurem.",
         "regSeasonRange": "{period} ({value}) jääb sama kalendrikuu varasema {years} aasta vahemikku {min}–{max}.",
         "regSeasonShort": "Sama kalendrikuu kohta on varasemaid aastaid vaid {years}, seega hooajalist võrdlust ei tehta."
       }

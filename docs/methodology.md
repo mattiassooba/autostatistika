@@ -219,6 +219,22 @@ stock on the same sheet, and no fuel figures are published for months before 07/
   only ever a fall is not called a rise (or the reverse), every cited evidence id exists, there is one key change per
   computed change, and it uses no causal words or markup. Otherwise the computed text is shown with the reason.
 
+## Registrations trend analysis (added 28 Oct 2026)
+
+- "Analüüsi trendi" in the registrations history analyses one vehicle type and the selected month (URL `to`), from the
+  type's general-table totals: first registrations, new, used (first registrations minus new) and new vehicles to
+  private owners. Every month 2006-2026 is stated for every type (mopeds from 06/2012).
+- The month is compared with the same month a year earlier (total, new, used). The last 12 months are compared with the
+  12 before only when all 24 months are stated; each block holds every calendar month once.
+- New share = new / first registrations, same type and month (or the 12 months); private share = new to private owners
+  / new, only where both months state it. Percentage points between the shares as shown.
+- Seasonal place: among the same calendar month in earlier years, the month is named the highest (lowest) of all,
+  or "the highest since <month>" only when that earlier record is at least three years back and every year in between
+  was lower; ties are never called the highest. Otherwise the card gives the earlier range.
+- Without the month a year earlier (the first year of a type's data) the card says so and computes no change; the AI
+  wording is used only when a change is computed.
+- Same checks, Worker, cache and daily cap as the brand analysis.
+
 ## Brand and month pages
 
 - A brand gets a page with at least 12 ranked TOP-list months or at least 100 new cars in the model lists (57 brands).

@@ -25,7 +25,7 @@ the weekly update.
 
 | Path | What it shows |
 | --- | --- |
-| `/et`, `/en` | Hero (blueprint drawing, selected-month figures, animated brand ranking with logos, timeline, brand duel) and the explorer: registrations, fleet, inspections, insights, methodology. The brand comparison has a period control (2, 5, 10 years or all) and a trend analysis card ("Analüüsi trendi") |
+| `/et`, `/en` | Hero (blueprint drawing, selected-month figures, animated brand ranking with logos, timeline, brand duel) and the explorer: registrations, fleet, inspections, insights, methodology. The brand comparison has a period control (2, 5, 10 years or all); it and the registrations history each have a trend analysis card ("Analüüsi trendi", optional Claude wording) |
 | `/et/margid`, `/et/margid/<brand>` | 57 brand pages: new cars by year, month and model, first-registration ranking, trucks |
 | `/et/kuu`, `/et/kuu/<YYYY-MM>` | 249 month pages: vehicle types, brand rankings, new cars by brand and model, fuels, new cars by county, power, gearbox and colour |
 | `/et/otsing` | Vehicle search over the latest register snapshot: make, model, year, power, fuel, gearbox, body, county, status and technical filters; results as variants with counts and spec ranges, side-by-side comparison of up to 4 variants, CSV download |

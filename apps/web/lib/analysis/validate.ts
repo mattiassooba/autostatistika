@@ -112,11 +112,18 @@ export function validateAnalysis(candidate: unknown, request: AnalysisRequest): 
   if (!isItem(c.summary) || !Array.isArray(c.keyChanges) || !c.keyChanges.every(isItem)) return fail("shape");
   if (c.comparison != null && !isItem(c.comparison)) return fail("shape");
   if (c.observation != null && !isItem(c.observation)) return fail("shape");
+  // A model sometimes cites a statement ("s3") instead of its evidence rows: read that as the
+  // statement's own evidence. The number checks below do not depend on citations.
+  const statementEvidence = new Map(request.statements.map((s) => [s.id, s.evidence]));
+  const tidy = (item: AnalysisItem) => {
+    const cleaned = clean(item);
+    return { ...cleaned, evidence: [...new Set(cleaned.evidence.flatMap((id) => statementEvidence.get(id) ?? [id]))] };
+  };
   const value: AnalysisText = {
-    summary: clean(c.summary),
-    keyChanges: (c.keyChanges as AnalysisItem[]).map(clean),
-    comparison: c.comparison ? clean(c.comparison as AnalysisItem) : null,
-    observation: c.observation ? clean(c.observation as AnalysisItem) : null,
+    summary: tidy(c.summary),
+    keyChanges: (c.keyChanges as AnalysisItem[]).map(tidy),
+    comparison: c.comparison ? tidy(c.comparison as AnalysisItem) : null,
+    observation: c.observation ? tidy(c.observation as AnalysisItem) : null,
   };
 
   // One key change per computed change; sections the statements have must be present.
