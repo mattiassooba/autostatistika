@@ -67,3 +67,29 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+
+  # Pre-writes the AI wording of the default trend card (newest month, every
+  # vehicle type, et + en) so visitors get it from the Worker's cache at once.
+  # Cached selections cost nothing; a new month costs about 16 model calls.
+  prewarm:
+    needs: deploy
+    if: ${{ vars.TREND_API_URL != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: workers/trend-analyst
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: workers/trend-analyst/package-lock.json
+      - run: npm ci
+      - run: npx tsx scripts/prewarm.ts "$TREND_API_URL"
+        env:
+          TREND_API_URL: ${{ vars.TREND_API_URL }}

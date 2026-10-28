@@ -117,6 +117,10 @@ npx wrangler tail        # live log: one JSON line per model call with tokens an
 - Cache: validated answers in KV for 30 days, keyed by prompt version, model and the request hash (the request carries
   the figures, so new data means a new key). Selections are finite, so repeat visitors are served from the cache at
   no cost and without counting against the cap. "Koosta uuesti" skips the cache read
+- Pre-written answers: after every site deploy, the `prewarm` job in `deploy.yml` runs `scripts/prewarm.ts`, which asks
+  the Worker for the registrations analysis of the newest month for every type in both languages (the card visitors
+  open first). Cached selections cost nothing; a new month costs about 16 calls of the daily cap. It never fails the
+  deploy; problems show as warnings in the run
 - Every answer is checked twice with `apps/web/lib/analysis/validate.ts`: in the Worker before caching, and in the page.
   A change to that file should be followed by `npm test` here as well
 

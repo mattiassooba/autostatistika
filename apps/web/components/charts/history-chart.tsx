@@ -4,6 +4,7 @@ import { useMemo, type ReactNode } from "react";
 import type { EChartsOption } from "echarts";
 import { Chart } from "./chart";
 import { axisLabel, base, splitLine, tipHtml, tooltipBase } from "./theme";
+import { useWidth, yearStep } from "./year-axis";
 import { color } from "@/lib/design/tokens";
 import type { RegistrationPoint } from "@/lib/data/views";
 
@@ -45,6 +46,10 @@ export function HistoryChart({
     return Array.from({ length: end - start + 1 }, (_, i) => fromIndex(start + i));
   }, [points]);
   const byPeriod = useMemo(() => new Map(points.map((p) => [p.period, p])), [points]);
+  // Every second year on wide screens for long series (as before), wider steps when narrow.
+  const [axisRef, axisWidth] = useWidth<HTMLDivElement>();
+  const years = months.length ? Number(months[months.length - 1].slice(0, 4)) - Number(months[0].slice(0, 4)) + 1 : 0;
+  const step = yearStep(years, axisWidth - 56, months.length > 120 ? 2 : 1);
 
   const option = useMemo<EChartsOption>(() => {
     const selectedIndex = months.indexOf(selected);
@@ -69,7 +74,7 @@ export function HistoryChart({
         axisLine: { lineStyle: { color: color.ink } },
         axisLabel: {
           ...axisLabel(),
-          interval: (_: number, value: string) => value.endsWith("-01") && Number(value.slice(0, 4)) % (months.length > 120 ? 2 : 1) === 0,
+          interval: (_: number, value: string) => value.endsWith("-01") && Number(value.slice(0, 4)) % step === 0,
           formatter: (value: string) => value.slice(0, 4),
         },
       },
@@ -137,7 +142,7 @@ export function HistoryChart({
         },
       ],
     } as EChartsOption;
-  }, [months, byPeriod, selected, formatValue, formatPeriod, labels]);
+  }, [months, byPeriod, selected, formatValue, formatPeriod, labels, step]);
 
   const onEvents = useMemo(
     () => ({
@@ -166,7 +171,9 @@ export function HistoryChart({
             {formatPeriod(selected)}
           </span>
         </div>
-        <Chart option={option} height={320} label={labels.chart} onEvents={onEvents} />
+        <div ref={axisRef}>
+          <Chart option={option} height={320} label={labels.chart} onEvents={onEvents} />
+        </div>
       </div>
       <div className="lg:border-l lg:border-rule lg:pl-6" aria-live="polite">
         {readout}

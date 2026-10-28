@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import type { EChartsOption } from "echarts";
 import { Chart } from "./chart";
 import { axisLabel, base, splitLine, tipHtml, tooltipBase } from "./theme";
+import { useWidth, yearStep } from "./year-axis";
 import { color } from "@/lib/design/tokens";
 
 export type CompareSeries = {
@@ -40,6 +41,11 @@ export function CompareChart({
   onFocus: (id: string | null) => void;
 }) {
   const dense = periodLabels.length > 12;
+  // Year labels on the dense axis: every year when they fit, otherwise every 2, 5 or 10.
+  // The plot is the width minus the y-axis labels and the 108 px kept for brand names.
+  const [axisRef, axisWidth] = useWidth<HTMLDivElement>();
+  const years = periods.length ? Number(periods[periods.length - 1].slice(0, 4)) - Number(periods[0].slice(0, 4)) + 1 : 0;
+  const step = yearStep(years, axisWidth - 56 - 108);
   const option = useMemo<EChartsOption>(() => {
     return {
       ...base(),
@@ -53,7 +59,10 @@ export function CompareChart({
         axisLabel: dense
           ? {
               ...axisLabel(),
-              interval: (_: number, value: string) => periods[periodLabels.indexOf(value)]?.endsWith("-01") ?? false,
+              interval: (_: number, value: string) => {
+                const period = periods[periodLabels.indexOf(value)];
+                return Boolean(period?.endsWith("-01")) && Number(period.slice(0, 4)) % step === 0;
+              },
               formatter: (value: string) => periods[periodLabels.indexOf(value)]?.slice(0, 4) ?? value,
             }
           : { ...axisLabel(), color: color.graphite, fontSize: 12, margin: 14, lineHeight: 16 },
@@ -132,7 +141,7 @@ export function CompareChart({
         };
       }),
     } as EChartsOption;
-  }, [periodLabels, periods, dense, series, formatValue, formatAxis, missingLabel, focus]);
+  }, [periodLabels, periods, dense, series, formatValue, formatAxis, missingLabel, focus, step]);
 
   const onEvents = useMemo(
     () => ({
@@ -146,5 +155,9 @@ export function CompareChart({
     [onFocus],
   );
 
-  return <Chart option={option} height={360} label={label} onEvents={onEvents} />;
+  return (
+    <div ref={axisRef}>
+      <Chart option={option} height={360} label={label} onEvents={onEvents} />
+    </div>
+  );
 }
