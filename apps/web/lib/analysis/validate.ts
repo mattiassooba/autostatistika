@@ -179,5 +179,11 @@ export function validateAnalysis(candidate: unknown, request: AnalysisRequest): 
 
 function clean(item: AnalysisItem): AnalysisItem {
   // Collapse ordinary whitespace only: no-break spaces keep "12,4 %" and "1,0 pp" together.
-  return { text: item.text.replace(/[ \t\r\n]+/g, " ").trim(), evidence: [...new Set(item.evidence)] };
+  // The model writes "48 674" and "11,0 %" with plain spaces; join those too so a line never breaks inside a figure.
+  const text = item.text
+    .replace(/[ \t\r\n]+/g, " ")
+    .trim()
+    .replace(/(\d) (?=\d{3}(?!\d))/g, "$1 ")
+    .replace(/(\d) (?=%|pp\b)/g, "$1 ");
+  return { text, evidence: [...new Set(item.evidence)] };
 }

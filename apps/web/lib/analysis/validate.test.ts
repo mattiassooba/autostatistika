@@ -64,6 +64,13 @@ describe("validateAnalysis", () => {
     assert.equal(result.value.summary.text, "Toyota: 11,9 % liigist.");
   });
 
+  it("joins digit groups and units with no-break spaces, so a figure never wraps", () => {
+    const text = withItem({ summary: { text: "Toyota 4 210 ehk 11,9 % ja okt 2025 – sept 2026.", evidence: ["e1"] } });
+    const result = validateAnalysis(text, request);
+    assert.ok(result.ok, JSON.stringify(result));
+    assert.equal(result.value.summary.text, "Toyota 4 210 ehk 11,9 % ja okt 2025 – sept 2026.");
+  });
+
   it("rejects a number that is not in the evidence", () => {
     const result = validateAnalysis(withItem({ summary: { text: "Toyota kasvas 8 %.", evidence: ["e1"] } }), request);
     assert.deepEqual(result, { ok: false, reason: "number:8" });
