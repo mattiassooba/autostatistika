@@ -6,7 +6,7 @@ import { buildExplorerData, type SlicePayload } from "../data/slices";
 import { shiftPeriod } from "../format";
 import et from "../../messages/et.json";
 import en from "../../messages/en.json";
-import { buildTrend } from "./build";
+import { buildRegistrationTrend, buildTrend } from "./build";
 import type { Translate } from "./render";
 import { messageTranslator, trendFileData } from "./trend-file";
 import { requestHash, type AnalysisRequest } from "./validate";
@@ -32,7 +32,8 @@ describe("page and Worker build the same request", () => {
       passenger_car: [["bmw", "toyota", "skoda"], ["tesla", "volvo", "kia", "audi"], ["volkswagen"]],
       truck: [["volvo", "scania", "man", "daf"]],
     };
-    assert.deepEqual((await trendCategories()).sort(), Object.keys(selections).sort());
+    const categories = await trendCategories();
+    for (const category of Object.keys(selections)) assert.ok(categories.includes(category));
     let compared = 0;
     for (const [category, brandSets] of Object.entries(selections)) {
       const page = await pagePath(category);
@@ -57,6 +58,29 @@ describe("page and Worker build the same request", () => {
       }
     }
     assert.equal(compared, 32);
+  });
+
+  it("registrations: same request for every category, several months and both languages", async () => {
+    const core = await getCore();
+    const page = buildExplorerData(core, []); // the registrations tab needs only the core payload
+    let compared = 0;
+    for (const category of await trendCategories()) {
+      const file = (await getTrendFile(category))!;
+      const worker = trendFileData(JSON.parse(JSON.stringify(file)));
+      const periods = trendFileData(file).registrations.totals.filter((row) => row.metric_code === "first_registrations").map((row) => row.reporting_period).sort();
+      for (const period of [periods[0], periods[Math.min(7, periods.length - 1)], periods[Math.floor(periods.length / 2)], periods[periods.length - 1]]) {
+        for (const locale of ["et", "en"] as const) {
+          const intl = createTranslator({ locale, messages: messages[locale], namespace: "trend" });
+          const pageT: Translate = (key, values) => intl(key as never, values as never);
+          const label = messages[locale].categories[category as keyof typeof et.categories];
+          const fromPage: AnalysisRequest = buildRegistrationTrend(page, { locale, category, period }, label, pageT).rendered.request;
+          const fromWorker: AnalysisRequest = buildRegistrationTrend(worker, { locale, category, period }, file.messages[locale].categories[category], messageTranslator(file.messages[locale].trend)).rendered.request;
+          assert.deepEqual(fromWorker, fromPage, `${category} ${period} ${locale}`);
+          compared += 1;
+        }
+      }
+    }
+    assert.ok(compared >= 60, String(compared));
   });
 
   it("a different selection gives a different hash", async () => {

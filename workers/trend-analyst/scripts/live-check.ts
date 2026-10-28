@@ -20,7 +20,7 @@ import { readFileSync } from "node:fs";
 import type { PublishedBundle } from "../../../apps/web/lib/data/types";
 import { generationId } from "../../../apps/web/lib/data/slices";
 import { shiftPeriod } from "../../../apps/web/lib/format";
-import { buildTrend } from "../../../apps/web/lib/analysis/build";
+import { buildRegistrationTrend, buildTrend } from "../../../apps/web/lib/analysis/build";
 import { messageTranslator, trendFile, trendFileData, type TrendFile } from "../../../apps/web/lib/analysis/trend-file";
 import { requestHash, validateAnalysis, type AnalysisRequest, type AnalysisText, type SelectionRequest } from "../../../apps/web/lib/analysis/validate";
 
@@ -31,6 +31,8 @@ const args = process.argv.slice(2);
 const url = args.find((arg) => /^https?:/.test(arg)) ?? "http://localhost:8787/";
 const origin = args.includes("--origin") ? args[args.indexOf("--origin") + 1] : "http://localhost:3000";
 const limitTest = args.includes("--limit-test");
+// --registrations: only the registrations-history analysis (several types and months, both languages).
+const registrationsOnly = args.includes("--registrations");
 
 const web = new URL("../../../apps/web/", import.meta.url);
 const bundle = JSON.parse(readFileSync(new URL("data/published/bundle.json", web), "utf-8")) as PublishedBundle;
@@ -55,7 +57,7 @@ async function selection(category: string, brands: string[], years: number | nul
   const latest = file.brandPeriods[file.brandPeriods.length - 1];
   const from = years ? shiftPeriod(latest, -(years * 12 - 1)) : null;
   const { facts, rendered } = buildTrend(trendFileData(file), { locale, category, brands, from }, file.messages[locale].categories[category], messageTranslator(file.messages[locale].trend));
-  const body: SelectionRequest = { v: 2, locale, generation: generationId(bundle.generatedAt), category, brands, from, hash: await requestHash(rendered.request) };
+  const body: SelectionRequest = { v: 2, kind: "brands", locale, generation: generationId(bundle.generatedAt), category, brands, from, period: null, hash: await requestHash(rendered.request) };
   return { facts, request: rendered.request, computed: rendered.analysis, body };
 }
 
@@ -78,6 +80,38 @@ const flatten = (a: AnalysisText) => [a.summary.text, ...a.keyChanges.map((i) =>
 
 async function main() {
   console.log(`Worker ${url} (origin ${origin}), data generation ${generationId(bundle.generatedAt)}\n`);
+
+  if (registrationsOnly) {
+    const picks: Array<[string, string]> = [["passenger_car", "2026-09"], ["passenger_car", "2025-01"], ["truck", "2026-06"], ["motorcycle", "2026-07"], ["bus", "2025-12"], ["moped", "2026-05"]];
+    const rows: Array<Record<string, unknown>> = [];
+    let tokensIn = 0;
+    let tokensOut = 0;
+    for (const [category, period] of picks) {
+      for (const locale of ["et", "en"] as const) {
+        const file = fileFor(category);
+        const { facts, rendered } = buildRegistrationTrend(trendFileData(file), { locale, category, period }, file.messages[locale].categories[category], messageTranslator(file.messages[locale].trend));
+        const body: SelectionRequest = { v: 2, kind: "registrations", locale, generation: generationId(bundle.generatedAt), category, brands: [], from: null, period, hash: await requestHash(rendered.request) };
+        if (facts.status !== "ok") {
+          rows.push({ selection: `${category} ${period} ${locale}`, status: "-", outcome: facts.status });
+          continue;
+        }
+        const result = await post({ ...body, fresh: true });
+        const usage = result.body.usage ?? {};
+        tokensIn += usage.input_tokens ?? 0;
+        tokensOut += usage.output_tokens ?? 0;
+        const pageCheck = result.status === 200 ? validateAnalysis(result.body.analysis, rendered.request) : null;
+        rows.push({ selection: `${category} ${period} ${locale}`, status: result.status, outcome: result.status === 200 ? (pageCheck?.ok ? "accepted" : "page rejected") : result.body.reason ?? result.body.error, ms: result.ms, in: usage.input_tokens, out: usage.output_tokens });
+        if (pageCheck?.ok) {
+          console.log(`--- ${category} ${period} ${locale}\nCOMPUTED:\n  ${flatten(rendered.analysis).join("\n  ")}\nCLAUDE:\n  ${flatten(pageCheck.value).join("\n  ")}\n`);
+        }
+      }
+    }
+    console.table(rows);
+    const sent = rows.filter((row) => row.status !== "-").length;
+    const cost = (tokensIn * PRICE.input + tokensOut * PRICE.output) / 1e6;
+    console.log(`Accepted ${rows.filter((row) => row.outcome === "accepted").length} of ${sent}; cost ≈ $${cost.toFixed(4)} ($${(cost / Math.max(sent, 1)).toFixed(5)} per call).`);
+    return;
+  }
 
   if (limitTest) {
     // Against `wrangler dev --var DAILY_LIMIT:2`: two model calls, then refusal.

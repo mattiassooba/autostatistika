@@ -9,7 +9,9 @@
 
 import { generationId } from "../data/slices";
 import { requestHash, validateAnalysis, type AnalysisRequest, type AnalysisText, type SelectionRequest } from "./validate";
-import type { TrendSelection } from "./build";
+
+/** Which analysis and selection the page computed; the Worker rebuilds the same. */
+export type WordingSelection = Omit<SelectionRequest, "v" | "generation" | "hash" | "fresh"> & { generatedAt: string };
 
 export const TREND_API_URL = process.env.NEXT_PUBLIC_TREND_API_URL ?? "";
 
@@ -22,7 +24,7 @@ const answers = new Map<string, Extract<ModelResult, { ok: true }>>();
 
 export async function requestWording(
   request: AnalysisRequest,
-  selection: TrendSelection & { generatedAt: string },
+  selection: WordingSelection,
   options: { fresh?: boolean; signal?: AbortSignal } = {},
 ): Promise<ModelResult> {
   const hash = await requestHash(request);
@@ -31,11 +33,13 @@ export async function requestWording(
 
   const body: SelectionRequest = {
     v: 2,
+    kind: selection.kind,
     locale: selection.locale,
     generation: generationId(selection.generatedAt),
     category: selection.category,
     brands: selection.brands,
     from: selection.from,
+    period: selection.period,
     hash,
     fresh: Boolean(options.fresh),
   };

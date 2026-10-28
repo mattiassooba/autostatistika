@@ -12,7 +12,7 @@ import {
   type SlicePayload,
 } from "./slices";
 import type { PublishedBundle } from "./types";
-import { fleetDatesOf, registrationPeriodsOf } from "./views";
+import { fleetDatesOf, registrationCategoriesOf, registrationPeriodsOf } from "./views";
 import { trendFile, type TrendFile } from "../analysis/trend-file";
 import et from "../../messages/et.json";
 import en from "../../messages/en.json";
@@ -209,14 +209,15 @@ export async function getSlice(key: string): Promise<SlicePayload | null> {
   return null;
 }
 
-/** Categories with brand top lists: one trend file each (see lib/analysis/trend-file.ts). */
+/** Every category with registration totals: one trend file each (see lib/analysis/trend-file.ts). */
 export async function trendCategories(): Promise<string[]> {
-  return Object.keys((await store()).core.catalog.brandPeriods);
+  return registrationCategoriesOf(buildExplorerData((await store()).core, []));
 }
 
 export async function getTrendFile(category: string): Promise<TrendFile | null> {
-  const periods = (await store()).core.catalog.brandPeriods[category];
-  if (!periods) return null;
+  if (!(await trendCategories()).includes(category)) return null;
+  // Categories without brand top lists get an empty month list (registrations analysis only).
+  const periods = (await store()).core.catalog.brandPeriods[category] ?? [];
   const messages = {
     et: { trend: et.trend, categories: et.categories },
     en: { trend: en.trend, categories: en.categories },

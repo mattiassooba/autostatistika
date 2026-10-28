@@ -68,7 +68,7 @@ function formatValues(values: Record<string, Value>, locale: string, t: Translat
 
 export function renderTrend(
   { statements, evidence, limitations }: TrendStatements,
-  context: { locale: "et" | "en"; category: string; brands: string[]; period: string; source: string },
+  context: { kind: "brands" | "registrations"; locale: "et" | "en"; category: string; brands: string[]; period: string; source: string },
   t: Translate,
 ): RenderedTrend {
   const { locale } = context;
@@ -99,7 +99,7 @@ export function renderTrend(
     request: {
       v: 1,
       locale,
-      context: { category: context.category, brands: context.brands, period: context.period, source: context.source },
+      context: { kind: context.kind, category: context.category, brands: context.brands, period: context.period, source: context.source },
       statements: rendered.map((s) => ({ id: s.id, section: s.section, text: s.text, evidence: s.evidence })),
       evidence: rows.map(({ id, label, period, value }) => ({ id, label, period, value })),
       limitations: limitationTexts,

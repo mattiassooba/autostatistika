@@ -5,7 +5,7 @@ import { extractNumbers, validateAnalysis, type AnalysisRequest, type AnalysisTe
 const request: AnalysisRequest = {
   v: 1,
   locale: "et",
-  context: { category: "Sõiduautod", brands: ["BMW", "Toyota"], period: "okt 2021 – sept 2026", source: "Transpordiamet" },
+  context: { kind: "brands", category: "Sõiduautod", brands: ["BMW", "Toyota"], period: "okt 2021 – sept 2026", source: "Transpordiamet" },
   statements: [
     { id: "s1", section: "summary", text: "Toyota on valitud markidest suurim: okt 2025 – sept 2026 4 210 esmaregistreerimist ehk 11,9 % liigi kõigist esmaregistreerimistest.", evidence: ["e1", "e2"] },
     { id: "s2", section: "changes", text: "BMW: 1 200 → 1 080 esmaregistreerimist (−10,0 %); osakaal liigis 10,0 % → 9,0 % (−1,0 pp).", evidence: ["e3", "e4"] },

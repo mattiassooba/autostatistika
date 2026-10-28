@@ -13,7 +13,7 @@
 export { DailyBudget } from "./budget";
 
 import { validateAnalysis, requestHash, type AnalysisRequest, type AnalysisText } from "../../../apps/web/lib/analysis/validate";
-import { buildTrend } from "../../../apps/web/lib/analysis/build";
+import { buildRegistrationTrend, buildTrend } from "../../../apps/web/lib/analysis/build";
 import { messageTranslator, trendFileData, type TrendFile } from "../../../apps/web/lib/analysis/trend-file";
 import { callModel as defaultCallModel, PROMPT_VERSION, type ModelAnswer } from "./model";
 import { MAX_BODY_BYTES, parseSelection } from "./request";
@@ -116,12 +116,11 @@ export function createHandler(deps: Partial<Deps> = {}) {
     if (!selection.brands.every((slug) => known.has(slug))) return json(400, { error: "brand" });
     const categoryLabel = file.messages[selection.locale]?.categories?.[selection.category];
     if (!categoryLabel) return json(400, { error: "category" });
-    const { facts, rendered } = buildTrend(
-      data,
-      { locale: selection.locale, category: selection.category, brands: selection.brands, from: selection.from },
-      categoryLabel,
-      messageTranslator(file.messages[selection.locale].trend),
-    );
+    const t = messageTranslator(file.messages[selection.locale].trend);
+    const { facts, rendered } =
+      selection.kind === "registrations"
+        ? buildRegistrationTrend(data, { locale: selection.locale, category: selection.category, period: selection.period! }, categoryLabel, t)
+        : buildTrend(data, { locale: selection.locale, category: selection.category, brands: selection.brands, from: selection.from }, categoryLabel, t);
     if (facts.status !== "ok") return json(400, { error: "insufficient" });
     const analysisRequest = rendered.request;
     const hash = await requestHash(analysisRequest);

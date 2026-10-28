@@ -4,9 +4,16 @@
 
 import { brandRanking, brandWindow, registrationSeries } from "../data/views";
 import type { ExplorerData } from "../data/types";
-import { fmtDate, fmtPeriodShort, titleCaseBrand } from "../format";
+import { fmtDate, fmtPeriod, fmtPeriodShort, titleCaseBrand } from "../format";
 import { renderTrend, type Translate } from "./render";
 import { trendFacts, trendStatements } from "./trend";
+import { registrationFacts, registrationStatements } from "./registrations";
+
+export type RegistrationSelection = {
+  locale: "et" | "en";
+  category: string;
+  period: string; // the selected month (URL `to`)
+};
 
 export type TrendSelection = {
   locale: "et" | "en";
@@ -33,6 +40,7 @@ export function buildTrend(data: ExplorerData, selection: TrendSelection, catego
   const rendered = renderTrend(
     trendStatements(facts),
     {
+      kind: "brands",
       locale,
       category: categoryLabel,
       brands: history.map((brand) => titleCaseBrand(brand.name)),
@@ -42,4 +50,25 @@ export function buildTrend(data: ExplorerData, selection: TrendSelection, catego
     t,
   );
   return { facts, rendered, periods, history };
+}
+
+/** The registrations history analysis for one type and month (lib/analysis/registrations.ts). */
+export function buildRegistrationTrend(data: ExplorerData, selection: RegistrationSelection, categoryLabel: string, t: Translate) {
+  const { locale, category, period } = selection;
+  const series = registrationSeries(data, category);
+  const facts = registrationFacts(series, category, period);
+  const start = series.find((point) => point.first != null)?.period ?? period;
+  const rendered = renderTrend(
+    registrationStatements(facts),
+    {
+      kind: "registrations",
+      locale,
+      category: categoryLabel,
+      brands: [],
+      period: fmtPeriod(period, locale),
+      source: t("sourceReg", { period: periodRange([start, period], locale), date: fmtDate(data.generatedAt, locale) }),
+    },
+    t,
+  );
+  return { facts, rendered };
 }

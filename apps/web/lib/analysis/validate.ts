@@ -20,7 +20,7 @@ export type AnalysisText = {
 export type AnalysisRequest = {
   v: 1;
   locale: "et" | "en";
-  context: { category: string; brands: string[]; period: string; source: string };
+  context: { kind: "brands" | "registrations"; category: string; brands: string[]; period: string; source: string };
   statements: Array<{ id: string; section: "summary" | "changes" | "comparison" | "observation"; text: string; evidence: string[] }>;
   evidence: Array<{ id: string; label: string; period: string; value: string }>;
   limitations: string[];
@@ -33,11 +33,13 @@ export type AnalysisRequest = {
  */
 export type SelectionRequest = {
   v: 2;
+  kind: "brands" | "registrations";
   locale: "et" | "en";
   generation: string; // generationId(bundle.generatedAt)
   category: string;
-  brands: string[];
-  from: string | null;
+  brands: string[]; // brand comparison: 1-4 slugs; registrations: none
+  from: string | null; // brand comparison window start
+  period: string | null; // registrations: the selected month
   hash: string;
   fresh?: boolean;
 };

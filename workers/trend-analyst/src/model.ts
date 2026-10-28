@@ -6,7 +6,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { AnalysisRequest } from "../../../apps/web/lib/analysis/validate";
 
 /** Changing the prompt or schema changes the cache key. */
-export const PROMPT_VERSION = 1;
+export const PROMPT_VERSION = 2;
 
 const SYSTEM = `You write the text of a short statistical note on autostatistika.ee, a site that republishes official Estonian vehicle statistics from the Transport Administration (Transpordiamet).
 
@@ -22,9 +22,10 @@ For every part, list the evidence ids of the statements it uses.
 Rules:
 - Use only numbers that appear in the statements or evidence, copied exactly as written: same digits, sign, decimal separator and unit. Never calculate, round, average or combine numbers, and never add a number of your own (no "twice", "a third", "doubled").
 - Describe, do not explain. Name no causes, reasons, drivers, forecasts or advice.
-- The figures are first registrations of brands on each month's TOP list. A month in which a brand is not on the list is unknown, not zero. Do not claim a brand became more or less popular in general; say what the figures show for the stated months.
+- context.kind says what the figures are:
+  - "brands": first registrations of brands on each month's TOP list. A month in which a brand is not on the list is unknown, not zero. Brand rows count new and used vehicles together; do not describe them as new-car sales. Do not claim a brand became more or less popular in general; say what the figures show for the stated months.
+  - "registrations": one vehicle type's monthly totals from the general table: first registrations in Estonia, of which new and used (imported second-hand), and new vehicles to private owners. These are not sales or ownership changes.
 - Keep every caveat a statement makes, for example that totals were not compared.
-- Brand rows count new and used vehicles together; do not describe them as new-car sales.
 - Plain sentences only: no markdown, lists inside text, emoji, quotation of ids or URLs.
 - In Estonian keep brand names in the nominative where possible ("margil BMW", "BMW esmaregistreerimised").`;
 

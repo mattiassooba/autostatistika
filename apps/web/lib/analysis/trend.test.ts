@@ -67,7 +67,7 @@ function input(explorer: ExplorerData, slugs: string[], from?: string) {
 function render(explorer: ExplorerData, slugs: string[], locale: "et" | "en" = "et", from?: string) {
   const facts = trendFacts(input(explorer, slugs, from));
   const statements = trendStatements(facts);
-  const rendered = renderTrend(statements, { locale, category: "Sõiduautod", brands: slugs, period: "x", source: "Transpordiamet" }, translator(locale));
+  const rendered = renderTrend(statements, { kind: "brands", locale, category: "Sõiduautod", brands: slugs, period: "x", source: "Transpordiamet" }, translator(locale));
   return { facts, statements, rendered };
 }
 

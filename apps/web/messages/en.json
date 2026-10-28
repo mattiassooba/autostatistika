@@ -253,7 +253,8 @@
     "meta": {
       "period": "Selected period",
       "brands": "Brands compared",
-      "category": "Type"
+      "category": "Type",
+      "month": "Selected month"
     },
     "sections": {
       "summary": "Main observation",
@@ -294,13 +295,21 @@
         "mover": "The largest change was {brand}: {from} → {to} first registrations ({pct}), comparing the 12 months {start} and {end}.",
         "single": "{brand}: {from} → {to} first registrations ({pct}), comparing the 12 months {start} and {end}.",
         "noTotals": "None of the selected brands is ranked in every month of both {start} and {end}, so no change is calculated.",
-        "insufficient": "The selected period ({months} calendar months) does not hold two separate complete 12-month blocks, so no change is calculated. Choose a longer period."
+        "insufficient": "The selected period ({months} calendar months) does not hold two separate complete 12-month blocks, so no change is calculated. Choose a longer period.",
+        "regMonth": "{period}: {value} first registrations, of which {neu} new ({share}).",
+        "regMonthNoNew": "{period}: {value} first registrations.",
+        "regYearAgo": "A year earlier ({before}) there were {from}, a change of {pct}.",
+        "regNoYearAgo": "The month a year earlier ({before}) is not in the data, so no change is calculated."
       },
       "changes": {
         "brand": "{brand}: {from} → {to} first registrations ({pct}); share of the type {shareFrom} → {shareTo} ({pp}).",
         "partial": "{brand}: ranked in {startListed} of 12 months ({start}) and {endListed} of 12 months ({end}). Months outside the ranking are unknown, so the 12-month totals are not compared.",
         "market": "Type total: {from} → {to} first registrations ({pct}); share of new vehicles {newFrom} → {newTo} ({pp}).",
-        "marketNoNew": "Type total: {from} → {to} first registrations ({pct}). The number of new vehicles is not known for every month."
+        "marketNoNew": "Type total: {from} → {to} first registrations ({pct}). The number of new vehicles is not known for every month.",
+        "regFirst": "Total: {from} ({before}) → {to} ({period}), {pct}.",
+        "regNew": "New: {from} → {to} ({pct}).",
+        "regUsed": "Used (first entry in Estonia): {from} → {to} ({pct}).",
+        "regRolling": "12 months {range}: {to} first registrations; the 12 months before ({prevRange}): {from}; change {pct}."
       },
       "comparison": {
         "order": "{range}: {list}.",
@@ -308,14 +317,24 @@
         "none": "{range}: none of the selected brands is ranked in all 12 months, so totals are not compared.",
         "single": "Only one brand ({brand}) is selected, so brands are not compared.",
         "onlyOne": "{range}: only {brand} is ranked in all 12 months, so brand totals are not compared.",
-        "ranks": "Ranks in {range}: {list}."
+        "ranks": "Ranks in {range}: {list}.",
+        "regNewShare": "Share of new: {from} ({before}) → {to} ({period}), {pp}.",
+        "regRollingShare": "Share of new over 12 months: {from} → {to} ({pp}).",
+        "regPrivate": "New vehicles going to private owners: {from} → {to} ({pp}).",
+        "regNoSplit": "The new/used split is not known for both months, so it is not compared."
       },
       "observation": {
         "peak": "{brand} peaked in {period}: {value} first registrations, {ratio} times its median month ({median}).",
         "dip": "{brand} had its lowest month in {period}: {value} first registrations, {ratio} times its median month ({median}).",
         "steady": "{brand} was ranked in all {months} months, between {best} and {worst}.",
         "steadyRank": "{brand} was ranked in all {months} months, every time at {best}.",
-        "none": "No month of any selected brand differed from the brand's median month by a factor of {threshold} or more."
+        "none": "No month of any selected brand differed from the brand's median month by a factor of {threshold} or more.",
+        "regSeasonTop": "{period} ({value}) is the highest for this calendar month in all {years} years since {firstYear}.",
+        "regSeasonBottom": "{period} ({value}) is the lowest for this calendar month in all {years} years since {firstYear}.",
+        "regSeasonHigh": "{period} ({value}) is the highest for this calendar month since {since}, which had {sinceValue}.",
+        "regSeasonLow": "{period} ({value}) is the lowest for this calendar month since {since}, which had {sinceValue}.",
+        "regSeasonRange": "{period} ({value}) is within the range of the same month in the previous {years} years, {min}–{max}.",
+        "regSeasonShort": "Only {years} earlier years have this calendar month, so no seasonal comparison is made."
       }
     },
     "item": {
@@ -333,7 +352,16 @@
       "marketNewShares": "Type total, share of new",
       "brandRanks": "{brand}, ranks",
       "brandMonth": "{brand}, month's first registrations",
-      "brandMedian": "{brand}, median month"
+      "brandMedian": "{brand}, median month",
+      "regFirst": "First registrations, total",
+      "regNew": "New",
+      "regUsed": "Used",
+      "regNewShare": "Share of new",
+      "regPrivateShare": "New to private owners",
+      "regRolling": "First registrations over 12 months",
+      "regRollingShare": "Share of new over 12 months",
+      "regSameMonth": "Same month in earlier years (lowest → highest)",
+      "regSince": "Same calendar month"
     },
     "lim": {
       "topList": "Brands come from each month's TOP sheet, which lists the {min}–{max} largest brands. A month in which a brand is not ranked is unknown, not zero.",
@@ -341,8 +369,13 @@
       "newUsed": "Brand rows count new and used vehicles together; the share of new is known only for the type as a whole.",
       "gaps": "No ranking in {count} months: {ranges}.",
       "blocks": "Changes compare two complete 12-month blocks, so seasonality does not distort the result.",
-      "noCause": "The analysis describes the figures, not their causes."
-    }
+      "noCause": "The analysis describes the figures, not their causes.",
+      "regDefinition": "A first registration is a vehicle's first entry in the Estonian register; used means imported second-hand. Ownership changes are not counted.",
+      "regRollingNote": "The 12-month comparison holds each calendar month once, so seasonality does not distort it.",
+      "regGaps": "{count} months are missing in the data: {ranges}."
+    },
+    "sourceReg": "Transport Administration, Infoleht: monthly general table, {period}. Processed by Autostatistika {date}.",
+    "monthHint": "Analysis: {period} against earlier months"
   },
   "models": {
     "title": "New passenger cars by model",

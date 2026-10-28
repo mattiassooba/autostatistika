@@ -6,7 +6,6 @@ import { useCallback, useId, useRef, useState, type ReactNode } from "react";
 import { ArrowClockwise, ArrowUpRight, Check, Copy, X } from "@phosphor-icons/react";
 import { SOURCES } from "./parts";
 import type { RenderedTrend, Translate } from "@/lib/analysis/render";
-import type { TrendSelection } from "@/lib/analysis/build";
 import type { AnalysisItem, AnalysisText } from "@/lib/analysis/validate";
 import type { ExplorerData } from "@/lib/data/types";
 import { motion as tokens } from "@/lib/design/tokens";
@@ -37,13 +36,15 @@ function modelName(id: string): string {
 }
 
 /**
- * Trend analysis for the brand comparison: a button beside the period control and
- * a card above the chart. Figures come from build.ts (the same window the chart
- * draws); with a Worker configured, Claude rewords them and the page shows that
- * text only if it passes the checks in validate.ts. A result belongs to the selection it was made for: once brands
- * or period change it is marked out of date and offers a new run.
+ * Trend analysis card: a button beside a toolbar and a card above the chart, for
+ * the brand comparison (kind "brands") or the registrations history (kind
+ * "registrations", one type and month). Figures come from build.ts; with a Worker
+ * configured, Claude rewords them and the page shows that text only if it passes
+ * the checks in validate.ts. A result belongs to the selection it was made for:
+ * once the selection changes it is marked out of date and offers a new run.
  */
 export function TrendAnalysis({
+  kind = "brands",
   toolbar,
   data,
   selection,
@@ -51,9 +52,10 @@ export function TrendAnalysis({
   categoryLabel,
   shareUrl,
 }: {
+  kind?: "brands" | "registrations";
   toolbar: ReactNode;
   data: ExplorerData;
-  selection: Omit<TrendSelection, "locale">;
+  selection: { category: string; brands: string[]; from: string | null; period: string | null };
   selectionKey: string;
   categoryLabel: string;
   shareUrl: () => string;
@@ -83,24 +85,35 @@ export function TrendAnalysis({
         return;
       }
       if (id !== run.current) return;
-      const { buildTrend, requestWording } = engine;
-      const full = { ...selection, locale };
-      const { facts, rendered } = buildTrend(data, full, categoryLabel, translate);
+      const { buildTrend, buildRegistrationTrend, requestWording } = engine;
+      const { facts, rendered } =
+        kind === "registrations"
+          ? buildRegistrationTrend(data, { locale, category: selection.category, period: selection.period ?? "" }, categoryLabel, translate)
+          : buildTrend(data, { locale, category: selection.category, brands: selection.brands, from: selection.from }, categoryLabel, translate);
       const { context } = rendered.request;
-      const brandList = new Intl.ListFormat(locale === "et" ? "et-EE" : "en-GB", { type: "conjunction" }).format(context.brands);
-      const base: Result = { key: selectionKey, rendered, text: rendered.analysis, mode: "computed", brands: brandList, period: context.period, category: categoryLabel };
+      // What the result is about: the compared brands, or the vehicle type for registrations.
+      const subject = context.brands.length
+        ? new Intl.ListFormat(locale === "et" ? "et-EE" : "en-GB", { type: "conjunction" }).format(context.brands)
+        : categoryLabel;
+      const base: Result = { key: selectionKey, rendered, text: rendered.analysis, mode: "computed", brands: subject, period: context.period, category: categoryLabel };
       if (facts.status !== "ok" || !AI_CONFIGURED) {
         setLoading(false);
         setResult(base);
         return;
       }
       setLoading(true);
-      const answer = await requestWording(rendered.request, { ...full, generatedAt: data.generatedAt }, { fresh });
+      const answer = await requestWording(
+        rendered.request,
+        kind === "registrations"
+          ? { kind, locale, category: selection.category, brands: [], from: null, period: selection.period, generatedAt: data.generatedAt }
+          : { kind, locale, category: selection.category, brands: selection.brands, from: selection.from, period: null, generatedAt: data.generatedAt },
+        { fresh },
+      );
       if (id !== run.current) return;
       setResult(answer.ok ? { ...base, text: answer.analysis, mode: "ai", model: answer.model } : { ...base, mode: "fallback", reason: answer.reason });
       setLoading(false);
     },
-    [data, selection, locale, categoryLabel, selectionKey, translate],
+    [kind, data, selection, locale, categoryLabel, selectionKey, translate],
   );
 
   const close = () => {
@@ -121,8 +134,8 @@ export function TrendAnalysis({
     const { text } = result;
     const lines = [
       title,
-      `${t("meta.period")}: ${result.period}`,
-      `${t("meta.brands")}: ${result.brands}`,
+      `${t(kind === "registrations" ? "meta.month" : "meta.period")}: ${result.period}`,
+      ...(kind === "brands" ? [`${t("meta.brands")}: ${result.brands}`] : []),
       `${t("meta.category")}: ${result.category}`,
       "",
       t("sections.summary"),
@@ -214,13 +227,15 @@ export function TrendAnalysis({
                   {result && (
                     <dl className="mt-2.5 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-muted">
                       <div>
-                        <dt className="inline">{t("meta.period")}: </dt>
+                        <dt className="inline">{t(kind === "registrations" ? "meta.month" : "meta.period")}: </dt>
                         <dd className="tabular inline text-ink">{result.period}</dd>
                       </div>
-                      <div>
-                        <dt className="inline">{t("meta.brands")}: </dt>
-                        <dd className="inline text-ink">{result.brands}</dd>
-                      </div>
+                      {kind === "brands" && (
+                        <div>
+                          <dt className="inline">{t("meta.brands")}: </dt>
+                          <dd className="inline text-ink">{result.brands}</dd>
+                        </div>
+                      )}
                       <div>
                         <dt className="inline">{t("meta.category")}: </dt>
                         <dd className="inline text-ink">{result.category}</dd>

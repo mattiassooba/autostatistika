@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import type { PublishedBundle } from "../../../apps/web/lib/data/types";
 import { generationId } from "../../../apps/web/lib/data/slices";
-import { buildTrend } from "../../../apps/web/lib/analysis/build";
+import { buildRegistrationTrend, buildTrend } from "../../../apps/web/lib/analysis/build";
 import { messageTranslator, trendFile, trendFileData, type TrendFile } from "../../../apps/web/lib/analysis/trend-file";
 import { requestHash, type AnalysisRequest, type AnalysisText, type SelectionRequest } from "../../../apps/web/lib/analysis/validate";
 import { createHandler, DailyBudget, type Env, type KV } from "../src/index";
@@ -25,13 +25,23 @@ function fileFor(category: string): TrendFile {
   const periods = [...new Set(bundle.registrations.brands.filter((r) => r.category_code === category).map((r) => r.reporting_period))].sort();
   return JSON.parse(JSON.stringify(trendFile(bundle, category, periods, messages)));
 }
-const files = { passenger_car: fileFor("passenger_car"), truck: fileFor("truck") };
+const files: Record<string, TrendFile> = Object.fromEntries(
+  ["passenger_car", "truck", "bus", "moped"].map((category) => [category, fileFor(category)]),
+);
 
 /** What the page sends, and the request it computed (build.test.ts shows the page computes the same). */
 async function selection(brands: string[], from: string | null = "2021-10", locale: "et" | "en" = "en", category: "passenger_car" | "truck" = "passenger_car") {
   const file = files[category];
   const request = buildTrend(trendFileData(file), { locale, category, brands, from }, file.messages[locale].categories[category], messageTranslator(file.messages[locale].trend)).rendered.request;
-  const body: SelectionRequest = { v: 2, locale, generation, category, brands, from, hash: await requestHash(request) };
+  const body: SelectionRequest = { v: 2, kind: "brands", locale, generation, category, brands, from, period: null, hash: await requestHash(request) };
+  return { body, request };
+}
+
+/** A registrations-history selection as the page sends it. */
+async function registrations(category: string, period: string, locale: "et" | "en" = "et") {
+  const file = files[category];
+  const request = buildRegistrationTrend(trendFileData(file), { locale, category, period }, file.messages[locale].categories[category], messageTranslator(file.messages[locale].trend)).rendered.request;
+  const body: SelectionRequest = { v: 2, kind: "registrations", locale, generation, category, brands: [], from: null, period, hash: await requestHash(request) };
   return { body, request };
 }
 
@@ -83,7 +93,7 @@ function setup(model?: (request: AnalysisRequest) => ModelAnswer, env: Partial<E
     },
     loadTrendFile: async (url) => {
       const match = /\/data\/(\d+)\/trend\/([a-z_]+)\.json$/.exec(url);
-      return match && match[1] === generation ? (files[match[2] as keyof typeof files] ?? null) : null;
+      return match && match[1] === generation ? (files[match[2]] ?? null) : null;
     },
   });
   const cache = kv();
@@ -228,6 +238,39 @@ describe("trend analyst worker", () => {
     const { body } = await selection(["bmw"]);
     const { post } = setup(() => ({ ok: false, status: 502, error: "upstream_connection" }));
     assert.equal((await post(body)).status, 502);
+  });
+
+  it("registrations: rebuilds the type's month analysis and sends exactly that to the model", async () => {
+    const { post, seen } = setup();
+    for (const [category, period, locale] of [["passenger_car", "2026-09", "et"], ["bus", "2026-09", "en"], ["moped", "2014-03", "et"]] as const) {
+      const { body, request } = await registrations(category, period, locale);
+      const response = await post(body);
+      assert.equal(response.status, 200, `${category} ${period}`);
+      assert.deepEqual(seen[seen.length - 1], request);
+      assert.equal(request.context.kind, "registrations");
+    }
+  });
+
+  it("registrations: refuses brands, a window start, a forged hash and a month without a year earlier", async () => {
+    const { body } = await registrations("passenger_car", "2026-09");
+    const { post, calls } = setup();
+    assert.equal((await post({ ...body, brands: ["bmw"] })).status, 400);
+    assert.equal((await post({ ...body, from: "2021-10" })).status, 400);
+    assert.equal((await post({ ...body, period: "2026-13" })).status, 400);
+    const other = await registrations("passenger_car", "2026-08");
+    assert.deepEqual(await (await post({ ...body, hash: other.body.hash })).json(), { error: "mismatch" });
+    const first = await registrations("passenger_car", "2006-03");
+    assert.deepEqual(await (await post(first.body)).json(), { error: "insufficient" });
+    assert.equal(calls(), 0);
+  });
+
+  it("a page built before the kind field (no kind, no period) is still a brand comparison", async () => {
+    const { body } = await selection(["bmw", "toyota"]);
+    const { kind, period, ...old } = body;
+    void kind;
+    void period;
+    const { post } = setup();
+    assert.equal((await post(old)).status, 200);
   });
 
   it("refuses oversized bodies", async () => {

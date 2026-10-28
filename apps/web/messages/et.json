@@ -253,7 +253,8 @@
     "meta": {
       "period": "Valitud periood",
       "brands": "Võrreldavad margid",
-      "category": "Liik"
+      "category": "Liik",
+      "month": "Valitud kuu"
     },
     "sections": {
       "summary": "Peamine tähelepanek",
@@ -294,13 +295,21 @@
         "mover": "Suurim muutus oli margil {brand}: {from} → {to} esmaregistreerimist ({pct}), kui võrrelda 12 kuud {start} ja {end}.",
         "single": "{brand}: {from} → {to} esmaregistreerimist ({pct}), kui võrrelda 12 kuud {start} ja {end}.",
         "noTotals": "Ühelgi valitud margil pole edetabelis kõiki kuid nii lõigus {start} kui ka lõigus {end}, seega muutust ei arvutata.",
-        "insufficient": "Valitud perioodis ({months} kalendrikuud) pole kahte eraldi täielikku 12 kuu lõiku, seega muutust ei arvutata. Vali pikem periood."
+        "insufficient": "Valitud perioodis ({months} kalendrikuud) pole kahte eraldi täielikku 12 kuu lõiku, seega muutust ei arvutata. Vali pikem periood.",
+        "regMonth": "{period}: esmaregistreeriti {value} sõidukit, neist uusi {neu} ({share}).",
+        "regMonthNoNew": "{period}: esmaregistreeriti {value} sõidukit.",
+        "regYearAgo": "Aasta varem ({before}) oli neid {from}, muutus {pct}.",
+        "regNoYearAgo": "Aasta varasemat kuud ({before}) andmetes pole, seega muutust ei arvutata."
       },
       "changes": {
         "brand": "{brand}: {from} → {to} esmaregistreerimist ({pct}); osakaal liigis {shareFrom} → {shareTo} ({pp}).",
         "partial": "{brand}: edetabelis {startListed} kuul 12-st ({start}) ja {endListed} kuul 12-st ({end}). Edetabelist välja jäänud kuude arvud pole teada, seega 12 kuu summasid ei võrrelda.",
         "market": "Liik kokku: {from} → {to} esmaregistreerimist ({pct}); uute sõidukite osakaal {newFrom} → {newTo} ({pp}).",
-        "marketNoNew": "Liik kokku: {from} → {to} esmaregistreerimist ({pct}). Uute sõidukite arv pole kõigil kuudel teada."
+        "marketNoNew": "Liik kokku: {from} → {to} esmaregistreerimist ({pct}). Uute sõidukite arv pole kõigil kuudel teada.",
+        "regFirst": "Kokku: {from} ({before}) → {to} ({period}), {pct}.",
+        "regNew": "Uued: {from} → {to} ({pct}).",
+        "regUsed": "Kasutatud (esimene kanne Eestis): {from} → {to} ({pct}).",
+        "regRolling": "12 kuud {range}: {to} esmaregistreerimist; eelmised 12 kuud ({prevRange}): {from}; muutus {pct}."
       },
       "comparison": {
         "order": "{range}: {list}.",
@@ -308,14 +317,24 @@
         "none": "{range}: ühelgi valitud margil pole edetabelis kõiki 12 kuud, seega kogusummasid ei võrrelda.",
         "single": "Valitud on üks mark ({brand}), seega marke omavahel ei võrrelda.",
         "onlyOne": "{range}: kõigil 12 kuul oli edetabelis ainult {brand}, seega markide kogusummasid ei võrrelda.",
-        "ranks": "Edetabelikohad perioodis {range}: {list}."
+        "ranks": "Edetabelikohad perioodis {range}: {list}.",
+        "regNewShare": "Uute osakaal: {from} ({before}) → {to} ({period}), {pp}.",
+        "regRollingShare": "12 kuu uute osakaal: {from} → {to} ({pp}).",
+        "regPrivate": "Uutest sõidukitest eraomanikele: {from} → {to} ({pp}).",
+        "regNoSplit": "Uute ja kasutatute jaotus pole mõlema kuu kohta teada, seega seda ei võrrelda."
       },
       "observation": {
         "peak": "{period} oli margi {brand} tippkuu: {value} esmaregistreerimist, {ratio}-kordne margi mediaankuu ({median}).",
         "dip": "{period} oli margi {brand} madalaim kuu: {value} esmaregistreerimist, {ratio}-kordne margi mediaankuu ({median}).",
         "steady": "{brand} oli edetabelis kõigil {months} kuul, kohtadel {best}–{worst}.",
         "steadyRank": "{brand} oli edetabelis kõigil {months} kuul, iga kord kohal {best}.",
-        "none": "Ühegi valitud margi ükski kuu ei erinenud margi mediaankuust {threshold} korda või rohkem."
+        "none": "Ühegi valitud margi ükski kuu ei erinenud margi mediaankuust {threshold} korda või rohkem.",
+        "regSeasonTop": "{period} ({value}) on selle kalendrikuu suurim arv kõigi {years} aasta seas alates {firstYear}.",
+        "regSeasonBottom": "{period} ({value}) on selle kalendrikuu väikseim arv kõigi {years} aasta seas alates {firstYear}.",
+        "regSeasonHigh": "{period} ({value}) on sama kalendrikuu suurim arv alates {since}, mil neid oli {sinceValue}.",
+        "regSeasonLow": "{period} ({value}) on sama kalendrikuu väikseim arv alates {since}, mil neid oli {sinceValue}.",
+        "regSeasonRange": "{period} ({value}) jääb sama kalendrikuu varasema {years} aasta vahemikku {min}–{max}.",
+        "regSeasonShort": "Sama kalendrikuu kohta on varasemaid aastaid vaid {years}, seega hooajalist võrdlust ei tehta."
       }
     },
     "item": {
@@ -333,7 +352,16 @@
       "marketNewShares": "Liik kokku, uute osakaal",
       "brandRanks": "{brand}, edetabelikohad",
       "brandMonth": "{brand}, kuu esmaregistreerimised",
-      "brandMedian": "{brand}, mediaankuu"
+      "brandMedian": "{brand}, mediaankuu",
+      "regFirst": "Esmaregistreerimised kokku",
+      "regNew": "Uued",
+      "regUsed": "Kasutatud",
+      "regNewShare": "Uute osakaal",
+      "regPrivateShare": "Uutest eraomanikele",
+      "regRolling": "12 kuu esmaregistreerimised",
+      "regRollingShare": "12 kuu uute osakaal",
+      "regSameMonth": "Sama kuu varasematel aastatel (väikseim → suurim)",
+      "regSince": "Sama kalendrikuu"
     },
     "lim": {
       "topList": "Margid on kuu TOP-lehelt, kus on {min}–{max} suurimat marki. Kuu, kus mark edetabelis pole, on teadmata, mitte null.",
@@ -341,8 +369,13 @@
       "newUsed": "Margiridades on uued ja kasutatud sõidukid koos; uute osakaal on teada ainult liigi kohta.",
       "gaps": "Edetabel puudub {count} kuul: {ranges}.",
       "blocks": "Muutused võrdlevad kahte täielikku 12 kuu lõiku, et hooajalisus tulemust ei moonutaks.",
-      "noCause": "Analüüs kirjeldab arve, mitte nende põhjusi."
-    }
+      "noCause": "Analüüs kirjeldab arve, mitte nende põhjusi.",
+      "regDefinition": "Esmaregistreerimine on sõiduki esimene kanne Eesti registrisse; kasutatud on välismaalt toodud sõiduk. Omanikuvahetusi siin ei loeta.",
+      "regRollingNote": "12 kuu võrdluses on iga kalendrikuu üks kord, nii et hooajalisus tulemust ei moonuta.",
+      "regGaps": "Andmetes puudub {count} kuud: {ranges}."
+    },
+    "sourceReg": "Transpordiamet, Infoleht: kuu üldtabel, {period}. Autostatistika töötlus {date}.",
+    "monthHint": "Analüüs: {period} ja võrdlus varasemaga"
   },
   "models": {
     "title": "Uued sõiduautod mudeli järgi",

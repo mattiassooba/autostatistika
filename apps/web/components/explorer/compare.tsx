@@ -49,7 +49,7 @@ export function Compare() {
   const range = !from ? "all" : ranges.find((option) => option.from === from)?.value ?? "custom";
   const setRange = (value: string) =>
     update((current) => ({ ...current, from: value === "all" ? undefined : ranges.find((option) => option.value === value)?.from }));
-  const selection = useMemo(() => ({ category: reg.category, brands: reg.brands, from }), [reg.category, reg.brands, from]);
+  const selection = useMemo(() => ({ category: reg.category, brands: reg.brands, from, period: null }), [reg.category, reg.brands, from]);
   const suggestions = useMemo(
     () => (latest ? brandRanking(data, reg.category, latest).slice(0, 3) : []),
     [data, reg.category, latest],

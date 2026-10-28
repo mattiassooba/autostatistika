@@ -11,6 +11,7 @@ import { RankChart, type RankItem } from "../charts/rank-chart";
 import { FuelChart } from "../charts/fuel-chart";
 import { BarRow, Block, Empty, Figure, SmallButton, SourceTag, SOURCES, ViewToggle } from "./parts";
 import { Compare } from "./compare";
+import { TrendAnalysis } from "./trend-analysis";
 import { Models } from "./models";
 import { localizedLabel, FUEL_LABELS } from "@/lib/data/labels";
 import {
@@ -29,9 +30,10 @@ import { MAX_COMPARE, seriesColor } from "@/lib/design/tokens";
 
 export function Registrations() {
   const t = useTranslations("reg");
+  const tt = useTranslations("trend");
   const tc = useTranslations("categories");
   const locale = useLocale();
-  const { data, view, update } = useDashboard();
+  const { data, view, update, shareUrl } = useDashboard();
   const reg = view.registrations;
   const series = useMemo(() => registrationSeries(data, reg.category), [data, reg.category]);
   const point = series.find((p) => p.period === reg.period) ?? null;
@@ -41,6 +43,7 @@ export function Registrations() {
   const usedShare = point?.first && point.used != null ? (point.used / point.first) * 100 : null;
   const privateShare = point?.neu && point.privateNew != null ? (point.privateNew / point.neu) * 100 : null;
   const periodText = fmtPeriod(reg.period, locale);
+  const trendSelection = useMemo(() => ({ category: reg.category, brands: [], from: null, period: reg.period }), [reg.category, reg.period]);
 
   return (
     <div className="flex flex-col gap-14 md:gap-20">
@@ -119,6 +122,19 @@ export function Registrations() {
         description={t("historyDescription", { category: tc(reg.category).toLowerCase() })}
         info={t("historyInfo")}
       >
+        {point?.first != null && (
+          <div className="mb-6">
+            <TrendAnalysis
+              kind="registrations"
+              toolbar={<p className="text-[13px] text-muted">{tt("monthHint", { period: periodText })}</p>}
+              data={data}
+              selection={trendSelection}
+              selectionKey={`registrations|${reg.category}|${reg.period}`}
+              categoryLabel={tc(reg.category)}
+              shareUrl={shareUrl}
+            />
+          </div>
+        )}
         {series.length > 8 ? (
           <HistoryChart
             points={series}
