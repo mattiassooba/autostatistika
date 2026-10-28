@@ -12,9 +12,9 @@ ALLOWED_ORIGINS = "https://autostatistika.ee,https://www.autostatistika.ee"
 SITE_ORIGIN = "https://autostatistika.ee"
 MODEL = "claude-haiku-5-5"
 # Model calls per UTC day across all visitors; cached answers do not count.
-# Enforced by the DailyBudget Durable Object below. Each call is at most 4 000
-# output tokens and a 24 KB request, so the day's spend has a fixed ceiling.
-DAILY_LIMIT = "500"
+# Enforced by the DailyBudget Durable Object below. Each call is the Worker's own
+# statements in and at most 4 000 tokens out, so the day's spend has a fixed ceiling.
+DAILY_LIMIT = "50"
 
 [[durable_objects.bindings]]
 name = "BUDGET"

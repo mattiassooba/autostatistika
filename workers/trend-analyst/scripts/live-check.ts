@@ -140,7 +140,7 @@ async function main() {
   const cost = (tokensIn * PRICE.input + tokensOut * PRICE.output) / 1e6;
   console.log(`\nAccepted ${accepted} of ${sent} model answers.`);
   console.log(`Tokens: ${tokensIn} in, ${tokensOut} out; cost ≈ $${cost.toFixed(4)} ($${(cost / Math.max(sent, 1)).toFixed(5)} per call).`);
-  console.log(`At the daily cap of 500 calls: ≈ $${((cost / Math.max(sent, 1)) * 500).toFixed(2)} a day.\n`);
+  console.log(`At the daily cap of 50 calls: ≈ $${((cost / Math.max(sent, 1)) * 50).toFixed(2)} a day.\n`);
   for (const sample of samples) {
     console.log(`--- ${sample.label}\nCOMPUTED:\n  ${flatten(sample.computed).join("\n  ")}\nCLAUDE:\n  ${flatten(sample.ai).join("\n  ")}\n`);
   }

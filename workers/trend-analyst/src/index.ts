@@ -141,7 +141,7 @@ export function createHandler(deps: Partial<Deps> = {}) {
 
     // Hard daily cap on model calls across all visitors (atomic Durable Object counter).
     if (!env.BUDGET) return json(503, { error: "no_budget" });
-    const limit = Number(env.DAILY_LIMIT ?? "500");
+    const limit = Number(env.DAILY_LIMIT ?? "50");
     const budget = await takeCall(env.BUDGET, Number.isFinite(limit) ? limit : 0);
     if (!budget.ok) return json(503, { error: "daily_limit" });
 

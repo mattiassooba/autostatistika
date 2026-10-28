@@ -108,11 +108,11 @@ npx wrangler tail        # live log: one JSON line per model call with tokens an
 - Model `claude-haiku-5-5` (`MODEL` in `wrangler.toml`), effort low, structured JSON output, at most 4 000 tokens
 - Limits: 8 requests a minute per IP (Workers rate-limit binding), 2 KB request body, requests only from
   `ALLOWED_ORIGINS` (a browser rule only; the selection-only format is the real protection), and `DAILY_LIMIT` model
-  calls per UTC day (500) counted by the `DailyBudget` Durable Object: atomic, so parallel requests cannot pass it.
+  calls per UTC day (50) counted by the `DailyBudget` Durable Object: atomic, so parallel requests cannot pass it.
   Without that binding the Worker makes no model call
 - Cost ceiling: the model input is the Worker's own statements for at most four brands (a few thousand tokens) and the
   output at most 4 000 tokens including thinking, so a call costs at most about $0.003 at Haiku 5.5 list prices
-  ($0.10 / $0.50 per million tokens), and 500 calls stay under $2 a day; measured use is lower (`live-check.ts`). The
+  ($0.10 / $0.50 per million tokens), and 50 calls stay under $0.20 a day; measured: about $0.0011 a call, so about $0.06 a day at the cap (`live-check.ts`). The
   Anthropic workspace spend limit is the backstop for everything else
 - Cache: validated answers in KV for 30 days, keyed by prompt version, model and the request hash (the request carries
   the figures, so new data means a new key). Selections are finite, so repeat visitors are served from the cache at
