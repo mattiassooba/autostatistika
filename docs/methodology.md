@@ -115,12 +115,18 @@ Each rule has a test in `ingestion/tests/test_parsers.py` that reproduces the so
 - Families follow the EU category (transpordiamet.ee/soidukite-ja-masinate-kategooriad): MS1/MS2 are off-road
   vehicles, C1-C5 and T4.x tractors, speed classes (T1a/T1b) keep their category, R1-R4 are tractor trailers (a
   separate family from road trailers O1-O4).
-- Older codes the category page does not define are mapped by evidence (27 Oct 2026, a question to Transpordiamet
-  is pending; if their answer differs, the mapping changes and the series is rebuilt). Any other code without a
+- Older codes the category page does not define were first mapped by evidence (27 Oct 2026) and confirmed by
+  Transpordiamet on 3 Nov 2026. They come from the agriculture minister's regulation no. 15 of 22 March 1995
+  ("Traktorite ja liikurmasinate registreerimise eeskiri…"), which is not in Riigi Teataja electronically; the
+  current categories have been used since 2005 (MKM regulation no. 110, annex 1). Any other code without a
   definition stays "unclassified".
-  - TR, TR1, TR2 → tractor (1.10.2026: 4,852 + 316 + 1; mostly MTZ, Valtra, John Deere, JUMZ). RO → tractor
-    (17; DT and TDT crawler tractors, matching the Infoleht "Traktor (sh roomik)").
-  - TH, TH1 → tractor trailer (1,874 + 125; mostly 2PTS, home-built, MMZ, Pöttinger).
+  - TR, TR1, TR2 → tractor (1.10.2026: 4,852 + 316 + 1; mostly MTZ, Valtra, John Deere, JUMZ). Transpordiamet: TR
+    is the general wheeled tractor code, TR1 smaller or lighter wheeled tractors, TR2 larger or heavier wheeled and
+    articulated tractors.
+  - RO → tractor (17; DT and TDT crawler tractors, matching the Infoleht "Traktor (sh roomik)"). Transpordiamet:
+    crawler tractors.
+  - TH, TH1 → tractor trailer (1,874 + 125; mostly 2PTS, home-built, MMZ, Pöttinger). Transpordiamet: TH is the
+    general agricultural and forestry tractor trailer, TH1 a light or single-axle tractor trailer.
   - Every vehicle with these codes was first registered by 2008 and the counts fall each year, so they are codes
     no longer issued, not a separate population.
   - Series check: 1.1.2020 tractors 25,817 + 6,106 = 31,923 against 30,522 in the 1.1.2019 general table; tractor

@@ -61,11 +61,11 @@ EU_TO_FAMILY = {
     "R3B": "tractor_trailer",
     "R4A": "tractor_trailer",
     "R4B": "tractor_trailer",
-    # Older register codes the category page does not list, mapped by evidence
-    # (docs/methodology.md, pending confirmation from Transpordiamet): every
-    # vehicle was first registered by 2008; TR/TR1/TR2 are MTZ, Valtra, John
-    # Deere tractors, TH/TH1 2PTS, Pöttinger trailers, RO DT/TDT crawler
-    # tractors. Counted with them, 1.1.2020 continues the 1.1.2019 table series.
+    # Older register codes the category page does not list (1995 tractor
+    # registration rules, replaced in 2005), confirmed by Transpordiamet on
+    # 3 Nov 2026 (docs/methodology.md): TR/TR1/TR2 wheeled tractors, RO crawler
+    # tractors, TH/TH1 tractor trailers. Counted with them, 1.1.2020 continues
+    # the 1.1.2019 table series.
     "TR": "tractor",
     "TR1": "tractor",
     "TR2": "tractor",

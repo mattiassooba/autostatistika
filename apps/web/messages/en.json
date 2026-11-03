@@ -536,8 +536,8 @@
         "body": "From 2020 the fleet comes from the open register file, in which every row is one vehicle in the register. The figures count those rows; individual vehicles are not published. Status is the source's general status: registered or suspended. The 2020–2023 files were queried from the register retroactively in 2025 and are marked as such."
       },
       "legacyCodes": {
-        "title": "Older register codes are classified by evidence",
-        "body": "The register has older category codes (TR, TR1, TR2, RO, TH, TH1) that Transpordiamet's category page does not describe. Every vehicle with them was first registered in 2008 or earlier and their number falls each year. TR is mostly MTZ, Valtra and John Deere tractors, RO crawler tractors and TH tractor trailers (2PTS, Pöttinger). Counted with them, tractors on 1.1.2020 (31,923) continue the 1.1.2019 general table (30,522); without them the series would drop by about a fifth in a year. TR and RO are therefore counted as tractors and TH as tractor trailers. We have asked Transpordiamet to confirm; if their answer differs, the classification changes. Other codes without a description stay unclassified."
+        "title": "Older register codes, confirmed by Transpordiamet",
+        "body": "The register has older category codes (TR, TR1, TR2, RO, TH, TH1) that Transpordiamet's category page does not describe. They come from the 1995 tractor registration rules; the current categories have been used since 2005. Every vehicle with them was first registered in 2008 or earlier and their number falls each year. According to Transpordiamet, TR is a wheeled tractor, TR1 a smaller or lighter and TR2 a larger or heavier wheeled or articulated tractor, RO a crawler tractor, and TH and TH1 are tractor trailers (TH1 light or single-axle). TR, TR1, TR2 and RO are therefore counted as tractors and TH and TH1 as tractor trailers. Counted with them, tractors on 1.1.2020 (31,923) continue the 1.1.2019 general table (30,522). Other codes without a description stay unclassified."
       },
       "missing": {
         "title": "Missing is not zero",

@@ -208,12 +208,11 @@ The fleet tab and brand pages plot every register date on a time axis; the searc
   opacity, dimming and entrance therefore live in CSS classes (`.race-enter`, `.race-in`). Check animations in the
   production build before concluding anything.
 
-## Open questions with the source
+## Questions answered by the source
 
-- Older register category codes TR, TR1, TR2, RO, TH, TH1: mapped by evidence on 27 Oct 2026 (methodology), an
-  email to andmed@transpordiamet.ee asks for their meaning. If the answer differs, change `EU_TO_FAMILY` in
-  `ingestion/normalization/categories.py`, the methodology note (`docs/methodology.md`, `method.p.legacyCodes` in
-  both message files) and the test, then rebuild the bundle and the search index.
+- Older register category codes TR, TR1, TR2, RO, TH, TH1: mapped by evidence on 27 Oct 2026; an email to
+  andmed@transpordiamet.ee was answered on 3 Nov 2026 and confirms the mapping (TR, TR1, TR2 and RO tractors; TH and
+  TH1 tractor trailers). Definitions and the regulations they come from are in `docs/methodology.md`.
 
 ## Unverified until credentials exist
 

@@ -536,8 +536,8 @@
         "body": "Alates 2020. aastast loetakse sõidukipark avaandmete registrifailist, kus iga rida on üks registris olev sõiduk. Arvud on nende ridade loendus; üksikuid sõidukeid ei avaldata. Staatus on allika üldstaatus: registreeritud või peatatud. 2020–2023 failid päriti registrist tagantjärgi 2025. aastal ja on nii märgitud."
       },
       "legacyCodes": {
-        "title": "Vanad registrikoodid on liigitatud tõendite põhjal",
-        "body": "Registris on vanu kategooriakoode (TR, TR1, TR2, RO, TH, TH1), mida Transpordiameti kategooriate leht ei kirjelda. Kõik need sõidukid on esmaregistreeritud hiljemalt 2008. aastal ja nende arv väheneb igal aastal. TR-koodiga on peamiselt MTZ, Valtra ja John Deere traktorid, RO-koodiga roomiktraktorid ja TH-koodiga traktorihaagised (2PTS, Pöttinger). Nendega koos jätkub 1.1.2020 traktorite arv (31 923) 1.1.2019 üldtabeli rida (30 522); ilma nendeta langeks see aastaga umbes viiendiku. Seetõttu loetakse TR ja RO traktoriteks ning TH traktorihaagisteks. Ootame Transpordiametilt kinnitust; kui see erineb, muudame liigitust. Muud kirjelduseta koodid jäävad liigitamata."
+        "title": "Vanad registrikoodid, Transpordiameti kinnitusega",
+        "body": "Registris on vanu kategooriakoode (TR, TR1, TR2, RO, TH, TH1), mida Transpordiameti kategooriate leht ei kirjelda. Need pärinevad 1995. aasta traktorite registreerimise eeskirjast; praegused kategooriad on kasutusel alates 2005. aastast. Kõik nende koodidega sõidukid on esmaregistreeritud hiljemalt 2008. aastal ja nende arv väheneb igal aastal. Transpordiameti selgituse järgi on TR ratastraktor, TR1 väiksem või kergem ja TR2 suurem või raskem ratastraktor või liigendtraktor, RO roomiktraktor ning TH ja TH1 traktorihaagised (TH1 kerge või üheteljeline). Seetõttu loetakse TR, TR1, TR2 ja RO traktoriteks ning TH ja TH1 traktorihaagisteks. Nendega koos jätkub 1.1.2020 traktorite arv (31 923) 1.1.2019 üldtabeli rida (30 522). Muud kirjelduseta koodid jäävad liigitamata."
       },
       "missing": {
         "title": "Puuduv ei ole null",
